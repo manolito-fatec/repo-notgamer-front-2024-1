@@ -5,13 +5,15 @@
       <input
           type="date"
           v-model="startDate"
-          @change="updateEndDate"
+          @change="validateStartDate"
+          :max="maxStartDate"
           class="filter-input date-input"
       />
       <span class="date-range-separator">até</span>
       <input
           type="date"
           v-model="endDate"
+          @change="validateEndDate"
           :min="minEndDate"
           :max="maxEndDate"
           class="filter-input date-input"
@@ -26,18 +28,21 @@ import { ref, computed, watch } from 'vue'
 const startDate = ref(null)
 const endDate = ref(null)
 
+const maxStartDate = computed(() => {
+  return new Date().toISOString().split('T')[0]
+})
+
 const minEndDate = computed(() => {
   if (!startDate.value) return null
-  const start = new Date(startDate.value)
-  start.setDate(start.getDate())
-  return start.toISOString().split('T')[0]
+  return startDate.value
 })
 
 const maxEndDate = computed(() => {
   if (!startDate.value) return null
   const start = new Date(startDate.value)
-  start.setDate(start.getDate() + 31)
-  return start.toISOString().split('T')[0]
+  const maxEnd = new Date(start)
+  maxEnd.setDate(start.getDate() + 31)
+  return maxEnd.toISOString().split('T')[0]
 })
 
 watch([startDate, endDate], ([newStartDate, newEndDate]) => {
@@ -52,7 +57,13 @@ watch([startDate, endDate], ([newStartDate, newEndDate]) => {
   }
 })
 
-function updateEndDate() {
+function validateStartDate() {
+  if (startDate.value && endDate.value && new Date(startDate.value) > new Date(endDate.value)) {
+    endDate.value = startDate.value
+  }
+}
+
+function validateEndDate() {
   if (startDate.value && endDate.value) {
     const start = new Date(startDate.value)
     const end = new Date(endDate.value)
