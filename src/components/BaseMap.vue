@@ -1,9 +1,7 @@
 <template>
   <ol-map class="map-container"
           :loadTilesWhileAnimating="true"
-          :loadTilesWhileInteracting="true"
-
-  >
+          :loadTilesWhileInteracting="true">
     <ol-view
         ref="view"
         :center="center"
@@ -13,21 +11,21 @@
     <ol-tile-layer>
       <ol-source-osm/>
     </ol-tile-layer>
-        <!-- Camada de pontos (vetores) -->
+    <!-- Início da Layer -->
     <ol-vector-layer>
-        <ol-source-vector>
-          <ol-feature>
-            <ol-geom-point :coordinates="[-45.794848, -23.162259]">
-            </ol-geom-point>
-            <ol-style>
-              <ol-style-circle :radius="20">
-                <ol-style-stroke color="red" :width="2"></ol-style-stroke>
-                <ol-style-fill color="rgba(255,0,0,0.2)"></ol-style-fill>
-              </ol-style-circle>
-            </ol-style>
-          </ol-feature>
-        </ol-source-vector>
+      <ol-source-vector>
+        <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">
+          <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>
+          <ol-style>
+            <ol-style-circle :radius="8">
+              <ol-style-stroke color="red" :width="1"/>
+              <ol-style-fill color="rgba(0,0,0,0.2)"/>
+            </ol-style-circle>
+          </ol-style>
+        </ol-feature>
+      </ol-source-vector>
     </ol-vector-layer>
+    <!-- Fim da Layer -->
   </ol-map>
 </template>
 
@@ -35,50 +33,48 @@
 import {onMounted, ref} from "vue";
 import {Feature} from "ol";
 import {Point} from "ol/geom";
-import {Icon, Style} from "ol/style";
-
-const center = ref([-45.794848, -23.162259]);
+const center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
 const projection = ref("EPSG:4326");
-const zoom = ref(17);
+const zoom = ref(5);
 
 const pointFeatures = ref([]);
-const pontosFinais = ref([]);
 
+//Função que
 function addPoint(coordenadas) {
-  const coord = coordenadas; // Exemplo de coordenada aleatória
-
-  // Cria uma nova Feature de ponto com o texto
   const pointFeature = new Feature({
-    geometry: new Point(coord)
+    geometry: new Point(coordenadas)
   });
-   // Adiciona a Feature à lista de pontos
+  // Adiciona a Feature à lista de pontos
   pointFeatures.value.push(pointFeature);
 }
 
-onMounted(async () => {
-  addPoint([-45.794848, -23.162259])
-  addPoint([-45.793728, -23.162980])
-  addPoint([-45.795504, -23.161650])
-  addPoint([-45.794950, -23.161240])
-  addPoint([-45.793512, -23.162390])
-  addPoint([-45.795218, -23.162100])
-  addPoint([-45.794710, -23.163000])
-  addPoint([-45.793830, -23.161890])
-  addPoint([-45.795300, -23.161800])
-  addPoint([-45.794670, -23.161720])
-  addPoint([-45.794100, -23.162500])
-
-  for (let i = 0; i < pointFeatures.value.length; i++) {
-    console.log(pointFeatures.value[i].values_.geometry.flatCoordinates);
-  }
+onMounted(() => {
+addPoint([-60.66744123,2.841927493])
+addPoint([-60.68858993,2.832449611])
+addPoint([-60.6890344,2.8330745])
+addPoint([-60.68875233,2.832707898])
 
 
-})
+  // for (let i = 0; i < pointFeatures.value.length; i++) {
+  //   console.log(pointFeatures.value[i].getGeometry().getCoordinates());
+  // }
+});
 </script>
 
 <style scoped>
 .map-container {
   width: 100vw;
   height: 100vh;
+}
+:global(.ol-zoom-in) {
+  bottom: 6em;
+  right: 2em;
+  position: fixed;
+}
+
+:global(.ol-zoom-out) {
+  bottom: 4.5em;
+  right: 2em;
+  position:fixed;
 }
 </style>
