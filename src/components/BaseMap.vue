@@ -32,12 +32,18 @@
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
 import {Feature} from "ol";
-import {Point} from "ol/geom";
+import {Geometry, Point} from "ol/geom";
+import type {GeometryPoint} from "@/components/Types";
+
+//Configurações de iniciação do mapa
 const center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
 const projection = ref("EPSG:4326");
 const zoom = ref(5);
 
 const pointFeatures = ref([]);
+
+let pointList = ref<GeometryPoint[]>([]);
+
 
 //Função que
 function addPoint(coordenadas) {
@@ -48,7 +54,29 @@ function addPoint(coordenadas) {
   pointFeatures.value.push(pointFeature);
 }
 
+
+const getAllPoints = async () => {
+  try {
+    const response = await api.get(`/ENDPOINT QUE PEGA TODOS OS POINTS}`)
+    return response.data
+
+  } catch (error) {
+    router.replace("/login")
+  }
+}
+
+
 onMounted(() => {
+  pointList = getAllPoints();
+  for (let i = 0; i < pointList.value.length; i++) {
+    let ponto = new Feature({
+      geometry: new Point("[" + pointList.value[i].longitude + "," + pointList.value[i].latitude +"]"),
+    })
+    ponto.setId(pointList.value[i].id)
+    ponto.setProperties({hora: pointList.value[i].createTime})
+    addPoint(ponto);
+  }
+//Pontos mockados
 addPoint([-60.66744123,2.841927493])
 addPoint([-60.68858993,2.832449611])
 addPoint([-60.6890344,2.8330745])
