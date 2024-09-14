@@ -1,6 +1,6 @@
 export type GeometryPoint ={
     id: number
     createTime: string
-    long: string
-    lat: string
+    long: float
+    lat: float
 }
