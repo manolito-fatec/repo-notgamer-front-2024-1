@@ -40,49 +40,44 @@ const center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
 const projection = ref("EPSG:4326");
 const zoom = ref(5);
 
-const pointFeatures = ref([]);
+//Array com as geometrias prontas dentro de uma Feature. Diferente da pointList, aqui o objeto geometry já está dentro de objetos que o mapa utiliza.
+let pointFeatures = ref([]);
 
+//Array com objetos do tipo GeometryPoint. É a lista inicial de pontos, vindos do endpoint.
 let pointList = ref<GeometryPoint[]>([]);
 
-
-//Função que
-function addPoint(coordenadas) {
-  const pointFeature = new Feature({
-    geometry: new Point(coordenadas)
-  });
-  // Adiciona a Feature à lista de pontos
-  pointFeatures.value.push(pointFeature);
-}
-
-
+//Método que irá solicitar os pontos do backend. Lembrar de ajustar conforme o término da task de criação desse endpoint
 const getAllPoints = async () => {
   try {
     const response = await api.get(`/ENDPOINT QUE PEGA TODOS OS POINTS}`)
     return response.data
 
   } catch (error) {
-    router.replace("/login")
+
   }
 }
-
-
 onMounted(() => {
-  pointList = getAllPoints();
+  //Popula a lista com objetos GeometryPoint mockados.
+  pointList = ref([
+    { id: 1, createTime: "2023-09-01T10:00:00", long: -60.457873, lat: 0.584053 },
+    { id: 2, createTime: "2023-09-01T10:05:00", long: -60.457500, lat: 0.584500 },
+    { id: 3, createTime: "2023-09-01T10:10:00", long: -60.456873, lat: 0.585000 },
+  ]);
+
+  //Prepara as coordenadas para serem lidas pelo mapa.
+  //Feature é um objeto legível pela tag 'ol-feature'. Define como a layer se comporta.
+  //Dentro da Feature, estamos inserindo o Point, objeto que contém as coordenadas (long,lat).
+  //A Feature permite inserir mais atributos para um ponto, podendo inserir dados personalizados (como nome, data, etc). Também podemos inserir o estilo do ponto por aqui.
   for (let i = 0; i < pointList.value.length; i++) {
     let ponto = new Feature({
-      geometry: new Point("[" + pointList.value[i].longitude + "," + pointList.value[i].latitude +"]"),
+      geometry: new Point([pointList.value[i].long,pointList.value[i].lat]),
     })
     ponto.setId(pointList.value[i].id)
     ponto.setProperties({hora: pointList.value[i].createTime})
-    addPoint(ponto);
+    pointFeatures.value.push(ponto);
   }
-//Pontos mockados
-addPoint([-60.66744123,2.841927493])
-addPoint([-60.68858993,2.832449611])
-addPoint([-60.6890344,2.8330745])
-addPoint([-60.68875233,2.832707898])
 
-
+  //Lógica para exibir nos logs como os objetos de geometria estão.
   // for (let i = 0; i < pointFeatures.value.length; i++) {
   //   console.log(pointFeatures.value[i].getGeometry().getCoordinates());
   // }
