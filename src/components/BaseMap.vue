@@ -25,14 +25,25 @@
         </ol-feature>
       </ol-source-vector>
     </ol-vector-layer>
-    <!-- Fim da Layer -->
+
+    <ol-vector-layer>
+      <ol-source-vector>
+        <ol-feature v-for="line in routeLine" :key="line.getId()">
+          <ol-geom-line-string :coordinates="line.getGeometry().getCoordinates()"/>
+          <ol-style>
+            <ol-style-stroke color="blue" :width="2"/>
+          </ol-style>
+        </ol-feature>
+      </ol-source-vector>
+    </ol-vector-layer>
+
   </ol-map>
 </template>
 
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
 import {Feature} from "ol";
-import {Geometry, Point} from "ol/geom";
+import {LineString, Point} from "ol/geom";
 import type {GeometryPoint} from "@/components/Types";
 
 //Configurações de iniciação do mapa
@@ -46,6 +57,10 @@ let pointFeatures = ref([]);
 //Array com objetos do tipo GeometryPoint. É a lista inicial de pontos, vindos do endpoint.
 let pointList = ref<GeometryPoint[]>([]);
 
+let pointListOrderedByTime = ref([]);
+
+let routeLine = ref([]);
+
 //Método que irá solicitar os pontos do backend. Lembrar de ajustar conforme o término da task de criação desse endpoint
 const getAllPoints = async () => {
   try {
@@ -55,6 +70,13 @@ const getAllPoints = async () => {
   } catch (error) {
 
   }
+}
+
+let makeLineFromPoints = (point, point2) => {
+  let newRoute = new Feature({
+    geometry: new LineString([point.getGeometry().getCoordinates(), point2.getGeometry().getCoordinates()]),
+  });
+  routeLine.value.push(newRoute);
 }
 onMounted(() => {
   //Popula a lista com objetos GeometryPoint mockados.
@@ -81,6 +103,9 @@ onMounted(() => {
   // for (let i = 0; i < pointFeatures.value.length; i++) {
   //   console.log(pointFeatures.value[i].getGeometry().getCoordinates());
   // }
+
+  makeLineFromPoints(pointFeatures.value[0], pointFeatures.value[1]);
+  makeLineFromPoints(pointFeatures.value[1], pointFeatures.value[2]);
 });
 </script>
 
