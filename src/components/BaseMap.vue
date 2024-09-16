@@ -74,12 +74,19 @@ const getAllPoints = async () => {
 }
 
 function makeLineFromPoints(featureList){
-  for (let i = 0; i < 10; i+2) {
+  for (let i = 0; i < featureList.value.length; i+=2) {
+    console.log(featureList)
     let newRoute = new Feature({
       geometry: new LineString([featureList._value[i].values_.geometry.getCoordinates(), featureList._value[i+1].values_.geometry.getCoordinates()]),
     });
+    if (routeLine._value.length == 0) {
+    }else {
+      let routeLinker = new Feature({
+        geometry: new LineString([routeLine._value[routeLine._value.length-1].values_.geometry.getCoordinates()[1],newRoute.values_.geometry.getCoordinates()[0]]),
+      })
+      routeLine.value.push(routeLinker)
+    }
     routeLine.value.push(newRoute);
-
   }
   return null;
 
@@ -90,7 +97,9 @@ onMounted(() => {
     { id: 1, createTime: "2023-09-01T10:00:00", long: -60.457873, lat: 0.584053 },
     { id: 2, createTime: "2023-09-01T10:05:00", long: -60.457500, lat: 0.584500 },
     { id: 3, createTime: "2023-09-01T10:10:00", long: -60.456873, lat: 0.585000 },
-    { id: 4, createTime: "2023-09-01T10:15:00", long: -60.456999, lat: 0.585000 },
+    { id: 4, createTime: "2023-09-01T10:15:00", long: -60.456999, lat: 0.579000 },
+    { id: 5, createTime: "2023-09-01T10:18:00", long: -60.456999, lat: 0.580000 },
+
   ]);
 
   //Prepara as coordenadas para serem lidas pelo mapa.
