@@ -47,9 +47,9 @@ import {LineString, Point} from "ol/geom";
 import type {GeometryPoint} from "@/components/Types";
 
 //Configurações de iniciação do mapa
-const center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
-const projection = ref("EPSG:4326");
-const zoom = ref(5);
+let center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
+let projection = ref("EPSG:4326");
+let zoom = ref(5);
 
 //Array com as geometrias prontas dentro de uma Feature. Diferente da pointList, aqui o objeto geometry já está dentro de objetos que o mapa utiliza.
 let pointFeatures = ref([]);
@@ -59,6 +59,7 @@ let pointList = ref<GeometryPoint[]>([]);
 
 let pointListOrderedByTime = ref([]);
 
+//Variável que armazena as geometrias do tipo LineString
 let routeLine = ref([]);
 
 //Método que irá solicitar os pontos do backend. Lembrar de ajustar conforme o término da task de criação desse endpoint
@@ -72,11 +73,16 @@ const getAllPoints = async () => {
   }
 }
 
-let makeLineFromPoints = (point, point2) => {
-  let newRoute = new Feature({
-    geometry: new LineString([point.getGeometry().getCoordinates(), point2.getGeometry().getCoordinates()]),
-  });
-  routeLine.value.push(newRoute);
+function makeLineFromPoints(featureList){
+  for (let i = 0; i < 10; i+2) {
+    let newRoute = new Feature({
+      geometry: new LineString([featureList._value[i].values_.geometry.getCoordinates(), featureList._value[i+1].values_.geometry.getCoordinates()]),
+    });
+    routeLine.value.push(newRoute);
+
+  }
+  return null;
+
 }
 onMounted(() => {
   //Popula a lista com objetos GeometryPoint mockados.
@@ -84,6 +90,7 @@ onMounted(() => {
     { id: 1, createTime: "2023-09-01T10:00:00", long: -60.457873, lat: 0.584053 },
     { id: 2, createTime: "2023-09-01T10:05:00", long: -60.457500, lat: 0.584500 },
     { id: 3, createTime: "2023-09-01T10:10:00", long: -60.456873, lat: 0.585000 },
+    { id: 4, createTime: "2023-09-01T10:15:00", long: -60.456999, lat: 0.585000 },
   ]);
 
   //Prepara as coordenadas para serem lidas pelo mapa.
@@ -104,8 +111,7 @@ onMounted(() => {
   //   console.log(pointFeatures.value[i].getGeometry().getCoordinates());
   // }
 
-  makeLineFromPoints(pointFeatures.value[0], pointFeatures.value[1]);
-  makeLineFromPoints(pointFeatures.value[1], pointFeatures.value[2]);
+  makeLineFromPoints(pointFeatures)
 });
 </script>
 
