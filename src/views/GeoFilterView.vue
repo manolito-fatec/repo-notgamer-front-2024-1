@@ -1,84 +1,108 @@
 <template>
   <div class="filter-container">
-    <button class="toggle-button" @click="toggleFilters">
-      <IconFilter />
-    </button>
-
+    <Sidebar @toggle-filters="toggleFilters"/>
     <div v-if="showFilters" class="filters">
-      <DataRangePicker />
       <DropDown
           id="dropdown1"
-          label="Selecione o tipo"
-          v-model="selectedOption1"
-          :options="options1"
+          label="Colaborador:"
+          v-model="Person"
+          :options="PersonOption"
       />
       <DropDown
           id="dropdown2"
-          label="Selecione a origem dos dados"
-          v-model="selectedOption2"
-          :options="options2"
+          label="Dispositivos:"
+          v-model="Device"
+          :options="DeviceOption"
+      />
+      <DropDown
+          id="dropdown3"
+          label="Periodo"
+          v-model="Period"
+          :options="PeriodOption"
+      />
+      <DataRangePicker
+      />
+      <div class="button-group">
+        <ClearButton
+            class="full-width" @click="handleSave">Salvar
+        </ClearButton>
+        <StartButton
+            class="full-width" @click="handleReset">Resetar
+        </StartButton>
+      </div>
+      <History
       />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import IconFilter from "@/components/icons/IconFilter.vue";
+import { ref } from 'vue';
+import Sidebar from "@/components/Sidebar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
+import History from "@/components/History.vue";
+import ClearButton from "@/components/ClearButton.vue";
+import StartButton from "@/components/StartButton.vue";
 
-const selectedOption1 = ref(null)
-const selectedOption2 = ref(null)
+const Person = ref(null);
+const Device = ref(null);
+const Period = ref(null);
 
-const options1 = [
-  { label: 'Pessoa', value: 'p' },
-  { label: 'Veículo', value: 'v' }
-]
+const PersonOption = [
+  { label: 'Pessoas', value: 'p' },
+];
 
-const options2 = [
-  {label: 'Wearables', value: 'w'},
-  {label: 'Smartphone', value: 's'},
-  {label: 'Tags', value: 't'}
-]
+const DeviceOption = [
+  { label: 'Wearables', value: 'w' },
+  { label: 'Smartphone', value: 's' },
+  { label: 'Tags', value: 't' }
+];
 
-const showFilters = ref(false)
+const PeriodOption = [
+  { label: 'Hoje', value: 'today' },
+  { label: 'Última semana', value: 'lastWeek' },
+  { label: 'Último mês', value: 'lastMonth' }
+];
+
+const showFilters = ref(false);
 
 function toggleFilters() {
-  showFilters.value = !showFilters.value
+  showFilters.value = !showFilters.value;
+}
+
+function handleSave() {
+}
+
+function handleReset() {
 }
 </script>
 
 <style scoped>
-.filter-container {
-  position: relative;
-}
-
-.toggle-button {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .filters {
   position: fixed;
-  top: 16px;
-  left: calc(16px + 70px);
+  top: 0;
+  left: 150px;
+  width: 320px;
+  height: 100vh;
   padding: 16px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: linear-gradient(180deg, #262626 0%, #000000 35%, #3A3A3A 52%, #262626 100%);
+  border-left: 4px solid red;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 999;
+  overflow-y: auto;
+  transition: left 0.3s ease;
+}
+
+.button-group {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+.full-width {
+  flex: 1;
 }
 </style>

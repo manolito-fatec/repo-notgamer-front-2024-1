@@ -1,6 +1,5 @@
 <template>
   <div class="date-range-container">
-    <label class="date-range-label">Data</label>
     <div class="date-range">
       <input
           type="date"
@@ -9,7 +8,7 @@
           :max="maxStartDate"
           class="filter-input date-input"
       />
-      <span class="date-range-separator">até</span>
+      <span class="date-range-separator"></span>
       <input
           type="date"
           v-model="endDate"
@@ -81,13 +80,6 @@ function validateEndDate() {
   margin-bottom: 16px;
 }
 
-.date-range-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: #000;
-}
-
 .date-range {
   display: flex;
   align-items: center;
@@ -98,13 +90,12 @@ function validateEndDate() {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: #fff;
-  color: #000;
+  background-color: #444444;
+  color: #fff;
 }
 
 .date-range-separator {
   margin: 0 8px;
-  font-weight: bold;
   color: #000;
 }
 </style>

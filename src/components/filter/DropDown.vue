@@ -31,15 +31,15 @@ const props = defineProps({
 .filter-label {
   display: block;
   margin-bottom: 8px;
-  font-weight: bold;
-  color: #000;
+  color: #ffffff;
 }
 
 .filter-input {
-  width: 50%;
+  width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  color: #000;
+  background-color: #444444;
+  color: #fff;
 }
 </style>
