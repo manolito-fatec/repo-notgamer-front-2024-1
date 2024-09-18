@@ -1,6 +1,14 @@
 <template>
-  <svg width="45" height="65" viewBox="0 0 45 65" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6.87511 29.0999C7.58229 21.0174 14.3498 14.8162 22.4632 14.8162C30.5764 14.8162 37.344 21.0174 38.0512 29.0998L40.1471 53.0515H4.77942L6.87511 29.0999Z" fill="#EC1C24"/>
+  <svg width="45"
+       height="65"
+       viewBox="0 0 45 65"
+       fill="none"
+       xmlns="http://www.w3.org/2000/svg"
+       @click="toggleColor"
+  >
+    <path d="M6.87511 29.0999C7.58229 21.0174 14.3498 14.8162 22.4632 14.8162C30.5764 14.8162 37.344 21.0174 38.0512 29.0998L40.1471 53.0515H4.77942L6.87511 29.0999Z"
+          :fill="pathColorManipulator ? 'red' : 'black'"
+          class="color-transition"/>
     <mask id="path-2-inside-1_303_150" fill="white">
       <path d="M2.38971 57.8309C2.38971 55.1913 4.52953 53.0515 7.16912 53.0515H37.7574C40.397 53.0515 42.5368 55.1913 42.5368 57.8309H2.38971Z"/>
     </mask>
@@ -12,11 +20,22 @@
   </svg>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const pathColorManipulator = ref<boolean>(true);
+
+const toggleColor = (): void => {
+  pathColorManipulator.value = !pathColorManipulator.value;
+};
 </script>
 
 <style scoped>
 svg {
   display: block;
+}
+
+.color-transition {
+  transition: fill 0.3s ease;
 }
 </style>
