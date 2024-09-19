@@ -17,7 +17,7 @@ import IconCorrect from "@/components/icons/IconCorrect.vue";
   color: #ffffff;
   border: none;
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 8px 20px;
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s ease;

@@ -4,9 +4,6 @@
     <button class="toggle-btn" @click="$emit('toggle-filters')">
       <IconFilter />
     </button>
-    <button class="alert-btn">
-      <IconAlert/>
-    </button>
   </div>
 </template>
 
@@ -20,22 +17,22 @@ import IconAlert from "@/components/icons/IconAlert.vue";
 .sidebar {
   position: fixed;
   left: 0;
-  top: 0;
-  width: 150px;
-  height: 100vh;
+  top: -5%;
+  width: 75px;
+  height: 110%;
   background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 16px;
+  padding-top: 8px;
 }
 
 .sidebar > * {
   margin: 36px 0;
 }
 
-.toggle-btn, .alert-btn {
+.toggle-btn {
   background-color: transparent;
   color: #fff;
   border: none;

@@ -81,19 +81,19 @@ function handleReset() {
 <style scoped>
 .filters {
   position: fixed;
-  top: 0;
-  left: 150px;
+  top: 0px;
+  left: 75px;
   width: 320px;
-  height: 100vh;
+  height: 100%;
   padding: 16px;
-  background: linear-gradient(180deg, #262626 0%, #000000 35%, #3A3A3A 52%, #262626 100%);
-  border-left: 4px solid red;
+  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
+  border-left: 4px solid #EC1C24;
   border-top-right-radius: 16px;
   border-bottom-right-radius: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 999;
   overflow-y: auto;
-  transition: left 0.3s ease;
+  transition: left 0.5s ease;
 }
 
 .button-group {

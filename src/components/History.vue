@@ -29,7 +29,7 @@ const historyText = ref('')
   padding: 0;
   border-radius: 8px;
   box-sizing: border-box;
-  background-color: #333333;
+  background-color: #3D3D3D;
   display: flex;
   height: 400px;
 }

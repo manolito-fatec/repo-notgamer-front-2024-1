@@ -25,7 +25,7 @@ const props = defineProps({
 
 <style scoped>
 .filter-item {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .filter-label {
@@ -36,7 +36,7 @@ const props = defineProps({
 
 .filter-input {
   width: 100%;
-  padding: 8px;
+  padding: 4px;
   border: 1px solid #ccc;
   border-radius: 4px;
   background-color: #444444;
