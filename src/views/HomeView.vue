@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import BaseMap from "@/components/BaseMap.vue";
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+    <BaseMap></BaseMap>
 </template>
+
