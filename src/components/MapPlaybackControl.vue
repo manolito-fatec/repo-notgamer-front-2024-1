@@ -5,7 +5,17 @@
       <button class="start-and-pause" @click="startAndPause();">
         <i :class="animating ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
       </button>
-      <div class="speed">
+      <button class="forward"><i class="fa-solid fa-forward-step"></i></button>
+      <button class="backward"><i class="fa-solid fa-backward-step"></i></button>
+      <button class="restart" @click="restartAnimation()"><i class="fa-solid fa-rotate-left"></i></button>
+      <div class = "reproduction-bar">
+        <input id="speed" type="range" min="0" :max="duration" step="0" v-model="elapsedTime" @input="adjustPosition(); pauseAnimation();">
+      </div>
+      <div class="date">
+        <h6>19/09/2024 <br> 17:38</h6>
+      </div>
+    </div>
+    <div class="speed-dropdown">
         <i class="fa-solid fa-gauge select-speed"></i>
         <select id="dropdown" class="dropdown-select" v-model="selectedOption" @change="typeVelocity">
           <option @click="adjustVelocity(0.5)" value="0.5x">0.5x</option>
@@ -13,16 +23,6 @@
           <option @click="adjustVelocity(2)" value="2x">2x</option>
         </select> 
       </div>
-      <button class="forward"><i class="fa-solid fa-forward-step"></i></button>
-      <button class="backward"><i class="fa-solid fa-backward-step"></i></button>
-      <button class="restart" @click="restartAnimation()"><i class="fa-solid fa-rotate-left"></i></button>
-    <div class = "reproduction-bar">
-      <input id="speed" type="range" min="0" :max="duration" step="0" v-model="elapsedTime" @input="adjustPosition(); pauseAnimation();">
-    </div>
-      <div class="date">
-        <h6>19/09/2024 <br> 17:38</h6>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -240,7 +240,7 @@ onMounted(() => {
   opacity: 70%;
 }
 
-.dropdown-select {
+.speed-dropdown select {
   width: 30px;
   height: 30px;
   position: absolute;
@@ -251,13 +251,11 @@ onMounted(() => {
   cursor: pointer;
   border: none;
   appearance: none; 
+  color: transparent;
+  text-emphasis-color: red;
 }
 
-.dropdown-select option:hover {
-  background-color: red;
-}
-
-#dropdown * {
+.speed-dropdown option {
   color: white;
   background-color: #202020;
 }
