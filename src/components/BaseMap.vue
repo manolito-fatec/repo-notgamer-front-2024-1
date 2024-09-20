@@ -66,7 +66,7 @@ let routeLine = ref([]);
 //Método que irá solicitar os pontos do backend. Lembrar de ajustar conforme o término da task de criação desse endpoint
 const getAllPoints = async () => {
   try {
-    let response = await axios.get("https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json")
+    let response = await axios.get("http://localhost:8080/tracker/period/2/2024-01-13T00:00:00/2024-09-09T23:59:59")
     return response.data
 
   } catch (error) {
@@ -79,28 +79,31 @@ const getAllPoints = async () => {
 //Dentro da Feature, estamos inserindo o Point, objeto que contém as coordenadas (longitude,latitude).
 //A Feature permite inserir mais atributos para um ponto, podendo inserir dados personalizados (como nome, data, etc). Também podemos inserir o estilo do ponto por aqui.
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
+  console.log(arrayOfGeometryObjects.length);
   if (arrayOfGeometryObjects.length == 0) {
     return []
   }
-  if (typeof nameFilter._value != 'undefined') {
-    for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
-      if (arrayOfGeometryObjects.value[i].person.fullName === nameFilter._value) {
-        let ponto = new Feature({
-          geometry: new Point([arrayOfGeometryObjects.value[i].longitude,arrayOfGeometryObjects.value[i].latitude]),
-        })
-        ponto.setId(arrayOfGeometryObjects.value[i].id)
-        ponto.setProperties({createdAt: arrayOfGeometryObjects.value[i].createdAt, person: {fullName: arrayOfGeometryObjects.value[i].person.fullName, code: arrayOfGeometryObjects.value[i].codeDevice}})
-        pointFeatures.value.push(ponto);
-      }
-      }
-    return null;
-  }
+  // if (nameFilter) {
+  //   for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
+  //     if (arrayOfGeometryObjects.value[i].person.fullName === nameFilter._value) {
+  //       let ponto = new Feature({
+  //         geometry: new Point([arrayOfGeometryObjects.value[i].longitude,arrayOfGeometryObjects.value[i].latitude]),
+  //       })
+  //       ponto.setId(arrayOfGeometryObjects.value[i].id)
+  //       ponto.setProperties({createdAt: arrayOfGeometryObjects.value[i].createdAt, person: {fullName: arrayOfGeometryObjects.value[i].person.fullName, code: arrayOfGeometryObjects.value[i].codeDevice}})
+  //       pointFeatures.value.push(ponto);
+  //     }
+  //     }
+  //   return null;
+  // }
   for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
     let ponto = new Feature({
       geometry: new Point([arrayOfGeometryObjects.value[i].longitude,arrayOfGeometryObjects.value[i].latitude]),
     })
+    console.log(arrayOfGeometryObjects.value[i]);
+    console.log(arrayOfGeometryObjects.value[i]);
     ponto.setId(arrayOfGeometryObjects.value[i].id)
-    ponto.setProperties({createdAt: arrayOfGeometryObjects.value[i].createdAt, person: {fullName: arrayOfGeometryObjects.value[i].person.fullName, codeDevice: arrayOfGeometryObjects.value[i].codeDevice}})
+    ponto.setProperties({createdAt: arrayOfGeometryObjects.value[i].createdAt})
     pointFeatures.value.push(ponto);
   }
   return null
@@ -181,32 +184,15 @@ function makeLineFromPoints(featureList) {
 
 let filtroPorNome = ref<string>()
 onMounted(() => {
-  // getAllPoints().then(points => {
-  //   points.forEach(point => {
-  //     let newPointFromArray = new Geometry
-  //     pointList.value.push(newPointFromArray);
-  //   })
-  // }).catch(error => {
-  //   console.error("Erro ao acessar os dados:", error);
-  // });
-  //
-  // console.log(pointList);
+  let arrayFromDB= new ref([]);
+  getAllPoints().then(point => {
+    for (let i = 0; i < point.length; i++) {
+      arrayFromDB.value.push(point[i]);
+    }
+    makeGeometryPointFromArray(arrayFromDB)
+    makeLineFromPoints(pointFeatures)
+  })
 
-  //Popula a lista com objetos GeometryPoint mockados.
-  pointList = ref([
-    { id: "1", createdAt: "2023-09-01T10:00:00", longitude: -60.457873, latitude: 0.584053, person: {fullName: "Caue", codeDevice: 1234 }},
-    { id: "2", createdAt: "2023-09-01T10:05:00", longitude: -60.457500, latitude: 0.584500, person: {fullName: "Caue", codeDevice: 1234 }},
-    { id: "3", createdAt: "2023-09-01T10:03:00", longitude: -60.456873, latitude: 0.585000, person: {fullName: "Caue", codeDevice: 1234 }},
-    { id: "4", createdAt: "2023-09-01T10:04:00", longitude: -60.456999, latitude: 0.579000, person: {fullName: "Max", codeDevice: 1234 }},
-    { id: "5", createdAt: "2023-09-01T10:02:00", longitude: -60.456999, latitude: 0.580000, person: {fullName: "Max", codeDevice: 1234 }},
-    { id: "6", createdAt: "2023-09-01T10:01:00", longitude: -60.457999, latitude: 0.590000, person: {fullName: "Max", codeDevice: 1234 }},
-  ]);
-
-  filtroPorNome.value = 'Caue'
-  makeGeometryPointFromArray(pointList,filtroPorNome)
-
-
-  makeLineFromPoints(pointFeatures)
 });
 </script>
 
