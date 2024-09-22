@@ -12,10 +12,9 @@
         <input id="speed" type="range" min="0" :max="duration" step="0" v-model="elapsedTime" @input="adjustPosition(); pauseAnimation();">
       </div>
       <div class="date">
-        <h6>19/09/2024 <br> 17:38</h6>
+        <h6> 19/09/2024 <br> 17:38</h6>
       </div>
-    </div>
-    <div class="speed-dropdown">
+      <div class="speed-dropdown">
         <i class="fa-solid fa-gauge select-speed"></i>
         <select id="dropdown" class="dropdown-select" v-model="selectedOption" @change="typeVelocity">
           <option @click="adjustVelocity(0.5)" value="0.5x">0.5x</option>
@@ -23,6 +22,7 @@
           <option @click="adjustVelocity(2)" value="2x">2x</option>
         </select> 
       </div>
+    </div>
   </div>
 </template>
 
@@ -52,14 +52,12 @@ let animating = false;
 let startTime: number;
 let iconFeature: Feature;
 let rota: LineString;
-let isDropdownOpen = false;
 
 const selectedOption = ref('');
 const elapsedTime = ref(0);
-const duration = ref(5000); 
+const duration = ref(10000);
 
 function typeVelocity() {
-  console.log(selectedOption)
   if (selectedOption.value === "0.5x") {
     if (!animating) {
       adjustVelocity(0.5);
@@ -88,14 +86,18 @@ function typeVelocity() {
 }
 
 function adjustVelocity(duracao: number) {
-  const progress = elapsedTime.value / duration.value;
-  duration.value = 5000 / duracao;
-  elapsedTime.value = progress * duration.value;
-  isDropdownOpen = false;
-
   if (!animating) {
-    adjustPosition();
+    const progress = elapsedTime.value / duration.value;
+    duration.value = 10000 / duracao;
+    elapsedTime.value = progress * duration.value;
+  } else {
+    pauseAnimation();
+    const progress = elapsedTime.value / duration.value;
+    duration.value = 10000 / duracao;
+    elapsedTime.value = progress * duration.value;
+    continueAnimation();
   }
+  adjustPosition();
 }
 
 function startAndPause() {
@@ -115,6 +117,7 @@ function startAndPause() {
 // funcao que anima o icone na rota tracejada
 function routeAnimation() {
   if (animating) {
+
     const progress = Math.min(elapsedTime.value / duration.value, 1); 
     elapsedTime.value = new Date().getTime() - startTime; 
 
@@ -150,8 +153,9 @@ function continueAnimation() {
 }
 
 function restartAnimation() {
+  pauseAnimation();
   elapsedTime.value = 0;
-  initiateAnimation();
+  adjustPosition();
 }
 
 function initiateAnimation() {
@@ -226,10 +230,6 @@ onMounted(() => {
 
 <style scoped>
 
-.speed {
-  top: 50px;
-}
-
 .control-movement {
   width: 100%;
   height: 50px;
@@ -252,7 +252,6 @@ onMounted(() => {
   border: none;
   appearance: none; 
   color: transparent;
-  text-emphasis-color: red;
 }
 
 .speed-dropdown option {
@@ -304,11 +303,23 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .select-speed {
-  left: 6.5%;
+  left: 90px;
 }
 
 .start-and-pause {
-  left: 3%;
+  left: 45px;
+}
+
+.backward {
+  right: 113px;
+}
+
+.forward {
+  right: 41.2px;
+}
+
+.restart {
+  right: 71px;
 }
 
 .start-and-pause, .backward, .forward, .restart, .select-speed {
@@ -320,18 +331,6 @@ input[type="range"]::-webkit-slider-thumb {
   position: absolute;
   display: flex;
   bottom: 10px;
-}
-
-.backward {
-  right: 8.2%;
-}
-
-.forward {
-  right: 3%;
-}
-
-.restart {
-  right: 5.2%;
 }
 
 </style>
