@@ -14,30 +14,19 @@
           v-model="Device"
           :options="DeviceOption"
       />
-      <DropDown
-          id="dropdown3"
-          label="Periodo"
-          v-model="Period"
-          :options="PeriodOption"
-      />
-      <DataRangePicker
-      />
+      <DataRangePicker/>
       <div class="button-group">
-        <ClearButton
-            class="full-width" @click="handleSave">Salvar
-        </ClearButton>
-        <StartButton
-            class="full-width" @click="handleReset">Resetar
-        </StartButton>
+        <ClearButton class="full-width" @click="handleReset"></ClearButton>
+        <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
-      <History
-      />
+      <History />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
+import axios from 'axios';
 import Sidebar from "@/components/Sidebar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
@@ -47,11 +36,8 @@ import StartButton from "@/components/StartButton.vue";
 
 const Person = ref(null);
 const Device = ref(null);
-const Period = ref(null);
 
-const PersonOption = [
-  { label: 'Pessoas', value: 'p' },
-];
+const PersonOption = ref([]);
 
 const DeviceOption = [
   { label: 'Wearables', value: 'w' },
@@ -59,13 +45,26 @@ const DeviceOption = [
   { label: 'Tags', value: 't' }
 ];
 
-const PeriodOption = [
-  { label: 'Hoje', value: 'today' },
-  { label: 'Última semana', value: 'lastWeek' },
-  { label: 'Último mês', value: 'lastMonth' }
-];
-
 const showFilters = ref(false);
+
+onMounted(async () => {
+  try {
+    const response = await axios.get('https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json');
+    console.log('Dados recebidos:', response.data);
+
+    PersonOption.value = response.data
+        .map(person => ({
+          label: person.person.fullname,
+          value: person.id
+        }))
+        .filter((person, index, self) =>
+            index === self.findIndex(p => p.label === person.label)
+        );
+  } catch (error) {
+    console.error("Erro ao buscar pessoas:", error);
+  }
+});
+
 
 function toggleFilters() {
   showFilters.value = !showFilters.value;
@@ -75,13 +74,15 @@ function handleSave() {
 }
 
 function handleReset() {
+  Person.value = null;
+  Device.value = null;
 }
 </script>
 
 <style scoped>
 .filters {
   position: fixed;
-  top: 0px;
+  top: 0;
   left: 75px;
   width: 320px;
   height: 100%;

@@ -15,11 +15,6 @@ const router = createRouter({
       name: 'about',
       component: () => import('../views/AboutView.vue'),
     },
-    {
-      path: '/filter',
-      name: 'filter',
-      component: GeoFilterView,
-    },
   ],
 });
 

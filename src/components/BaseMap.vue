@@ -1,30 +1,34 @@
 <template>
-  <ol-map class="map-container"
-          :loadTilesWhileAnimating="true"
-          :loadTilesWhileInteracting="true">
-    <ol-view
-        ref="view"
-        :center="center"
-        :zoom="zoom"
-        :projection="projection"
-    />
-    <ol-tile-layer>
-      <ol-source-osm/>
-    </ol-tile-layer>
-    <!-- Início da Layer -->
-    <ol-vector-layer>
-      <ol-source-vector>
-        <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">
-          <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>
-          <ol-style>
-            <ol-style-circle :radius="8">
-              <ol-style-stroke color="red" :width="1"/>
-              <ol-style-fill color="rgba(0,0,0,0.2)"/>
-            </ol-style-circle>
-          </ol-style>
-        </ol-feature>
-      </ol-source-vector>
-    </ol-vector-layer>
+  <div class="map-wrapper">
+    <GeoFilterView class="filter-overlay"></GeoFilterView>
+
+    <ol-map class="map-container"
+            :loadTilesWhileAnimating="true"
+            :loadTilesWhileInteracting="true">
+      <ol-view
+          ref="view"
+          :center="center"
+          :zoom="zoom"
+          :projection="projection"
+      />
+      <ol-tile-layer>
+        <ol-source-osm/>
+      </ol-tile-layer>
+
+      <!-- Início da Layer -->
+      <ol-vector-layer>
+        <ol-source-vector>
+          <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">
+            <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>
+            <ol-style>
+              <ol-style-circle :radius="8">
+                <ol-style-stroke color="red" :width="1"/>
+                <ol-style-fill color="rgba(0,0,0,0.2)"/>
+              </ol-style-circle>
+            </ol-style>
+          </ol-feature>
+        </ol-source-vector>
+      </ol-vector-layer>
 
     <ol-vector-layer>
       <ol-source-vector>
@@ -37,7 +41,8 @@
       </ol-source-vector>
     </ol-vector-layer>
 
-  </ol-map>
+    </ol-map>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -47,6 +52,7 @@ import {LineString, Point} from "ol/geom";
 import type {GeometryPoint} from "@/components/Types";
 import axios from "axios";
 import {forEach} from "ol/geom/flat/segments";
+import GeoFilterView from "@/views/GeoFilterView.vue";
 
 //Configurações de iniciação do mapa
 let center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
@@ -201,6 +207,17 @@ onMounted(() => {
   width: 100vw;
   height: 100vh;
 }
+
+.filter-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  background-color: white;
+  padding: 10px;
+  border-radius: 8px;
+}
+
 :global(.ol-zoom-in) {
   bottom: 6em;
   right: 2em;
@@ -210,6 +227,6 @@ onMounted(() => {
 :global(.ol-zoom-out) {
   bottom: 4.5em;
   right: 2em;
-  position:fixed;
+  position: fixed;
 }
 </style>
