@@ -42,7 +42,8 @@
       </ol-source-vector>
     </ol-vector-layer>
 
-  </ol-map>
+    </ol-map>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -52,6 +53,7 @@ import {LineString, Point} from "ol/geom";
 import type {GeometryPoint} from "@/components/Types";
 import axios from "axios";
 import {forEach} from "ol/geom/flat/segments";
+import GeoFilterView from "@/views/GeoFilterView.vue";
 
 //Configurações de iniciação do mapa
 let center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
@@ -223,6 +225,17 @@ onMounted(() => {
   width: 100vw;
   height: 100vh;
 }
+
+.filter-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  background-color: white;
+  padding: 10px;
+  border-radius: 8px;
+}
+
 :global(.ol-zoom-in) {
   bottom: 6em;
   right: 2em;
@@ -232,6 +245,6 @@ onMounted(() => {
 :global(.ol-zoom-out) {
   bottom: 4.5em;
   right: 2em;
-  position:fixed;
+  position: fixed;
 }
 </style>
