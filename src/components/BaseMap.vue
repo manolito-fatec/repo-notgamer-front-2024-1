@@ -1,34 +1,35 @@
 <template>
-  <div class="map-wrapper">
-    <GeoFilterView class="filter-overlay"></GeoFilterView>
+  <ol-map class="map-container"
+          :loadTilesWhileAnimating="true"
+          :loadTilesWhileInteracting="true">
+    <ol-view
+        ref="view"
+        :center="center"
+        :zoom="zoom"
+        :projection="projection"
+    />
+    <ol-tile-layer>
+      <ol-source-osm/>
+<!--      <ol-source-xyz-->
+<!--          url="https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"-->
+<!--          attributions="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors &copy; <a href='https://carto.com/attributions'>CARTO</a>"-->
+<!--      />-->
+    </ol-tile-layer>
 
-    <ol-map class="map-container"
-            :loadTilesWhileAnimating="true"
-            :loadTilesWhileInteracting="true">
-      <ol-view
-          ref="view"
-          :center="center"
-          :zoom="zoom"
-          :projection="projection"
-      />
-      <ol-tile-layer>
-        <ol-source-osm/>
-      </ol-tile-layer>
-
-      <!-- Início da Layer -->
-      <ol-vector-layer>
-        <ol-source-vector>
-          <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">
-            <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>
-            <ol-style>
-              <ol-style-circle :radius="8">
-                <ol-style-stroke color="red" :width="1"/>
-                <ol-style-fill color="rgba(0,0,0,0.2)"/>
-              </ol-style-circle>
-            </ol-style>
-          </ol-feature>
-        </ol-source-vector>
-      </ol-vector-layer>
+    <!-- Início da Layer -->
+    <ol-vector-layer>
+      <ol-source-vector>
+        <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">
+          <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>
+          <ol-style>
+            <ol-style-circle :radius="8">
+              <ol-style-stroke color="red" :width="1"/>
+              <ol-style-fill color="rgba(0,0,0,0.2)"/>
+            </ol-style-circle>
+          </ol-style>
+        </ol-feature>
+      </ol-source-vector>
+    </ol-vector-layer>
 
     <ol-vector-layer>
       <ol-source-vector>
@@ -62,21 +63,30 @@ let zoom = ref(5);
 //Array com as geometrias prontas dentro de uma Feature. Diferente da pointList, aqui o objeto geometry já está dentro de objetos que o mapa utiliza.
 let pointFeatures = ref([]);
 
-//Array com objetos do tipo GeometryPoint. É a lista inicial de pontos, vindos do endpoint.
-let pointList = ref<GeometryPoint[]>([]);
-
 //Variável que armazena as geometrias do tipo LineString
 let routeLine = ref([]);
+
+let personId = ref();
 
 
 //Método que irá solicitar os pontos do backend. Lembrar de ajustar conforme o término da task de criação desse endpoint
 const getAllPoints = async () => {
   try {
-    let response = await axios.get("http://localhost:8080/tracker/period/2/2024-01-13T00:00:00/2024-09-09T23:59:59")
+    let response = await axios.get("http://localhost:8080/tracker/period/1/2024-06-01T03:00:00.000/2024-06-18T21:15:00.000")
     return response.data
 
   } catch (error) {
       console.log(error);
+  }
+}
+
+const getAllPoints2 = async () => {
+  try {
+    let response = await axios.get("http://localhost:8080/tracker/period/2/2024-01-13T00:00:00/2024-09-09T23:59:59")
+    return response.data
+
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -85,117 +95,125 @@ const getAllPoints = async () => {
 //Dentro da Feature, estamos inserindo o Point, objeto que contém as coordenadas (longitude,latitude).
 //A Feature permite inserir mais atributos para um ponto, podendo inserir dados personalizados (como nome, data, etc). Também podemos inserir o estilo do ponto por aqui.
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
-  console.log(arrayOfGeometryObjects.length);
   if (arrayOfGeometryObjects.length == 0) {
     return []
   }
-  // if (nameFilter) {
-  //   for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
-  //     if (arrayOfGeometryObjects.value[i].person.fullName === nameFilter._value) {
-  //       let ponto = new Feature({
-  //         geometry: new Point([arrayOfGeometryObjects.value[i].longitude,arrayOfGeometryObjects.value[i].latitude]),
-  //       })
-  //       ponto.setId(arrayOfGeometryObjects.value[i].id)
-  //       ponto.setProperties({createdAt: arrayOfGeometryObjects.value[i].createdAt, person: {fullName: arrayOfGeometryObjects.value[i].person.fullName, code: arrayOfGeometryObjects.value[i].codeDevice}})
-  //       pointFeatures.value.push(ponto);
-  //     }
-  //     }
-  //   return null;
-  // }
+  if (nameFilter) {
+    for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
+        let ponto = new Feature({
+          geometry: new Point([arrayOfGeometryObjects.value[i].longitude,arrayOfGeometryObjects.value[i].latitude]),
+        })
+        ponto.setId(arrayOfGeometryObjects.value[i].id)
+        ponto.setProperties({
+          createdAt: arrayOfGeometryObjects.value[i].createdAt,
+          person:
+              {idPerson: nameFilter,
+                code: arrayOfGeometryObjects.value[i].codeDevice}})
+        pointFeatures.value.push(ponto);
+      }
+    return null;
+  }
   for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
     let ponto = new Feature({
-      geometry: new Point([arrayOfGeometryObjects.value[i].longitude,arrayOfGeometryObjects.value[i].latitude]),
-    })
-    console.log(arrayOfGeometryObjects.value[i]);
-    console.log(arrayOfGeometryObjects.value[i]);
-    ponto.setId(arrayOfGeometryObjects.value[i].id)
-    ponto.setProperties({createdAt: arrayOfGeometryObjects.value[i].createdAt})
+      geometry: new Point([arrayOfGeometryObjects.value[i].longitude, arrayOfGeometryObjects.value[i].latitude]),
+    });
+    ponto.setId(arrayOfGeometryObjects.value[i].id);
+    ponto.setProperties({
+      createdAt: arrayOfGeometryObjects.value[i].createdAt,
+      idText: arrayOfGeometryObjects.value[i].itoId, // Adiciona itoId como uma propriedade da Feature
+    });
     pointFeatures.value.push(ponto);
   }
-  return null
+
+  return null;
 }
 
 //Função responsável por criar as rotas no mapa. Objetivamente falando, cria um objeto LineString baseado em dois
 // objetos Point presentes na lista iterada pelo mapa.
 //Cada verificação lógica do tamanho da lista é verificado para garantir que as linhas sejam criadas.
 function makeLineFromPoints(featureList) {
-  if (featureList.value.length != 0) {
-    const pointsLength = featureList._value.length;
-
-    // Verifica se o número de pontos é par
-    if (pointsLength % 2 === 0) {
-      // Percorre a lista de pontos de 2 em 2
-      for (let i = 0; i < pointsLength; i += 2) {
-        let newRoute = new Feature({
-          geometry: new LineString([
-            featureList._value[i].values_.geometry.getCoordinates(),
-            featureList._value[i + 1].values_.geometry.getCoordinates(),
-          ]),
-        });
-
-        // Conectar a última rota com a nova
-        if (routeLine._value.length > 0) {
-          let routeLinker = new Feature({
-            geometry: new LineString([
-              routeLine._value[routeLine._value.length - 1].values_.geometry.getCoordinates()[1],
-              newRoute.values_.geometry.getCoordinates()[0],
-            ]),
-          });
-          routeLine.value.push(routeLinker);
-        }
-        // Adiciona a nova rota ao routeLine
-        routeLine.value.push(newRoute);
-      }
-    }
-    // Verifica se o número de pontos é ímpar e maior ou igual a 3
-    else if (pointsLength >= 3 && pointsLength % 2 === 1) {
-      // Percorre os pares e faz as conexões
-      for (let i = 0; i < pointsLength - 1; i += 2) {
-        let newRoute = new Feature({
-          geometry: new LineString([
-            featureList._value[i].values_.geometry.getCoordinates(),
-            featureList._value[i + 1].values_.geometry.getCoordinates(),
-          ]),
-        });
-
-        // Conecta com a rota anterior, se houver
-        if (routeLine._value.length > 0) {
-          let routeLinker = new Feature({
-            geometry: new LineString([
-              routeLine._value[routeLine._value.length - 1].values_.geometry.getCoordinates()[1],
-              newRoute.values_.geometry.getCoordinates()[0],
-            ]),
-          });
-          routeLine.value.push(routeLinker);
-        }
-        // Adiciona a nova rota ao routeLine
-        routeLine.value.push(newRoute);
-      }
-
-      // Ponto ímpar: conecta o último ponto que "sobrou" à última rota
-      let lastPoint = featureList._value[pointsLength - 1];
-      let lastLinker = new Feature({
-        geometry: new LineString([
-          routeLine._value[routeLine._value.length - 1].values_.geometry.getCoordinates()[1],
-          lastPoint.values_.geometry.getCoordinates(),
-        ]),
-      });
-      routeLine.value.push(lastLinker);
-    }
+  if (featureList.value.length === 0) {
+    console.log('Nenhum ponto disponível para criar linhas');
+    return null;
   }
 
-  return null;  // A função não retorna nada de significativo
+  // Agrupando os pontos por 'idText' (ou 'itoId')
+  const groupedByItoId = featureList.value.reduce((acc, feature) => {
+    const idText = feature.get('idText');  // Obtém o 'idText' da feature
+    if (!acc[idText]) {
+      acc[idText] = [];
+    }
+    acc[idText].push(feature);
+    return acc;
+  }, {});
+
+  // Percorre cada grupo de 'idText' e cria linhas
+  Object.keys(groupedByItoId).forEach(idText => {
+    const points = groupedByItoId[idText];
+    const pointsLength = points.length;
+
+    console.log(`Criando linhas para idText: ${idText} com ${pointsLength} pontos`);
+
+    // Cria linhas apenas se houver pelo menos 2 pontos no grupo
+    if (pointsLength >= 2) {
+      for (let i = 0; i < pointsLength - 1; i++) {
+        const point1 = points[i];
+        const point2 = points[i + 1];
+
+        // Verifica se o idPerson do ponto atual e o próximo são os mesmos
+        if (point1.get('person').idPerson === point2.get('person').idPerson) {
+          let newRoute = new Feature({
+            geometry: new LineString([
+              point1.getGeometry().getCoordinates(),
+              point2.getGeometry().getCoordinates(),
+            ]),
+          });
+          newRoute.setProperties({ idPerson: point1.get('person').idPerson });
+
+          // Conectar a última rota com a nova apenas se o 'idPerson' for igual
+          if (routeLine.value.length > 0) {
+            if (routeLine.value[routeLine.value.length - 1].get('idPerson') === newRoute.get('idPerson')) {
+              let routeLinker = new Feature({
+                geometry: new LineString([
+                  routeLine.value[routeLine.value.length - 1].getGeometry().getCoordinates()[1],
+                  newRoute.getGeometry().getCoordinates()[0],
+                ]),
+              });
+              routeLinker.setProperties({ idPerson: point1.get('person').idPerson });
+              routeLine.value.push(routeLinker);
+            }
+          }
+
+          // Adiciona a nova rota ao routeLine
+          routeLine.value.push(newRoute);
+        }
+      }
+    }
+  });
+
+  console.log('Linhas criadas:', routeLine.value);
+  return null;
 }
 
 
-let filtroPorNome = ref<string>()
 onMounted(() => {
-  let arrayFromDB= new ref([]);
   getAllPoints().then(point => {
+    let arrayFromDB= new ref([]);
     for (let i = 0; i < point.length; i++) {
       arrayFromDB.value.push(point[i]);
+      arrayFromDB.value.sort((a, b) => a.createdAt - b.createdAt);
     }
-    makeGeometryPointFromArray(arrayFromDB)
+    makeGeometryPointFromArray(arrayFromDB,1)
+  })
+
+  getAllPoints2().then(point => {
+    let arrayFromDb_= new ref([]);
+    personId.value = 2;
+    for (let i = 0; i < point.length; i++) {
+      arrayFromDb_.value.push(point[i]);
+      arrayFromDb_.value.sort((a, b) => a.createdAt - b.createdAt);
+    }
+    makeGeometryPointFromArray(arrayFromDb_,2)
     makeLineFromPoints(pointFeatures)
   })
 
