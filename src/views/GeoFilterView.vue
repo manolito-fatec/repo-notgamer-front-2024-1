@@ -21,7 +21,7 @@
       />
       <div class="button-group">
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
-        <StartButton class="full-width" @click="handleStart"></StartButton>
+        <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
       <History />
     </div>
@@ -54,7 +54,7 @@ onMounted(async () => {
     PersonOption.value = response.data
         .map(person => ({
           label: person.person.fullname,
-          value: person.person.id
+          value: person.person.idPerson
         }))
         .filter((person, index, self) =>
             index === self.findIndex(p => p.label === person.label)
@@ -75,7 +75,7 @@ const onPersonSelect = async (selectedPerson) => {
       DeviceOption.value = response.data
           .map(person => ({
             label: person.person.codeDevice,
-            value: person.person.id
+            value: person.person.idPerson
           }))
           .filter((person, index, self) =>
               index === self.findIndex(p => p.label === person.label)
@@ -90,18 +90,17 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-function handleStart() {
-}
+const emit = defineEmits(['saveFilter'])
 
 function handleSave() {
   const filterData = {
     person: Person.value,
-    device: Device.value,
     startDate: startDate.value,
     endDate: endDate.value
   };
+  emit('saveFilter', filterData);
 
-  console.log("Dados dos filtros:", filterData);
+  // console.log("Dados dos filtros:", filterData.person);
 }
 
 function handleReset() {

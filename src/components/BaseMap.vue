@@ -1,4 +1,6 @@
 <template>
+  <div class="map-wrapper">
+    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
   <ol-map class="map-container"
           :loadTilesWhileAnimating="true"
           :loadTilesWhileInteracting="true">
@@ -66,14 +68,27 @@ let pointFeatures = ref([]);
 //Variável que armazena as geometrias do tipo LineString
 let routeLine = ref([]);
 
-let personId = ref();
+function handleFilterData(filterData: { person: int | null, startDate: string | null, endDate: string | null }) {
+  pointFeatures.value = ref([]);
+  let getUrl = 'http://localhost:8080/tracker/period/' + filterData.person + '/' + filterData.startDate + 'T00:00:00.000/' + filterData.endDate + 'T00:00:00.000?page=0'
+
+  getAllPoints(getUrl).then(point => {
+    let arrayFromDB= new ref([]);
+
+    for (let i = 0; i < point.length; i++) {
+      arrayFromDB.value.push(point[i]);
+    }
+    makeGeometryPointFromArray(arrayFromDB,filterData.person)
+    makeLineFromPoints(pointFeatures)
+  })
+}
 
 
 //Método que irá solicitar os pontos do backend. Lembrar de ajustar conforme o término da task de criação desse endpoint
-const getAllPoints = async () => {
+const getAllPoints = async (getPointsUrl) => {
   try {
-    let response = await axios.get("http://localhost:8080/tracker/period/1/2024-06-01T03:00:00.000/2024-06-18T21:15:00.000")
-    return response.data
+    let response = await axios.get(getPointsUrl);
+    return response.data.content
 
   } catch (error) {
       console.log(error);
@@ -111,6 +126,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
                 code: arrayOfGeometryObjects.value[i].codeDevice}})
         pointFeatures.value.push(ponto);
       }
+    console.log(pointFeatures);
     return null;
   }
   for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
@@ -195,29 +211,6 @@ function makeLineFromPoints(featureList) {
   return null;
 }
 
-
-onMounted(() => {
-  getAllPoints().then(point => {
-    let arrayFromDB= new ref([]);
-    for (let i = 0; i < point.length; i++) {
-      arrayFromDB.value.push(point[i]);
-      arrayFromDB.value.sort((a, b) => a.createdAt - b.createdAt);
-    }
-    makeGeometryPointFromArray(arrayFromDB,1)
-  })
-
-  getAllPoints2().then(point => {
-    let arrayFromDb_= new ref([]);
-    personId.value = 2;
-    for (let i = 0; i < point.length; i++) {
-      arrayFromDb_.value.push(point[i]);
-      arrayFromDb_.value.sort((a, b) => a.createdAt - b.createdAt);
-    }
-    makeGeometryPointFromArray(arrayFromDb_,2)
-    makeLineFromPoints(pointFeatures)
-  })
-
-});
 </script>
 
 <style scoped>
