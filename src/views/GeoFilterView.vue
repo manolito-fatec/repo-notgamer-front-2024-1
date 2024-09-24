@@ -15,10 +15,13 @@
           v-model="Device"
           :options="DeviceOption"
       />
-      <DataRangePicker/>
+      <DataRangePicker
+          v-model:startDate="startDate"
+          v-model:endDate="endDate"
+      />
       <div class="button-group">
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
-        <StartButton class="full-width" @click="handleSave"></StartButton>
+        <StartButton class="full-width" @click="handleStart"></StartButton>
       </div>
       <History />
     </div>
@@ -26,7 +29,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Sidebar from "@/components/Sidebar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
@@ -42,6 +45,8 @@ const DeviceOption = ref([]);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
 const isPersonSelected = ref(false);
+const startDate = ref(null);
+const endDate = ref(null);
 
 onMounted(async () => {
   try {
@@ -49,7 +54,7 @@ onMounted(async () => {
     PersonOption.value = response.data
         .map(person => ({
           label: person.person.fullname,
-          value: person.id
+          value: person.person.id
         }))
         .filter((person, index, self) =>
             index === self.findIndex(p => p.label === person.label)
@@ -70,7 +75,7 @@ const onPersonSelect = async (selectedPerson) => {
       DeviceOption.value = response.data
           .map(person => ({
             label: person.person.codeDevice,
-            value: person.id
+            value: person.person.id
           }))
           .filter((person, index, self) =>
               index === self.findIndex(p => p.label === person.label)
@@ -85,13 +90,26 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
+function handleStart() {
+}
+
 function handleSave() {
+  const filterData = {
+    person: Person.value,
+    device: Device.value,
+    startDate: startDate.value,
+    endDate: endDate.value
+  };
+
+  console.log("Dados dos filtros:", filterData);
 }
 
 function handleReset() {
   Person.value = null;
   Device.value = null;
   DeviceOption.value = [];
+  startDate.value = null;
+  endDate.value = null;
 }
 </script>
 
