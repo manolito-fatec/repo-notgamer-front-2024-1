@@ -7,6 +7,7 @@
           label="Colaborador:"
           v-model="Person"
           :options="PersonOption"
+          @change="onPersonSelect"
       />
       <DropDown
           id="dropdown2"
@@ -25,7 +26,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import Sidebar from "@/components/Sidebar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
@@ -36,22 +37,15 @@ import StartButton from "@/components/StartButton.vue";
 
 const Person = ref(null);
 const Device = ref(null);
-
 const PersonOption = ref([]);
-
-const DeviceOption = [
-  { label: 'Wearables', value: 'w' },
-  { label: 'Smartphone', value: 's' },
-  { label: 'Tags', value: 't' }
-];
-
+const DeviceOption = ref([]);
+const originalPersonOption = ref([]);
 const showFilters = ref(false);
+const isPersonSelected = ref(false);
 
 onMounted(async () => {
   try {
     const response = await axios.get('https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json');
-    console.log('Dados recebidos:', response.data);
-
     PersonOption.value = response.data
         .map(person => ({
           label: person.person.fullname,
@@ -60,11 +54,32 @@ onMounted(async () => {
         .filter((person, index, self) =>
             index === self.findIndex(p => p.label === person.label)
         );
+
+    originalPersonOption.value = [...PersonOption.value];
   } catch (error) {
     console.error("Erro ao buscar pessoas:", error);
   }
 });
 
+const onPersonSelect = async (selectedPerson) => {
+  if (selectedPerson) {
+    isPersonSelected.value = true;
+
+    try {
+      const response = await axios.get('https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json');
+      DeviceOption.value = response.data
+          .map(person => ({
+            label: person.person.codeDevice,
+            value: person.id
+          }))
+          .filter((person, index, self) =>
+              index === self.findIndex(p => p.label === person.label)
+          );
+    } catch (error) {
+      console.log("Erro ao buscar dispositivos:", error);
+    }
+  }
+};
 
 function toggleFilters() {
   showFilters.value = !showFilters.value;
@@ -76,8 +91,10 @@ function handleSave() {
 function handleReset() {
   Person.value = null;
   Device.value = null;
+  DeviceOption.value = [];
 }
 </script>
+
 
 <style scoped>
 .filters {
