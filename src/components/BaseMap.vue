@@ -69,7 +69,8 @@ let pointFeatures = ref([]);
 let routeLine = ref([]);
 
 function handleFilterData(filterData: { person: int | null, startDate: string | null, endDate: string | null }) {
-  pointFeatures.value = ref([]);
+  pointFeatures.value = []
+  routeLine.value = []
   let getUrl = 'http://localhost:8080/tracker/period/' + filterData.person + '/' + filterData.startDate + 'T00:00:00.000/' + filterData.endDate + 'T00:00:00.000?page=0'
 
   getAllPoints(getUrl).then(point => {
