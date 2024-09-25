@@ -30,7 +30,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { fetchPersons, fetchDevices} from "@/services/apiService.js";
 import Sidebar from "@/components/Sidebar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
@@ -50,19 +50,10 @@ const endDate = ref(null);
 
 onMounted(async () => {
   try {
-    const response = await axios.get('https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json');
-    PersonOption.value = response.data
-        .map(person => ({
-          label: person.person.fullname,
-          value: person.person.idPerson
-        }))
-        .filter((person, index, self) =>
-            index === self.findIndex(p => p.label === person.label)
-        );
-
+    PersonOption.value = await fetchPersons();
     originalPersonOption.value = [...PersonOption.value];
   } catch (error) {
-    console.error("Erro ao buscar pessoas:", error);
+    console.error("Erro ao inicializar opções de pessoas:", error);
   }
 });
 
@@ -71,15 +62,7 @@ const onPersonSelect = async (selectedPerson) => {
     isPersonSelected.value = true;
 
     try {
-      const response = await axios.get('https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json');
-      DeviceOption.value = response.data
-          .map(person => ({
-            label: person.person.codeDevice,
-            value: person.person.idPerson
-          }))
-          .filter((person, index, self) =>
-              index === self.findIndex(p => p.label === person.label)
-          );
+      DeviceOption.value = await fetchDevices();
     } catch (error) {
       console.log("Erro ao buscar dispositivos:", error);
     }
