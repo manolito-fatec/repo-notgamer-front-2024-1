@@ -21,15 +21,15 @@
     <!-- Início da Layer -->
     <ol-vector-layer>
       <ol-source-vector>
-        <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">
-          <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>
-          <ol-style>
-            <ol-style-circle :radius="8">
-              <ol-style-stroke color="red" :width="1"/>
-              <ol-style-fill color="rgba(0,0,0,0.2)"/>
-            </ol-style-circle>
-          </ol-style>
-        </ol-feature>
+<!--        <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">-->
+<!--          <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>-->
+<!--          <ol-style>-->
+<!--            <ol-style-circle :radius="8">-->
+<!--              <ol-style-stroke color="red" :width="1"/>-->
+<!--              <ol-style-fill color="rgba(0,0,0,0.2)"/>-->
+<!--            </ol-style-circle>-->
+<!--          </ol-style>-->
+<!--        </ol-feature>-->
       </ol-source-vector>
     </ol-vector-layer>
 
@@ -38,7 +38,7 @@
         <ol-feature v-for="line in routeLine" :key="line.getId()">
           <ol-geom-line-string :coordinates="line.getGeometry().getCoordinates()"/>
           <ol-style>
-            <ol-style-stroke color="blue" :width="5"/>
+            <ol-style-stroke color="#ec1c24" :width="5"/>
           </ol-style>
         </ol-feature>
       </ol-source-vector>
