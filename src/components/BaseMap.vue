@@ -19,8 +19,8 @@
     </ol-tile-layer>
 
     <!-- Início da Layer -->
-    <ol-vector-layer>
-      <ol-source-vector>
+<!--    <ol-vector-layer>-->
+<!--      <ol-source-vector>-->
 <!--        <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">-->
 <!--          <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>-->
 <!--          <ol-style>-->
@@ -30,8 +30,26 @@
 <!--            </ol-style-circle>-->
 <!--          </ol-style>-->
 <!--        </ol-feature>-->
+<!--      </ol-source-vector>-->
+<!--    </ol-vector-layer>-->
+
+    <ol-vector-layer>
+      <ol-source-vector>
+        <ol-feature v-for="geometry in pointFinalStar" :key="geometry.getId()">
+          <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>
+          <ol-style v-if="geometry.values_.starPoint">
+            <ol-style-icon :src="IconStartPin" :scale="0.7" :anchor="[0.5, 1]">
+            </ol-style-icon>
+          </ol-style>
+          <ol-style v-else>
+            <ol-style-icon :src="IconEndPin" :scale="0.7" :anchor="[0.5, 1]">
+            </ol-style-icon>
+          </ol-style>
+
+        </ol-feature>
       </ol-source-vector>
     </ol-vector-layer>
+
 
     <ol-vector-layer>
       <ol-source-vector>
@@ -55,6 +73,8 @@ import {LineString, Point} from "ol/geom";
 import type {GeometryPoint} from "@/components/Types";
 import axios from "axios";
 import {forEach} from "ol/geom/flat/segments";
+import IconStartPin from "../assets/IconStartPin.png";
+import IconEndPin from "../assets/IconEndPin.png";
 import GeoFilterView from "@/views/GeoFilterView.vue";
 
 //Configurações de iniciação do mapa
@@ -65,12 +85,15 @@ let zoom = ref(5);
 //Array com as geometrias prontas dentro de uma Feature. Diferente da pointList, aqui o objeto geometry já está dentro de objetos que o mapa utiliza.
 let pointFeatures = ref([]);
 
+let pointFinalStar = ref([]);
+
 //Variável que armazena as geometrias do tipo LineString
 let routeLine = ref([]);
 
 function handleFilterData(filterData: { person: int | null, startDate: string | null, endDate: string | null }) {
   pointFeatures.value = []
   routeLine.value = []
+  pointFinalStar.value = []
   let getUrl = 'http://localhost:8080/tracker/period/' + filterData.person + '/' + filterData.startDate + 'T00:00:00.000/' + filterData.endDate + 'T00:00:00.000?page=0'
 
   getAllPoints(getUrl).then(point => {
@@ -115,6 +138,32 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
     return []
   }
   if (nameFilter) {
+    let pontoInicial = new Feature({
+      geometry: new Point([arrayOfGeometryObjects.value[0].longitude,arrayOfGeometryObjects.value[0].latitude]),
+    })
+    pontoInicial.setId(arrayOfGeometryObjects.value[0].id)
+    pontoInicial.setProperties({
+      createdAt: arrayOfGeometryObjects.value[0].createdAt,
+      person:
+          {idPerson: nameFilter,
+            code: arrayOfGeometryObjects.value[0].codeDevice},
+            starPoint: true
+    })
+
+    pointFinalStar.value.push(pontoInicial);
+
+    let pontoFinal = new Feature({
+      geometry: new Point([arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length-1].longitude,arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length-1].latitude]),
+    })
+    pontoFinal.setId(arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length-1].id)
+    pontoFinal.setProperties({
+      createdAt: arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length-1].createdAt,
+      person:
+          {idPerson: nameFilter,
+            code: arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length-1].codeDevice}})
+    pointFinalStar.value.push(pontoFinal);
+
+
     for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
         let ponto = new Feature({
           geometry: new Point([arrayOfGeometryObjects.value[i].longitude,arrayOfGeometryObjects.value[i].latitude]),
@@ -241,4 +290,5 @@ function makeLineFromPoints(featureList) {
   right: 2em;
   position: fixed;
 }
+
 </style>
