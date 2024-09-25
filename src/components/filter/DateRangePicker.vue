@@ -2,7 +2,7 @@
   <div class="date-range-container">
     <DropDown
         id="periodDropdown"
-        label="Selecione o período"
+        label="Período:"
         v-model="selectedPeriod"
         :options="periodOptions"
         @change="updateDateRange"
@@ -127,5 +127,9 @@ function onEndDateChange() {
 .date-range-separator {
   margin: 0 8px;
   color: #000;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }
 </style>

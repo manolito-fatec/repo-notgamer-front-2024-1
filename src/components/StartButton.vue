@@ -31,7 +31,7 @@ import IconCorrect from "@/components/icons/IconCorrect.vue";
 
 .start-button .button-text {
   font-size: 16px;
-  color: #ffffff;
+  color: #262626;
 }
 
 </style>

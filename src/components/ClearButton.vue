@@ -29,6 +29,6 @@ import IconBlock from "@/components/icons/IconBlock.vue";
 
 .clear-button .button-text {
   font-size: 16px;
-  color: #ffffff;
+  color: #262626;
 }
 </style>

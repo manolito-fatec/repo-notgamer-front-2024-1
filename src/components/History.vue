@@ -1,6 +1,6 @@
 <template>
   <div class="history-wrapper">
-    <h2 class="history-title">Histórico</h2>
+    <h2 class="history-title">Histórico:</h2>
     <div class="history-container">
       <textarea v-model="historyText" readonly></textarea>
     </div>

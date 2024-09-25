@@ -112,6 +112,7 @@ function handleReset() {
   z-index: 999;
   overflow-y: auto;
   transition: left 0.5s ease;
+  font-family: 'Poppins', sans-serif;
 }
 
 .button-group {

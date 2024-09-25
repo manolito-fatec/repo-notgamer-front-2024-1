@@ -25,11 +25,11 @@ import IconAlert from "@/components/icons/IconAlert.vue";
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 8px;
+  padding-top: 18px;
 }
 
 .sidebar > * {
-  margin: 36px 0;
+  margin: 46px 0;
 }
 
 .toggle-btn {
@@ -41,5 +41,6 @@ import IconAlert from "@/components/icons/IconAlert.vue";
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 10px;
 }
 </style>

@@ -37,7 +37,7 @@ const props = defineProps({
 .filter-input {
   width: 100%;
   padding: 4px;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 4px;
   background-color: #444444;
   color: #fff;
