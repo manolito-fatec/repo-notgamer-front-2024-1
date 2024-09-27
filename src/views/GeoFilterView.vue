@@ -50,7 +50,13 @@ const endDate = ref(null);
 
 onMounted(async () => {
   try {
-    PersonOption.value = await fetchPersons();
+    let personListFromDb = await fetchPersons();
+    PersonOption.value = personListFromDb.map(person => ({
+      label: person.fullName,
+      value: person.idPerson
+    })).filter((person, index, self) =>
+        index === self.findIndex(p => p.label === person.label)
+    );
     originalPersonOption.value = [...PersonOption.value];
   } catch (error) {
     console.error("Erro ao inicializar opções de pessoas:", error);
