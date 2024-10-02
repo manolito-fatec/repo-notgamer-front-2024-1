@@ -20,5 +20,5 @@ app.use(PrimeVue, {
 app.use(OpenLayersMap);
 
 app.use(router)
-
+app.use(PrimeVue)
 app.mount('#app')

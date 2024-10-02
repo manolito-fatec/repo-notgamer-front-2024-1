@@ -1,6 +1,15 @@
 export type GeometryPoint ={
     id: number
-    createTime: string
-    long: float
-    lat: float
+    idText: string
+    createdAt: string
+    longitude: float
+    latitude: float
+    person :  Pessoa
+
+}
+export type Pessoa ={
+    idPerson?: Number
+    idText?: string
+    fullName: string
+    codeDevice: number
 }
