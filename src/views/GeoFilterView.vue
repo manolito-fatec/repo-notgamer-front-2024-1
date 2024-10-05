@@ -79,17 +79,18 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-const emit = defineEmits(['saveFilter'])
+const emit = defineEmits(['saveFilter', ]);
 
 function handleSave() {
+  emit('toggle-playback');
+
   const filterData = {
     person: Person.value,
     startDate: startDate.value,
     endDate: endDate.value
   };
+  
   emit('saveFilter', filterData);
-
-  // console.log("Dados dos filtros:", filterData.person);
 }
 
 function handleReset() {
@@ -117,7 +118,7 @@ function handleReset() {
   border-top-right-radius: 16px;
   border-bottom-right-radius: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 999;
+  z-index: 2;
   overflow-y: auto;
   transition: left 0.5s ease;
   font-family: 'Poppins', regular, sans-serif;

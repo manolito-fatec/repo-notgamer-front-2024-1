@@ -1,6 +1,7 @@
 <template>
   <div class="map-wrapper">
     <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
+    <PlaybackControl class="playback-layer"/>
   <ol-map class="map-container"
           :loadTilesWhileAnimating="true"
           :loadTilesWhileInteracting="true">
@@ -75,6 +76,7 @@ import {forEach} from "ol/geom/flat/segments";
 import IconStartPin from "../assets/IconStartPin.png";
 import IconEndPin from "../assets/IconEndPin.png";
 import GeoFilterView from "@/views/GeoFilterView.vue";
+import PlaybackControl from "@/views/PlaybackControl.vue";
 
 //Configurações de iniciação do mapa
 let center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
@@ -272,10 +274,17 @@ function makeLineFromPoints(featureList) {
   position: absolute;
   top: 20px;
   left: 20px;
-  z-index: 10;
   background-color: white;
   padding: 10px;
   border-radius: 8px;
+}
+
+.playback-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  bottom: 0px;
+  z-index: 2;
 }
 
 :global(.ol-zoom-in) {

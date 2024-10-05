@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <IconLogo />
-    <button class="toggle-btn" @click="$emit('toggle-filters')">
+    <button class="toggle-btn" @click="getChangeValue">
       <IconFilter />
     </button>
   </div>
@@ -10,7 +10,20 @@
 <script setup>
 import IconFilter from "@/components/icons/IconFilter.vue";
 import IconLogo from "@/components/icons/IconLogo.vue";
-import IconAlert from "@/components/icons/IconAlert.vue";
+import { ref } from 'vue';
+
+const clickFiltersButton = ref(true);
+const emit = defineEmits(['toggle-filters']);
+
+function getChangeValue() {
+  emit('toggle-filters')
+  console.log(clickFiltersButton.value)
+  if (clickFiltersButton.value) {
+    clickFiltersButton.value = false;
+  } else {
+    clickFiltersButton.value = true;
+  }
+}
 </script>
 
 <style scoped>
