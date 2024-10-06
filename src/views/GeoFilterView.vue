@@ -79,7 +79,7 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-const emit = defineEmits(['saveFilter', ]);
+const emit = defineEmits(['saveFilter', 'toggle-playback']);
 
 function handleSave() {
   emit('toggle-playback');
@@ -118,7 +118,6 @@ function handleReset() {
   border-top-right-radius: 16px;
   border-bottom-right-radius: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 2;
   overflow-y: auto;
   transition: left 0.5s ease;
   font-family: 'Poppins', regular, sans-serif;

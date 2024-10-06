@@ -11,10 +11,6 @@
 
 <script setup lang="ts">
 
-const props = defineProps({
-  modelValue: String
-});
-
 const emit = defineEmits(['update:modelValue']);
 
 function onChange(event: Event) {

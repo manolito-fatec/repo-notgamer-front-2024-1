@@ -1,6 +1,5 @@
 <template>
   <div>
-    <StartButton />
     <GeoFilterView @toggle-playback="togglePlayback"/>
     <div v-if="showPlayback" class="playback-control">
       <BottomContainerPlayback/>
@@ -26,7 +25,7 @@ import 'ol/ol.css';
 import DropdownSpeed from '@/components/filter/DropdownSpeed.vue';
 import ButtonStartPause from '@/components/ButtonStartPause.vue';
 import BottomContainerPlayback from '@/components/BottomContainerPlayback.vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import Feature from 'ol/Feature';
 import { LineString } from 'ol/geom';
 import ButtonBackward from '@/components/ButtonBackward.vue';
@@ -43,10 +42,6 @@ const elapsedTime = ref(0);
 const duration = ref(10000);
 const showPlayback = ref(false);
 const selectedValue = ref('1x');
-
-const props = defineProps({
-  clickStartButton: { type: Boolean }
-});
 
 function continueAnimation() {
   if (!animating) {
@@ -170,7 +165,6 @@ function togglePlayback() {
   width: 89.1%;
   right: 75px;
   height: 100%;
-  z-index: 1;
 }
 
 </style>

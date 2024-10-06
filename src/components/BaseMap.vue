@@ -1,8 +1,8 @@
 <template>
   <div class="map-wrapper">
-    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
     <PlaybackControl class="playback-layer"/>
-  <ol-map class="map-container"
+    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
+    <ol-map class="map-container"
           :loadTilesWhileAnimating="true"
           :loadTilesWhileInteracting="true">
     <ol-view
@@ -277,14 +277,15 @@ function makeLineFromPoints(featureList) {
   background-color: white;
   padding: 10px;
   border-radius: 8px;
+  z-index: 2;
 }
 
 .playback-layer {
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: 6.8%;
   bottom: 0px;
-  z-index: 2;
+  z-index: 3;
 }
 
 :global(.ol-zoom-in) {
