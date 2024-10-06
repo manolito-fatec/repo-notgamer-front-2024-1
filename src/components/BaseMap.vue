@@ -12,26 +12,7 @@
     />
     <ol-tile-layer>
       <ol-source-osm/>
-<!--      <ol-source-xyz-->
-<!--          url="https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"-->
-<!--          attributions="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors &copy; <a href='https://carto.com/attributions'>CARTO</a>"-->
-<!--      />-->
     </ol-tile-layer>
-
-    <!-- Início da Layer -->
-<!--    <ol-vector-layer>-->
-<!--      <ol-source-vector>-->
-<!--        <ol-feature v-for="geometry in pointFeatures" :key="geometry.getId()">-->
-<!--          <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>-->
-<!--          <ol-style>-->
-<!--            <ol-style-circle :radius="8">-->
-<!--              <ol-style-stroke color="red" :width="1"/>-->
-<!--              <ol-style-fill color="rgba(0,0,0,0.2)"/>-->
-<!--            </ol-style-circle>-->
-<!--          </ol-style>-->
-<!--        </ol-feature>-->
-<!--      </ol-source-vector>-->
-<!--    </ol-vector-layer>-->
 
     <ol-vector-layer>
       <ol-source-vector>
@@ -67,6 +48,7 @@
 </template>
 
 <script setup lang="ts">
+
 import {onMounted, ref} from "vue";
 import {Feature} from "ol";
 import {LineString, Point} from "ol/geom";
@@ -89,6 +71,8 @@ let pointFinalStar = ref([]);
 
 //Variável que armazena as geometrias do tipo LineString
 let routeLine = ref([]);
+
+let view = ref(); 
 
 function handleFilterData(filterData: { person: int | null, startDate: string | null, endDate: string | null }) {
   pointFeatures.value = []
@@ -119,15 +103,6 @@ const getAllPoints = async (getPointsUrl) => {
   }
 }
 
-const getAllPoints2 = async () => {
-  try {
-    let response = await axios.get("http://localhost:8080/tracker/period/2/2024-01-13T00:00:00/2024-09-09T23:59:59")
-    return response.data
-
-  } catch (error) {
-    console.log(error);
-  }
-}
 
 //Prepara as coordenadas para serem lidas pelo mapa.
 //Feature é um objeto legível pela tag 'ol-feature'. Define como a layer se comporta.
@@ -259,6 +234,13 @@ function makeLineFromPoints(featureList) {
 
   console.log('Linhas criadas:', routeLine.value);
   return null;
+}
+
+function centerMapOnExtent(extent: Extent) {
+  if (view.value) {
+    // Centraliza o mapa e ajusta o zoom para a extensão das coordenadas
+    view.value.fit(extent, { size: view.value.getSize(), padding: [20, 20, 20, 20] });
+  }
 }
 
 </script>
