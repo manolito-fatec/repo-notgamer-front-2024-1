@@ -137,6 +137,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
           {idPerson: nameFilter,
             code: arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length-1].codeDevice}})
     pointFinalStar.value.push(pontoFinal);
+    center.value = pontoFinal.getGeometry()?.getCoordinates()
 
 
     for (let i = 0; i < arrayOfGeometryObjects.value.length; i++) {
