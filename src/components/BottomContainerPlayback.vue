@@ -9,7 +9,6 @@
       v-model="elapsedTime" 
       @input="changeColor">
     </div>
-    <!-- <div class = "arrow-up"></div> -->
     <div class="date">
       <h6> 19/09/2024 <br> 17:38</h6>
     </div>
@@ -40,6 +39,7 @@ function changeColor(event: Event) {
   bottom: 0px;
   background: linear-gradient(rgb(50, 50, 50), rgb(0, 0, 0));
   opacity: 70%;
+  left: 75px;
 }
 
 .reproduction-bar {

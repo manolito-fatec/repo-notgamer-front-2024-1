@@ -13,9 +13,9 @@
   color: white;
   font-size: 30px;
   cursor: pointer; 
-  position: absolute;
+  position: fixed;
   display: flex;
   bottom: 10px;
-  right: -16px;
+  right: 5.6%;
 }
 </style>

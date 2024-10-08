@@ -68,9 +68,9 @@ function routeAnimation() {
   color: white;
   font-size: 30px;
   cursor: pointer; 
-  position: absolute;
+  position: fixed;
   display: flex;
   bottom: 10px;
-  left: 45px;
+  left: 8.6%;
 }
 </style>

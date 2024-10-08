@@ -12,9 +12,9 @@
   color: white;
   font-size: 30px;
   cursor: pointer; 
-  position: absolute;
+  position: fixed;
   display: flex;
   bottom: 10px;
-  right: -50px;
+  right: 3%;
 }
 </style>

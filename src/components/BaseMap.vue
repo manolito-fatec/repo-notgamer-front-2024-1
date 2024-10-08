@@ -1,7 +1,9 @@
 <template>
   <div class="map-wrapper">
-    <PlaybackControl class="playback-layer"/>
-    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
+    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData" @toggle-playback="togglePlayback"/>
+    <div v-if="showPlayback" class="playback-layer">
+      <PlaybackControl/>
+    </div>
     <ol-map class="map-container"
           :loadTilesWhileAnimating="true"
           :loadTilesWhileInteracting="true">
@@ -20,12 +22,10 @@
         <ol-feature v-for="geometry in pointFinalStar" :key="geometry.getId()">
           <ol-geom-point :coordinates="geometry.getGeometry().getCoordinates()"/>
           <ol-style v-if="geometry.values_.starPoint">
-            <ol-style-icon :src="IconStartPin" :scale="0.7" :anchor="[0.5, 1]">
-            </ol-style-icon>
+            <ol-style-icon :src="IconStartPin" :scale="0.7" :anchor="[0.5, 1]"/>
           </ol-style>
           <ol-style v-else>
-            <ol-style-icon :src="IconEndPin" :scale="0.7" :anchor="[0.5, 1]">
-            </ol-style-icon>
+            <ol-style-icon :src="IconEndPin" :scale="0.7" :anchor="[0.5, 1]"/>
           </ol-style>
 
         </ol-feature>
@@ -49,16 +49,19 @@
 
 <script setup lang="ts">
 
-import {onMounted, ref} from "vue";
+import {ref} from "vue";
 import {Feature} from "ol";
 import {LineString, Point} from "ol/geom";
-import type {GeometryPoint} from "@/components/Types";
 import axios from "axios";
-import {forEach} from "ol/geom/flat/segments";
 import IconStartPin from "../assets/IconStartPin.png";
 import IconEndPin from "../assets/IconEndPin.png";
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import PlaybackControl from "@/views/PlaybackControl.vue";
+import IconPositionMap from "../assets/IconPositionMap.png";
+import { create } from "node_modules/axios/index.cjs";
+import { Icon, IconImage, Style } from "ol/style";
+
+const showPlayback = ref(false);
 
 //Configurações de iniciação do mapa
 let center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
@@ -245,6 +248,14 @@ function centerMapOnExtent(extent: Extent) {
   }
 }
 
+function togglePlayback() {
+  if (showPlayback.value === false) {
+    showPlayback.value = !showPlayback.value;
+  } else {
+    showPlayback.value = true;
+  }
+}
+
 </script>
 
 <style scoped>
@@ -268,7 +279,7 @@ function centerMapOnExtent(extent: Extent) {
   width: 100%;
   height: 6.8%;
   bottom: 0px;
-  z-index: 3;
+  z-index: 1;
 }
 
 :global(.ol-zoom-in) {

@@ -82,8 +82,6 @@ function toggleFilters() {
 const emit = defineEmits(['saveFilter', 'toggle-playback']);
 
 function handleSave() {
-  emit('toggle-playback');
-
   const filterData = {
     person: Person.value,
     startDate: startDate.value,
@@ -91,6 +89,8 @@ function handleSave() {
   };
   
   emit('saveFilter', filterData);
+
+  emit('toggle-playback');
 }
 
 function handleReset() {
@@ -121,6 +121,7 @@ function handleReset() {
   overflow-y: auto;
   transition: left 0.5s ease;
   font-family: 'Poppins', regular, sans-serif;
+  z-index: 10;
 }
 
 .button-group {

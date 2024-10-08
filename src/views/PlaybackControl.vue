@@ -1,22 +1,19 @@
 <template>
   <div>
-    <GeoFilterView @toggle-playback="togglePlayback"/>
-    <div v-if="showPlayback" class="playback-control">
-      <BottomContainerPlayback/>
-      <ButtonBackward/>
-      <ButtonForward/>
-      <ButtonRestart 
-        @click="restartAnimation"
-      />
-      <ButtonStartPause 
-        @click="startAndPause"
-      />
-      <DropdownSpeed 
-        v-model="selectedValue" 
-        @change="typeVelocity"
-      />
-    </div> 
-  </div>
+    <BottomContainerPlayback/>
+    <ButtonBackward/>
+    <ButtonForward/>
+    <ButtonRestart 
+      @click="restartAnimation"
+    />
+    <ButtonStartPause 
+      @click="startAndPause"
+    />
+    <DropdownSpeed 
+      v-model="selectedValue" 
+      @change="typeVelocity"
+    />
+  </div> 
 </template>
 
 <script setup lang="ts">
@@ -31,7 +28,6 @@ import { LineString } from 'ol/geom';
 import ButtonBackward from '@/components/ButtonBackward.vue';
 import ButtonForward from '@/components/ButtonForward.vue';
 import ButtonRestart from '@/components/ButtonRestart.vue';
-import GeoFilterView from './GeoFilterView.vue';
 
 let animating = false;
 let startTime: number;
@@ -40,8 +36,8 @@ let rota: LineString;
 
 const elapsedTime = ref(0);
 const duration = ref(10000);
-const showPlayback = ref(false);
 const selectedValue = ref('1x');
+const emit = defineEmits(['playback']);
 
 function continueAnimation() {
   if (!animating) {
@@ -50,6 +46,7 @@ function continueAnimation() {
 }
 
 function typeVelocity() {
+  console.log(selectedValue.value)
   if (selectedValue.value === "0.5x") {
     if (!animating) {
       adjustVelocity(0.5);
@@ -148,23 +145,15 @@ function restartAnimation() {
   adjustPosition();
 }
 
-function togglePlayback() {
-  if (showPlayback.value === false) {
-    showPlayback.value = !showPlayback.value;
-  } else {
-    showPlayback.value = true;
-  }
-}
-
 </script>
 
 <style scoped>
 
 .playback-control {
-  position: absolute;
-  width: 89.1%;
-  right: 75px;
+  position: fixed;
+  width: 88.8%;
   height: 100%;
+  z-index: 10;
 }
 
 </style>

@@ -25,10 +25,12 @@ import IconLogo from "@/components/icons/IconLogo.vue";
   align-items: center;
   justify-content: flex-start;
   padding-top: 18px;
+  z-index: 10;
 }
 
 .sidebar > * {
   margin: 46px 0;
+  z-index: 10;
 }
 
 .toggle-btn {

@@ -25,14 +25,14 @@ function onChange(event: Event) {
 .dropdown-speed select {
 width: 30px;
 height: 30px;
-position: absolute;
 background-color: transparent;
 cursor: pointer;
 border: none;
+position: fixed;
 appearance: none; 
 color: transparent;
 bottom: 10px;
-left: 90px;
+left: 12%;
 }
 
 .dropdown-speed option {
@@ -46,10 +46,10 @@ border: none;
 color: white;
 font-size: 30px;
 cursor: pointer; 
-position: absolute;
+position: fixed;
 display: flex;
 bottom: 10px;
-left: 90px;
+left: 12%;
 }
 
 </style>
