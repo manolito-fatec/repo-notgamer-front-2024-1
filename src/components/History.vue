@@ -6,14 +6,19 @@
         <div class="start-icon"></div>
         <textarea v-model="historyText" readonly></textarea>
       </contenthistory>
-      <expandedhistory>
+        <button class="expand-history" @click="expandItems">Linha do tempo
+        <div class = "icon-expand"></div>
+      </button>
+      <div v-if="showHistory" class = "expanded-history">
+        <div class="start-icon"></div>
         <textarea v-model="historyText" readonly></textarea>
         <div class = "icon-in"></div>
-        </expandedhistory>
-        <expandedhistory>
+      </div>
+      <div v-if="showHistory" class="expanded-history">
+        <div class="start-icon"></div>
         <textarea v-model="historyText" readonly></textarea>
         <div class = "icon-out"></div>
-      </expandedhistory>
+      </div>
       <contenthistory>
         <div class="end-icon"></div>
         <textarea v-model="historyText" readonly></textarea>
@@ -26,9 +31,13 @@
 import {ref} from 'vue'
 import iconIn from './icons/iconIn.vue';
 import iconOut from './icons/iconOut.vue';
+import iconExpand from './icons/iconExpand.vue';
 const historyText = ref('dd/mm/aaaa hh:mm:ss\n[bairro] - [av/rua], [cidade] - [estado]')
+const showHistory = ref (false)
 
-
+function expandItems(){
+  showHistory .value= !showHistory.value
+}
 
 </script>
 
@@ -88,7 +97,7 @@ const historyText = ref('dd/mm/aaaa hh:mm:ss\n[bairro] - [av/rua], [cidade] - [e
   font-family: 'Poppins', regular, sans-serif;
   resize: none;
   box-sizing: border-box;
-  cursor: pointer;
+  cursor: default;
 }
 
 .history-container contenthistory {
@@ -103,23 +112,42 @@ const historyText = ref('dd/mm/aaaa hh:mm:ss\n[bairro] - [av/rua], [cidade] - [e
   padding: 2%;
   resize: none;
   box-sizing: border-box;
-  cursor:pointer;
+  cursor:default;
   justify-items: center;
   align-items: center;
 }
 
-.history-container expandedhistory {
+.expanded-history {
   display: grid;
-  grid-template-columns: 90% 10%;
+  grid-template-columns: 10% 80% 10%;
   width: 100%;
   height: 100%;
   background-color: #4a4a4a;
   padding: 1%;
   resize: none;
-  border-radius: 4px;
+  border-radius: 10px;
+  border-style: solid;
+  border-color: #3D3D3D;
   box-sizing: border-box;
   cursor: default;
   justify-items:center;
+  align-items: center;
+}
+
+.expand-history {
+  display: grid;
+  grid-template-columns: 95% 5%;
+  width: 100%;
+  height: 100%;
+  background-color: #4a4a4a;
+  color: white;
+  font-size: 10px;
+  padding: 2%;
+  border-radius: 10px;
+  border-style: solid;
+  border-color: #3D3D3D;
+  cursor: pointer;
+  justify-items: start;
   align-items: center;
 }
 
