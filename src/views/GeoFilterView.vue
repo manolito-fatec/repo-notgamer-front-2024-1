@@ -18,6 +18,10 @@
       <DataRangePicker
           v-model:startDate="startDate"
           v-model:endDate="endDate"
+          :reset="resetFilters"
+          @update:startDate="startDate = $event"
+          @update:endDate="endDate = $event"
+          @update:selectedPeriod="selectedPeriod = $event"
       />
       <div class="button-group">
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
@@ -31,7 +35,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { fetchPersons, fetchDevices} from "@/services/apiService.js";
-import Sidebar from "@/components/Sidebar.vue";
+import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
 import History from "@/components/History.vue";
@@ -47,6 +51,8 @@ const showFilters = ref(false);
 const isPersonSelected = ref(false);
 const startDate = ref(null);
 const endDate = ref(null);
+const selectedPeriod = ref('');
+const resetFilters = ref(false);
 
 onMounted(async () => {
   try {
@@ -98,6 +104,12 @@ function handleReset() {
   DeviceOption.value = [];
   startDate.value = null;
   endDate.value = null;
+  selectedPeriod.value = '';
+
+  resetFilters.value = true;
+  setTimeout(() => {
+    resetFilters.value = false;
+  }, 0);
 }
 </script>
 
