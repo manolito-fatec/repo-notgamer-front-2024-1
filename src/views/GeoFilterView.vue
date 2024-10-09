@@ -2,12 +2,12 @@
   <div class="filter-container">
     <Sidebar @toggle-filters="toggleFilters"/>
     <div v-if="showFilters" class="filters">
-      <DropDown
-          id="dropdown1"
+      <PersonSearch
+          id="autocomplete1"
           label="Colaborador:"
           v-model="Person"
           :options="PersonOption"
-          @change="onPersonSelect"
+          :reset="resetFilters"
       />
       <DropDown
           id="dropdown2"
@@ -41,6 +41,7 @@ import DropDown from "@/components/filter/DropDown.vue";
 import History from "@/components/History.vue";
 import ClearButton from "@/components/ClearButton.vue";
 import StartButton from "@/components/StartButton.vue";
+import PersonSearch from "@/components/PersonSearch.vue";
 
 const Person = ref(null);
 const Device = ref(null);
@@ -58,7 +59,7 @@ onMounted(async () => {
   try {
     let personListFromDb = await fetchPersons();
     PersonOption.value = personListFromDb.map(person => ({
-      label: person.fullName,
+      label: person.fullName.toUpperCase(),
       value: person.idPerson
     })).filter((person, index, self) =>
         index === self.findIndex(p => p.label === person.label)
@@ -95,7 +96,6 @@ function handleSave() {
   };
   emit('saveFilter', filterData);
 
-  // console.log("Dados dos filtros:", filterData.person);
 }
 
 function handleReset() {
