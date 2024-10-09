@@ -31,7 +31,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { fetchPersons, fetchDevices} from "@/services/apiService.js";
-import Sidebar from "@/components/Sidebar.vue";
+import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
 import History from "@/components/History.vue";
