@@ -10,14 +10,24 @@ import OpenLayersMap from "vue3-openlayers";
 
 //PrimeVue plugin import
 import PrimeVue from "primevue/config";
+import {
+    Map,
+    Layers,
+    Sources,
+    Geometries,
+    MapControls,
+} from "vue3-openlayers";
 
 const app = createApp(App)
+
+
 
 app.use(PrimeVue, {
     unstyled: true
 });
-app.use(OpenLayersMap);
+app.use(Map,Layers,Sources,Geometries,MapControls)
+// app.use(OpenLayersMap);
 
 app.use(router)
-app.use(PrimeVue)
+// app.use(PrimeVue)
 app.mount('#app')

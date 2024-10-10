@@ -1,7 +1,7 @@
 <template>
   <div class="map-wrapper">
     <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
-    <div id="map" class="map-container"></div>
+    <div id="map" class="map-container"></div>  <!-- O mapa será montado aqui -->
   </div>
 </template>
 
@@ -20,13 +20,48 @@ import GeoFilterView from '@/views/GeoFilterView.vue';
 import IconStartPin from '../assets/IconStartPin.png';
 import IconEndPin from '../assets/IconEndPin.png';
 
-let center = ref([-60.457873, 0.584053]);
+let center = ref([-60.457873, 0.584053]);  // Centro do mapa
 let zoom = ref(5);
 let map = ref<Map | null>(null);
 let pointFeatures = ref<Feature[]>([]);
 let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 
+onMounted(() => {
+  // Inicializa o mapa
+  map.value = new Map({
+    target: 'map', // ID do elemento HTML
+    layers: [
+      new TileLayer({
+        source: new OSM(),
+      }),
+    ],
+    view: new View({
+      center: center.value,
+      zoom: zoom.value,
+      projection: 'EPSG:4326',
+    }),
+  });
+
+  // Adiciona as camadas de vetores para os pontos e as rotas
+  const vectorLayer = new VectorLayer({
+    source: new VectorSource({
+      features: pointFeatures.value,
+    }),
+  });
+
+  const routeLayer = new VectorLayer({
+    source: new VectorSource({
+      features: routeLine.value,
+    }),
+  });
+
+  map.value.addLayer(vectorLayer);  // Camada de pontos
+  map.value.addLayer(routeLayer);   // Camada de linhas
+
+  // Adiciona os controles ao mapa (por exemplo, escala)
+  map.value.addControl(new ScaleLine());
+});
 
 function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
   // Limpa os arrays antes de adicionar novos pontos e rotas
@@ -133,38 +168,6 @@ function makeLineFromPoints(featureList) {
     }
   });
 }
-
-onMounted(() => {
-  map.value = new Map({
-    target: 'map',
-    layers: [
-      new TileLayer({
-        source: new OSM(),
-      }),
-    ],
-    view: new View({
-      center: center.value,
-      zoom: zoom.value,
-      projection: 'EPSG:4326',
-    }),
-  });
-
-  const vectorLayer = new VectorLayer({
-    source: new VectorSource({
-      features: pointFeatures.value,
-    }),
-  });
-
-  const routeLayer = new VectorLayer({
-    source: new VectorSource({
-      features: routeLine.value,
-    }),
-  });
-
-  map.value.addLayer(vectorLayer);  // Camada de pontos
-  map.value.addLayer(routeLayer);   // Camada de linhas
-});
-
 </script>
 
 <style scoped>

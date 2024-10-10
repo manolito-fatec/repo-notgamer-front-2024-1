@@ -6,7 +6,6 @@ const BASE_URL_ENDPOINT = 'http://localhost:8080/person'
 export const fetchPersons = async () => {
     try {
         const response = await axios.get(BASE_URL_ENDPOINT);
-        console.log(response.data);
         return response.data;
     } catch (error) {
         console.error("Erro ao buscar pessoas:", error);
