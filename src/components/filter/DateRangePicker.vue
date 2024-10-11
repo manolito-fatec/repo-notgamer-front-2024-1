@@ -122,6 +122,7 @@ function onEndDateChange() {
   border-radius: 4px;
   background-color: #444444;
   color: #fff;
+  font-size: 11px;
 }
 
 .date-range-separator {

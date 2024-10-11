@@ -1,29 +1,27 @@
 <template>
   <div class="history-wrapper">
     <h2 class="history-title">Histórico:</h2>
-    <div class="history-container">
-      <contenthistory>
-        <div class="start-icon"></div>
-        <textarea v-model="historyText" readonly></textarea>
-      </contenthistory>
+      <ul class="history-container">
+        <contenthistory>
+          <div class="start-icon"></div>
+          <textarea v-model="historyText" readonly></textarea>
+        </contenthistory>
         <button class="expand-history" @click="expandItems">Linha do tempo
-        <div class = "icon-expand"></div>
-      </button>
-      <div v-if="showHistory" class = "expanded-history">
-        <div class="start-icon"></div>
-        <textarea v-model="historyText" readonly></textarea>
-        <div class = "icon-in"></div>
-      </div>
-      <div v-if="showHistory" class="expanded-history">
-        <div class="start-icon"></div>
-        <textarea v-model="historyText" readonly></textarea>
-        <div class = "icon-out"></div>
-      </div>
-      <contenthistory>
-        <div class="end-icon"></div>
-        <textarea v-model="historyText" readonly></textarea>
-      </contenthistory>
-    </div>
+          <div class = "icon-expand"></div>
+        </button>
+        <HistoryDetail v-if="showHistory" 
+          v-for="(point, index) in points" 
+          :historyText="historyText">
+        </HistoryDetail>
+        <contenthistory>
+          <div class="end-icon"></div>
+          <textarea v-model="historyText" readonly></textarea>
+        </contenthistory>
+      </ul>
+    <Observer
+       v-if="!(infinteScrollOptions.currentPage > infinteScrollOptions.maxPage)" 
+       @is-in-view="handleIsInView"
+        @is-outside-view="handleIsOutsideView" />
   </div>
 </template>
 
@@ -32,11 +30,48 @@ import {ref} from 'vue'
 import iconIn from './icons/iconIn.vue';
 import iconOut from './icons/iconOut.vue';
 import iconExpand from './icons/iconExpand.vue';
-const historyText = ref('dd/mm/aaaa hh:mm:ss\n[bairro] - [av/rua], [cidade] - [estado]')
+import HistoryDetail from './HistoryDetail.vue';
+import Observer from './Observer.vue';
+import { throttle } from 'lodash';
+
 const showHistory = ref (false)
+const historyText = ref('dd/mm/aaaa hh:mm:ss\n[bairro] - [av/rua], [cidade] - [estado]')
 
 function expandItems(){
   showHistory .value= !showHistory.value
+}
+
+const infinteScrollOptions = {
+  maxPage: 100,
+  limitsPerPage: 1,
+  currentPage: 1,
+  isInView: false
+}
+const points = ref(getPoints(infinteScrollOptions.limitsPerPage, infinteScrollOptions.currentPage))
+
+const handleLoadmore  = throttle(function(options = infinteScrollOptions) {
+  const { limitsPerPage, currentPage, isInView, maxPage } = options
+  if (currentPage > maxPage) return
+  const newCurrentPage = currentPage + 1
+  infinteScrollOptions.currentPage = newCurrentPage
+  const newPoints = getPoints(limitsPerPage, newCurrentPage)
+  points.value = [...points.value, ...newPoints];
+  if (isInView) {
+    handleLoadmore()
+  }
+}, 300, { leading: true, trailing: true })
+	
+function handleIsInView() {
+  infinteScrollOptions.isInView = true
+  handleLoadmore()
+}
+
+function handleIsOutsideView() {
+  infinteScrollOptions.isInView = false
+}
+
+function getPoints(limitsPerPage, currentPage) {
+  return Array.from({ length: limitsPerPage }, () => ({ title: currentPage.toString() }));
 }
 
 </script>
@@ -45,7 +80,7 @@ function expandItems(){
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 .history-wrapper {
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .start-icon {
@@ -69,7 +104,7 @@ function expandItems(){
 .history-title {
   color: #ffffff;
   margin-bottom: 8px;
-  font-size: 16px;
+  font-size: 11px;
   font-family: Arial, sans-serif;
 }
 
@@ -77,11 +112,11 @@ function expandItems(){
   border-radius: 8px;
   box-sizing: border-box;
   background-color: #3D3D3D;
-  display: grid;
+  display: flexbox;
   grid-template-rows: repeat(auto, 100%);
-  height: 100%;
+  height: 200%;
   padding: 0%;
-  align-items: cente;
+  align-items: center;
   justify-items: center;
   row-gap: 2%;
 }

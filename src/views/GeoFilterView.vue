@@ -23,7 +23,9 @@
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
+      <div>
       <History />
+    </div>
     </div>
   </div>
 </template>
