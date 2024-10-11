@@ -1,11 +1,13 @@
 <template>
-  <div class="filter-item">
+  <div class="filter-item" ref="filterItem">
     <label :for="id" class="filter-label">{{ label }}</label>
     <input
         type="text"
         v-model="searchTerm"
-        @focus="showAllOptions"
+        ref="inputField"
+        @focus="handleFocus"
         @input="filterOptions"
+        @keydown.enter="selectClosestOption"
         placeholder="Digite para buscar..."
         class="filter-input"
     />
@@ -23,7 +25,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import {ref, watch, onMounted, onBeforeUnmount} from 'vue';
 
 const props = defineProps({
   id: String,
@@ -37,6 +39,8 @@ const emit = defineEmits(['update:modelValue']);
 
 const searchTerm = ref('');
 const filteredOptions = ref([]);
+const filterItem = ref(null);
+const inputField = ref(null);
 
 watch(() => props.reset, (newValue) => {
   if (newValue) {
@@ -68,6 +72,35 @@ function selectOption(option) {
   searchTerm.value = option.label;
   filteredOptions.value = [];
 }
+
+function selectClosestOption() {
+  if (filteredOptions.value.length > 0) {
+    selectOption(filteredOptions.value[0]);
+  }
+}
+
+function handleFocus() {
+  if (searchTerm.value) {
+    inputField.value.select();
+  } else {
+    showAllOptions();
+  }
+}
+
+function handleClickOutside(event) {
+  if (filterItem.value && !filterItem.value.contains(event.target)) {
+    filteredOptions.value = [];
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
+
 </script>
 
 <style scoped>

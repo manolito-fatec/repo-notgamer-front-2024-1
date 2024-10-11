@@ -8,6 +8,7 @@
           v-model="Person"
           :options="PersonOption"
           :reset="resetFilters"
+          @update:modelValue="onPersonSelect"
       />
       <DropDown
           id="dropdown2"
@@ -33,8 +34,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { fetchPersons, fetchDevices} from "@/services/apiService.js";
+import {onMounted, ref} from 'vue';
+import {fetchDevices, fetchPersons} from "@/services/apiService.js";
 import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
@@ -71,11 +72,20 @@ onMounted(async () => {
 });
 
 const onPersonSelect = async (selectedPerson) => {
-  if (selectedPerson) {
+  Person.value = selectedPerson;
+  if (selectedPerson != null) {
     isPersonSelected.value = true;
-
     try {
-      DeviceOption.value = await fetchDevices();
+      const allDevices = await fetchDevices();
+      const filteredDevices = allDevices.filter(device => {
+        return device.value === selectedPerson;
+      });
+      DeviceOption.value = filteredDevices;
+      if (filteredDevices.length > 0) {
+        Device.value = filteredDevices[0].value;
+      } else {
+        Device.value = null;
+      }
     } catch (error) {
       console.log("Erro ao buscar dispositivos:", error);
     }
