@@ -42,7 +42,7 @@
   .history-container textarea {
     align-content: center;
     width: 100%;
-    height: 100%;
+    height: 8ch;
     border: none;
     background-color: transparent;
     color: #ffffff;
@@ -57,7 +57,7 @@
     display: grid;
     grid-template-columns: 10% 80% 10%;
     width: 100%;
-    height: 100%;
+    height: 400px;
     background-color: #4a4a4a;
     padding: 1%;
     resize: none;
