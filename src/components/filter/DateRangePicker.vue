@@ -32,12 +32,28 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import DropDown from "@/components/filter/DropDown.vue";
-import { defineEmits } from 'vue';
 
-const emit = defineEmits(['update:startDate', 'update:endDate']);
+const emit = defineEmits(['update:startDate', 'update:endDate', 'update:selectedPeriod']);
 const startDate = ref(null);
 const endDate = ref(null);
 const selectedPeriod = ref('');
+
+const props = defineProps({
+  reset: Boolean
+});
+
+watch(() => props.reset, (newValue) => {
+  if (newValue) {
+    selectedPeriod.value = '';
+    startDate.value = null;
+    endDate.value = null;
+
+    emit('update:startDate', null);
+    emit('update:endDate', null);
+    emit('update:selectedPeriod', '');
+  }
+});
+
 
 const periodOptions = [
   { label: 'Hoje', value: 'today' },
