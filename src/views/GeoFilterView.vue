@@ -12,9 +12,9 @@
       />
       <DropDown
           id="dropdown2"
-          label="Dispositivos:"
           v-model="Device"
           :options="DeviceOption"
+          label="Dispositivos:"
       />
       <DataRangePicker
           v-model:startDate="startDate"
@@ -28,7 +28,7 @@
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
-      <History />
+      <History/>
     </div>
   </div>
 </template>
@@ -43,7 +43,10 @@ import History from "@/components/History.vue";
 import ClearButton from "@/components/ClearButton.vue";
 import StartButton from "@/components/StartButton.vue";
 import PersonSearch from "@/components/PersonSearch.vue";
+import {handleAxiosError} from "@/utils/errorHandler";
+import {useToast} from "vue-toastification";
 
+const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
@@ -68,6 +71,7 @@ onMounted(async () => {
     originalPersonOption.value = [...PersonOption.value];
   } catch (error) {
     console.error("Erro ao inicializar opções de pessoas:", error);
+    handleAxiosError(error, toast);
   }
 });
 
@@ -88,6 +92,7 @@ const onPersonSelect = async (selectedPerson) => {
       }
     } catch (error) {
       console.log("Erro ao buscar dispositivos:", error);
+      handleAxiosError(error, toast);
     }
   }
 };
@@ -96,7 +101,7 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-const emit = defineEmits(['saveFilter'])
+const emit = defineEmits(['saveFilter']);
 
 function handleSave() {
   const filterData = {
@@ -106,6 +111,34 @@ function handleSave() {
   };
   emit('saveFilter', filterData);
 
+  let hasErrors = false;
+
+  if (!Person.value) {
+    toast.error("Por favor, selecione um colaborador.");
+    hasErrors = true;
+  }
+  if (!Device.value) {
+    toast.error("Por favor, selecione um dispositivo.");
+    hasErrors = true;
+  }
+  if (!startDate.value) {
+    toast.error("Por favor, selecione uma data de início.");
+    hasErrors = true;
+  }
+  if (!endDate.value) {
+    toast.error("Por favor, selecione uma data de fim.");
+    hasErrors = true;
+  }
+
+  if (!hasErrors) {
+    const filterData = {
+      person: Person.value,
+      device: Device.value,
+      startDate: startDate.value,
+      endDate: endDate.value
+    };
+    emit('saveFilter', filterData);
+  }
 }
 
 function handleReset() {

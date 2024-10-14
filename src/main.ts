@@ -4,12 +4,13 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 
-//OpenLayers plugin import
 import "vue3-openlayers/styles.css";
 import OpenLayersMap from "vue3-openlayers";
 
-//PrimeVue plugin import
 import PrimeVue from "primevue/config";
+
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
 const app = createApp(App)
 
@@ -17,7 +18,7 @@ app.use(PrimeVue, {
     unstyled: true
 });
 app.use(OpenLayersMap);
+app.use(router);
+app.use(Toast);
 
-app.use(router)
-app.use(PrimeVue)
-app.mount('#app')
+app.mount('#app');
