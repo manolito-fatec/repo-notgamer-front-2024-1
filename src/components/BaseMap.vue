@@ -14,7 +14,6 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import { Point, LineString } from 'ol/geom';
 import { Icon, Style, Stroke } from 'ol/style';
-import { ScaleLine } from 'ol/control';
 import axios from 'axios';
 import GeoFilterView from '@/views/GeoFilterView.vue';
 import IconStartPin from '../assets/IconStartPin.png';
@@ -27,20 +26,23 @@ let pointFeatures = ref<Feature[]>([]);
 let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 
+let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
+
 
 function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
-  // Limpa os arrays antes de adicionar novos pontos e rotas
   pointFeatures.value = [];
+  map.value.removeLayers;
   routeLine.value = [];
   pointFinalStar.value = [];
 
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
 
-  // Pega os pontos do backend e atualiza o mapa
   getAllPoints(getUrl).then((points) => {
     let pointList = new ref(points);
     makeGeometryPointFromArray(pointList, filterData.person);
-    makeLineFromPoints(pointFeatures);
+    lineLayer.value  = makeLineFromPoints(pointFeatures);
+  console.log(points);
+    map.value.addLayer(lineLayer.value);
   });
 }
 
@@ -132,6 +134,11 @@ function makeLineFromPoints(featureList) {
       }
     }
   });
+  return new VectorLayer({
+    source: new VectorSource({
+      features: routeLine.value,
+    })
+  })
 }
 
 onMounted(() => {
@@ -162,7 +169,7 @@ onMounted(() => {
   });
 
   map.value.addLayer(vectorLayer);  // Camada de pontos
-  map.value.addLayer(routeLayer);   // Camada de linhas
+  map.value.addLayer(routeLayer);// Camada de linhas
 });
 
 </script>
@@ -171,6 +178,8 @@ onMounted(() => {
 .map-container {
   width: 100vw;
   height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 .filter-overlay {
   position: absolute;
