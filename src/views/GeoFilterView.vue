@@ -4,33 +4,34 @@
     <div v-if="showFilters" class="filters">
       <DropDown
           id="dropdown1"
-          label="Colaborador:"
           v-model="Person"
           :options="PersonOption"
+          label="Colaborador:"
           @change="onPersonSelect"
       />
       <DropDown
           id="dropdown2"
-          label="Dispositivos:"
           v-model="Device"
           :options="DeviceOption"
+          label="Dispositivos:"
       />
       <DataRangePicker
-          v-model:startDate="startDate"
           v-model:endDate="endDate"
+          v-model:startDate="startDate"
       />
       <div class="button-group">
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
-      <History />
+      <History/>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { fetchPersons, fetchDevices} from "@/services/apiService.js";
+import {onMounted, ref} from 'vue';
+import {useToast} from "vue-toastification";
+import {fetchDevices, fetchPersons} from "@/services/apiService.js";
 import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
@@ -38,13 +39,12 @@ import History from "@/components/History.vue";
 import ClearButton from "@/components/ClearButton.vue";
 import StartButton from "@/components/StartButton.vue";
 
+const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
-const originalPersonOption = ref([]);
 const showFilters = ref(false);
-const isPersonSelected = ref(false);
 const startDate = ref(null);
 const endDate = ref(null);
 
@@ -57,7 +57,6 @@ onMounted(async () => {
     })).filter((person, index, self) =>
         index === self.findIndex(p => p.label === person.label)
     );
-    originalPersonOption.value = [...PersonOption.value];
   } catch (error) {
     console.error("Erro ao inicializar opções de pessoas:", error);
   }
@@ -65,8 +64,6 @@ onMounted(async () => {
 
 const onPersonSelect = async (selectedPerson) => {
   if (selectedPerson) {
-    isPersonSelected.value = true;
-
     try {
       DeviceOption.value = await fetchDevices();
     } catch (error) {
@@ -79,17 +76,37 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-const emit = defineEmits(['saveFilter'])
+const emit = defineEmits(['saveFilter']);
 
 function handleSave() {
-  const filterData = {
-    person: Person.value,
-    startDate: startDate.value,
-    endDate: endDate.value
-  };
-  emit('saveFilter', filterData);
+  let hasErrors = false;
 
-  // console.log("Dados dos filtros:", filterData.person);
+  if (!Person.value) {
+    toast.error("Por favor, selecione um colaborador.");
+    hasErrors = true;
+  }
+  if (!Device.value) {
+    toast.error("Por favor, selecione um dispositivo.");
+    hasErrors = true;
+  }
+  if (!startDate.value) {
+    toast.error("Por favor, selecione uma data de início.");
+    hasErrors = true;
+  }
+  if (!endDate.value) {
+    toast.error("Por favor, selecione uma data de fim.");
+    hasErrors = true;
+  }
+
+  if (!hasErrors) {
+    const filterData = {
+      person: Person.value,
+      device: Device.value,
+      startDate: startDate.value,
+      endDate: endDate.value
+    };
+    emit('saveFilter', filterData);
+  }
 }
 
 function handleReset() {
@@ -104,6 +121,12 @@ function handleReset() {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
 
 .filters {
   position: fixed;
