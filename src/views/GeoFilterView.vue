@@ -38,6 +38,7 @@ import DropDown from "@/components/filter/DropDown.vue";
 import History from "@/components/History.vue";
 import ClearButton from "@/components/ClearButton.vue";
 import StartButton from "@/components/StartButton.vue";
+import {errorHandler} from "@/utils/errorHandler";
 
 const toast = useToast();
 const Person = ref(null);
@@ -59,6 +60,7 @@ onMounted(async () => {
     );
   } catch (error) {
     console.error("Erro ao inicializar opções de pessoas:", error);
+    errorHandler(error, toast);
   }
 });
 
@@ -68,6 +70,7 @@ const onPersonSelect = async (selectedPerson) => {
       DeviceOption.value = await fetchDevices();
     } catch (error) {
       console.log("Erro ao buscar dispositivos:", error);
+      errorHandler(error, toast);
     }
   }
 };
