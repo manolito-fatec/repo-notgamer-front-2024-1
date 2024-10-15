@@ -18,7 +18,13 @@ import axios from 'axios';
 import GeoFilterView from '@/views/GeoFilterView.vue';
 import IconStartPin from '../assets/IconStartPin.png';
 import IconEndPin from '../assets/IconEndPin.png';
+import GeoFilterView from "@/views/GeoFilterView.vue";
+import {useToast} from "vue-toastification";
 
+
+const toast = useToast();
+
+let projection = ref("EPSG:4326");
 let center = ref([-60.457873, 0.584053]);
 let zoom = ref(5);
 let map = ref<Map | null>(null);
@@ -28,6 +34,7 @@ let pointFinalStar = ref<Feature[]>([]);
 
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 
+let routeLine = ref([]);
 
 function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
   pointFeatures.value = [];
@@ -52,6 +59,7 @@ const getAllPoints = async (getPointsUrl: string) => {
     return response.data.content;
   } catch (error) {
     console.error(error);
+    toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
   }
 };
 
@@ -105,7 +113,11 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
 }
 
 function makeLineFromPoints(featureList) {
-  if (featureList.value.length === 0) return;
+  if (featureList.value.length === 0) {
+    console.log('Nenhum ponto disponível para criar linhas');
+    toast.info("Nenhum ponto disponível para criar linhas.");
+    return null;
+  }
 
   const groupedById = featureList.value.reduce((acc, feature) => {
     const idText = feature.get('idText');
