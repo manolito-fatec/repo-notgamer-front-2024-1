@@ -15,7 +15,6 @@ import { Vector as VectorSource } from 'ol/source';
 import { Point, LineString } from 'ol/geom';
 import { Icon, Style, Stroke } from 'ol/style';
 import axios from 'axios';
-import GeoFilterView from '@/views/GeoFilterView.vue';
 import IconStartPin from '../assets/IconStartPin.png';
 import IconEndPin from '../assets/IconEndPin.png';
 import GeoFilterView from "@/views/GeoFilterView.vue";
@@ -34,7 +33,6 @@ let pointFinalStar = ref<Feature[]>([]);
 
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 
-let routeLine = ref([]);
 
 function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
   pointFeatures.value = [];
