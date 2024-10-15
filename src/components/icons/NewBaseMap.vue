@@ -1,7 +1,7 @@
 <template>
   <div class="map-wrapper">
     <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
-    <div id="map" class="map-container"></div>
+    <div id="map" class="map-container"></div>  <!-- O mapa será montado aqui -->
   </div>
 </template>
 
@@ -14,40 +14,68 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import { Point, LineString } from 'ol/geom';
 import { Icon, Style, Stroke } from 'ol/style';
+import { ScaleLine } from 'ol/control';
 import axios from 'axios';
+import GeoFilterView from '@/views/GeoFilterView.vue';
 import IconStartPin from '../assets/IconStartPin.png';
 import IconEndPin from '../assets/IconEndPin.png';
-import GeoFilterView from "@/views/GeoFilterView.vue";
-import {useToast} from "vue-toastification";
 
-
-const toast = useToast();
-
-let projection = ref("EPSG:4326");
-let center = ref([-60.457873, 0.584053]);
+let center = ref([-60.457873, 0.584053]);  // Centro do mapa
 let zoom = ref(5);
 let map = ref<Map | null>(null);
 let pointFeatures = ref<Feature[]>([]);
 let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 
-let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
+onMounted(() => {
+  // Inicializa o mapa
+  map.value = new Map({
+    target: 'map', // ID do elemento HTML
+    layers: [
+      new TileLayer({
+        source: new OSM(),
+      }),
+    ],
+    view: new View({
+      center: center.value,
+      zoom: zoom.value,
+      projection: 'EPSG:4326',
+    }),
+  });
 
+  // Adiciona as camadas de vetores para os pontos e as rotas
+  const vectorLayer = new VectorLayer({
+    source: new VectorSource({
+      features: pointFeatures.value,
+    }),
+  });
+
+  const routeLayer = new VectorLayer({
+    source: new VectorSource({
+      features: routeLine.value,
+    }),
+  });
+
+  map.value.addLayer(vectorLayer);  // Camada de pontos
+  map.value.addLayer(routeLayer);   // Camada de linhas
+
+  // Adiciona os controles ao mapa (por exemplo, escala)
+  map.value.addControl(new ScaleLine());
+});
 
 function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
+  // Limpa os arrays antes de adicionar novos pontos e rotas
   pointFeatures.value = [];
-  map.value.removeLayers;
   routeLine.value = [];
   pointFinalStar.value = [];
 
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
 
+  // Pega os pontos do backend e atualiza o mapa
   getAllPoints(getUrl).then((points) => {
     let pointList = new ref(points);
     makeGeometryPointFromArray(pointList, filterData.person);
-    lineLayer.value  = makeLineFromPoints(pointFeatures);
-  console.log(points);
-    map.value.addLayer(lineLayer.value);
+    makeLineFromPoints(pointFeatures);
   });
 }
 
@@ -57,7 +85,6 @@ const getAllPoints = async (getPointsUrl: string) => {
     return response.data.content;
   } catch (error) {
     console.error(error);
-    toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
   }
 };
 
@@ -111,11 +138,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
 }
 
 function makeLineFromPoints(featureList) {
-  if (featureList.value.length === 0) {
-    console.log('Nenhum ponto disponível para criar linhas');
-    toast.info("Nenhum ponto disponível para criar linhas.");
-    return null;
-  }
+  if (featureList.value.length === 0) return;
 
   const groupedById = featureList.value.reduce((acc, feature) => {
     const idText = feature.get('idText');
@@ -144,68 +167,21 @@ function makeLineFromPoints(featureList) {
       }
     }
   });
-  return new VectorLayer({
-    source: new VectorSource({
-      features: routeLine.value,
-    })
-  })
 }
-
-onMounted(() => {
-  map.value = new Map({
-    target: 'map',
-    layers: [
-      new TileLayer({
-        source: new OSM(),
-      }),
-    ],
-    view: new View({
-      center: center.value,
-      zoom: zoom.value,
-      projection: 'EPSG:4326',
-    }),
-  });
-
-  const vectorLayer = new VectorLayer({
-    source: new VectorSource({
-      features: pointFeatures.value,
-    }),
-  });
-
-  const routeLayer = new VectorLayer({
-    source: new VectorSource({
-      features: routeLine.value,
-    }),
-  });
-
-  map.value.addLayer(vectorLayer);  // Camada de pontos
-  map.value.addLayer(routeLayer);// Camada de linhas
-});
-
 </script>
 
 <style scoped>
 .map-container {
   width: 100vw;
   height: 100vh;
-  position: relative;
-  z-index: 1;
 }
 .filter-overlay {
   position: absolute;
   top: 20px;
   left: 20px;
+  z-index: 10;
   background-color: white;
   padding: 10px;
   border-radius: 8px;
-  z-index: 2;
-}
-
-.playback-layer {
-  position: absolute;
-  width: 100%;
-  height: 6.8%;
-  bottom: 0px;
-  z-index: 1;
 }
 </style>
