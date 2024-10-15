@@ -19,7 +19,8 @@ import IconStartPin from '../assets/IconStartPin.png';
 import IconEndPin from '../assets/IconEndPin.png';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import {useToast} from "vue-toastification";
-
+import {fromLonLat} from "ol/proj";
+import {boundingExtent} from "ol/extent";
 
 const toast = useToast();
 
@@ -34,7 +35,7 @@ let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 
 
-function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
+  function handleFilterData(filterData:{person: number | null, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
   map.value.removeLayers;
   routeLine.value = [];
@@ -45,9 +46,10 @@ function handleFilterData(filterData: { person: number | null, startDate: string
   getAllPoints(getUrl).then((points) => {
     let pointList = new ref(points);
     makeGeometryPointFromArray(pointList, filterData.person);
-    lineLayer.value  = makeLineFromPoints(pointFeatures);
-  console.log(points);
+    lineLayer.value = makeLineFromPoints(pointFeatures);
+    console.log(points);
     map.value.addLayer(lineLayer.value);
+    adjustMap();
   });
 }
 
@@ -151,6 +153,19 @@ function makeLineFromPoints(featureList) {
   })
 }
 
+const adjustMap = () => {
+  const coordinates = pointFeatures.value.map((pontos) =>
+      pontos.getGeometry().getCoordinates()
+  );
+  // Cria uma extensão que abrange todas as coordenadas
+  const extent = boundingExtent(coordinates);
+  // Ajusta a visualização do mapa para essa extensão
+  if (map.value) {
+    map.value
+        .getView()
+        .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15});
+  }
+};
 onMounted(() => {
   map.value = new Map({
     target: 'map',
@@ -181,7 +196,6 @@ onMounted(() => {
   map.value.addLayer(vectorLayer);  // Camada de pontos
   map.value.addLayer(routeLayer);// Camada de linhas
 });
-
 </script>
 
 <style scoped>
