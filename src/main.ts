@@ -24,10 +24,8 @@ const app = createApp(App)
 app.use(PrimeVue, {
     unstyled: true
 });
-app.use(OpenLayersMap);
 app.use(Toast);
 app.use(Map,Layers,Sources,Geometries,MapControls)
-// app.use(OpenLayersMap);
 
 app.use(router)
 app.mount('#app')
