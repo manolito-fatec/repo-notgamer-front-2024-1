@@ -44,12 +44,16 @@ function handleFilterData(filterData:{person: number | null, startDate:string | 
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
 
   getAllPoints(getUrl).then((points) => {
-    let pointList = new ref(points);
-    makeGeometryPointFromArray(pointList, filterData.person);
-    lineLayer.value = makeLineFromPoints(pointFeatures);
-    console.log(points);
-    map.value.addLayer(lineLayer.value);
-    adjustMap();
+    if (points.length === 0) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+    } else {
+      let pointList = new ref(points);
+      makeGeometryPointFromArray(pointList, filterData.person);
+      lineLayer.value = makeLineFromPoints(pointFeatures);
+      console.log(points);
+      map.value.addLayer(lineLayer.value);
+      adjustMap();
+    }
   });
 }
 
@@ -157,9 +161,7 @@ const adjustMap = () => {
   const coordinates = pointFeatures.value.map((pontos) =>
       pontos.getGeometry().getCoordinates()
   );
-  // Cria uma extensão que abrange todas as coordenadas
   const extent = boundingExtent(coordinates);
-  // Ajusta a visualização do mapa para essa extensão
   if (map.value) {
     map.value
         .getView()
