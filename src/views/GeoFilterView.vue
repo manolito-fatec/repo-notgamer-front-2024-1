@@ -2,44 +2,53 @@
   <div class="filter-container">
     <Sidebar @toggle-filters="toggleFilters"/>
     <div v-if="showFilters" class="filters">
-      <DropDown
-          id="dropdown1"
+      <PersonSearch
+          id="autocomplete1"
           label="Colaborador:"
           v-model="Person"
           :options="PersonOption"
-          @change="onPersonSelect"
+          :reset="resetFilters"
+          @update:modelValue="onPersonSelect"
       />
       <DropDown
           id="dropdown2"
-          label="Dispositivos:"
           v-model="Device"
           :options="DeviceOption"
+          label="Dispositivos:"
       />
       <DataRangePicker
           v-model:startDate="startDate"
           v-model:endDate="endDate"
+          :reset="resetFilters"
+          @update:startDate="startDate = $event"
+          @update:endDate="endDate = $event"
+          @update:selectedPeriod="selectedPeriod = $event"
       />
       <div class="button-group">
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
       <div>
-      <History />
+      <History/>
     </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { fetchPersons, fetchDevices} from "@/services/apiService.js";
-import Sidebar from "@/components/Sidebar.vue";
+import {onMounted, ref} from 'vue';
+import {fetchDevices, fetchPersons} from "@/services/apiService.js";
+import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
 import History from "@/components/History.vue";
 import ClearButton from "@/components/ClearButton.vue";
 import StartButton from "@/components/StartButton.vue";
+import PersonSearch from "@/components/PersonSearch.vue";
+import {handleAxiosError} from "@/utils/errorHandler";
+import {useToast} from "vue-toastification";
 
+const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
@@ -49,12 +58,14 @@ const showFilters = ref(false);
 const isPersonSelected = ref(false);
 const startDate = ref(null);
 const endDate = ref(null);
+const selectedPeriod = ref('');
+const resetFilters = ref(false);
 
 onMounted(async () => {
   try {
     let personListFromDb = await fetchPersons();
     PersonOption.value = personListFromDb.map(person => ({
-      label: person.fullName,
+      label: person.fullName.toUpperCase(),
       value: person.idPerson
     })).filter((person, index, self) =>
         index === self.findIndex(p => p.label === person.label)
@@ -62,17 +73,28 @@ onMounted(async () => {
     originalPersonOption.value = [...PersonOption.value];
   } catch (error) {
     console.error("Erro ao inicializar opções de pessoas:", error);
+    handleAxiosError(error, toast);
   }
 });
 
 const onPersonSelect = async (selectedPerson) => {
-  if (selectedPerson) {
+  Person.value = selectedPerson;
+  if (selectedPerson != null) {
     isPersonSelected.value = true;
-
     try {
-      DeviceOption.value = await fetchDevices();
+      const allDevices = await fetchDevices();
+      const filteredDevices = allDevices.filter(device => {
+        return device.value === selectedPerson;
+      });
+      DeviceOption.value = filteredDevices;
+      if (filteredDevices.length > 0) {
+        Device.value = filteredDevices[0].value;
+      } else {
+        Device.value = null;
+      }
     } catch (error) {
       console.log("Erro ao buscar dispositivos:", error);
+      handleAxiosError(error, toast);
     }
   }
 };
@@ -81,7 +103,7 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-const emit = defineEmits(['saveFilter'])
+const emit = defineEmits(['saveFilter']);
 
 function handleSave() {
   const filterData = {
@@ -91,7 +113,34 @@ function handleSave() {
   };
   emit('saveFilter', filterData);
 
-  // console.log("Dados dos filtros:", filterData.person);
+  let hasErrors = false;
+
+  if (!Person.value) {
+    toast.error("Por favor, selecione um colaborador.");
+    hasErrors = true;
+  }
+  if (!Device.value) {
+    toast.error("Por favor, selecione um dispositivo.");
+    hasErrors = true;
+  }
+  if (!startDate.value) {
+    toast.error("Por favor, selecione uma data de início.");
+    hasErrors = true;
+  }
+  if (!endDate.value) {
+    toast.error("Por favor, selecione uma data de fim.");
+    hasErrors = true;
+  }
+
+  if (!hasErrors) {
+    const filterData = {
+      person: Person.value,
+      device: Device.value,
+      startDate: startDate.value,
+      endDate: endDate.value
+    };
+    emit('saveFilter', filterData);
+  }
 }
 
 function handleReset() {
@@ -100,6 +149,12 @@ function handleReset() {
   DeviceOption.value = [];
   startDate.value = null;
   endDate.value = null;
+  selectedPeriod.value = '';
+
+  resetFilters.value = true;
+  setTimeout(() => {
+    resetFilters.value = false;
+  }, 0);
 }
 </script>
 
