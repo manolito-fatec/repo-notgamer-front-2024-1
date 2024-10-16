@@ -196,8 +196,8 @@ const createMap = () => {
     }),
   });
 
-  map.value.addLayer(vectorLayer);
-  map.value.addLayer(routeLayer);
+  map.value.addLayer(vectorLayer);  // Camada de pontos
+  map.value.addLayer(routeLayer);// Camada de linhas
 }
 onMounted(() => {
 
