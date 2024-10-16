@@ -35,7 +35,7 @@ let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 
 
-  function handleFilterData(filterData:{person: number | null, startDate:string | null, endDate:string | null}){
+function handleFilterData(filterData:{person: number | null, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
   map.value.removeLayers;
   routeLine.value = [];
@@ -166,7 +166,8 @@ const adjustMap = () => {
         .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15});
   }
 };
-onMounted(() => {
+
+const createMap = () => {
   map.value = new Map({
     target: 'map',
     layers: [
@@ -195,6 +196,11 @@ onMounted(() => {
 
   map.value.addLayer(vectorLayer);  // Camada de pontos
   map.value.addLayer(routeLayer);// Camada de linhas
+}
+onMounted(() => {
+
+  createMap()
+
 });
 </script>
 
