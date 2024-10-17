@@ -19,7 +19,6 @@ import IconStartPin from '../assets/IconStartPin.png';
 import IconEndPin from '../assets/IconEndPin.png';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import {useToast} from "vue-toastification";
-import {fromLonLat} from "ol/proj";
 import {boundingExtent} from "ol/extent";
 
 const toast = useToast();
@@ -67,6 +66,16 @@ const getAllPoints = async (getPointsUrl: string) => {
   }
 };
 
+function createStartLayer(pointFinalStarArrayOfFeatures) {
+  const vectorLayer = new VectorLayer({
+    source: new VectorSource({
+      features: pointFinalStarArrayOfFeatures.value,
+    }),
+    zIndex: 2,
+  });
+  map.value.addLayer(vectorLayer);
+}
+
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
   if (arrayOfGeometryObjects.length === 0) return [];
 
@@ -97,6 +106,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
 
     pointFinalStar.value.push(startPoint);
     pointFinalStar.value.push(endPoint);
+    createStartLayer(pointFinalStar);
 
     center.value = endPoint.getGeometry().getCoordinates();
   }
@@ -143,7 +153,7 @@ function makeLineFromPoints(featureList) {
         lineFeature.setStyle(new Style({
           stroke: new Stroke({
             color: '#ec1c24',
-            width: 5,
+            width: 6,
           }),
         }));
         routeLine.value.push(lineFeature);
@@ -180,7 +190,7 @@ const createMap = () => {
     view: new View({
       center: center.value,
       zoom: zoom.value,
-      projection: 'EPSG:4326',
+      projection: projection.value,
     }),
   });
 
