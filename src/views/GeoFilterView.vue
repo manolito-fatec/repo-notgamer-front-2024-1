@@ -104,13 +104,6 @@ function toggleFilters() {
 const emit = defineEmits(['saveFilter']);
 
 function handleSave() {
-  const filterData = {
-    person: Person.value,
-    startDate: startDate.value,
-    endDate: endDate.value
-  };
-  
-  emit('saveFilter', filterData);
 
   let hasErrors = false;
 

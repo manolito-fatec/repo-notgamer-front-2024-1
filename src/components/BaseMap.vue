@@ -16,10 +16,11 @@ import { Point, LineString } from 'ol/geom';
 import { Icon, Style, Stroke } from 'ol/style';
 import axios from 'axios';
 import IconStartPin from '../assets/IconStartPin.png';
+import IconStartAndEnd from '../assets/InconStartAndEnd.png';
 import IconEndPin from '../assets/IconEndPin.png';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import {useToast} from "vue-toastification";
-
+import {boundingExtent} from "ol/extent";
 
 const toast = useToast();
 
@@ -34,7 +35,7 @@ let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 
 
-function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
+function handleFilterData(filterData:{person: number | null, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
   map.value.removeLayers;
   routeLine.value = [];
@@ -43,11 +44,15 @@ function handleFilterData(filterData: { person: number | null, startDate: string
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
 
   getAllPoints(getUrl).then((points) => {
-    let pointList = new ref(points);
-    makeGeometryPointFromArray(pointList, filterData.person);
-    lineLayer.value  = makeLineFromPoints(pointFeatures);
-  console.log(points);
-    map.value.addLayer(lineLayer.value);
+    if (points.length === 0) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+    } else {
+      let pointList = new ref(points);
+      makeGeometryPointFromArray(pointList, filterData.person);
+      lineLayer.value = makeLineFromPoints(pointFeatures);
+      map.value.addLayer(lineLayer.value);
+      adjustMap();
+    }
   });
 }
 
@@ -60,6 +65,16 @@ const getAllPoints = async (getPointsUrl: string) => {
     toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
   }
 };
+
+function createStartLayer(pointFinalStarArrayOfFeatures) {
+  const vectorLayer = new VectorLayer({
+    source: new VectorSource({
+      features: pointFinalStarArrayOfFeatures.value,
+    }),
+    zIndex: 2,
+  });
+  map.value.addLayer(vectorLayer);
+}
 
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
   if (arrayOfGeometryObjects.length === 0) return [];
@@ -89,11 +104,29 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       }),
     }));
 
-    pointFinalStar.value.push(startPoint);
-    pointFinalStar.value.push(endPoint);
+    if(startPoint.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
+      const startAndEnd = new Feature({
+        geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
+      });
 
+      startAndEnd.setStyle(new Style({
+        image: new Icon({
+          src: IconStartAndEnd,
+          scale: 0.7,
+          anchor: [0.5, 1],
+        })
+      }));
+      pointFinalStar.value.push(startAndEnd);
+      createStartLayer(pointFinalStar);
+    } else {
+        pointFinalStar.value.push(startPoint);
+        pointFinalStar.value.push(endPoint);
+        createStartLayer(pointFinalStar);
+      center.value = endPoint.getGeometry().getCoordinates();
+      }
     center.value = endPoint.getGeometry().getCoordinates();
-  }
+    }
+
 
   arrayOfGeometryObjects.value.forEach((pointObj) => {
     const point = new Feature({
@@ -137,7 +170,7 @@ function makeLineFromPoints(featureList) {
         lineFeature.setStyle(new Style({
           stroke: new Stroke({
             color: '#ec1c24',
-            width: 5,
+            width: 6,
           }),
         }));
         routeLine.value.push(lineFeature);
@@ -151,7 +184,19 @@ function makeLineFromPoints(featureList) {
   })
 }
 
-onMounted(() => {
+const adjustMap = () => {
+  const coordinates = pointFeatures.value.map((pontos) =>
+      pontos.getGeometry().getCoordinates()
+  );
+  const extent = boundingExtent(coordinates);
+  if (map.value) {
+    map.value
+        .getView()
+        .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15});
+  }
+};
+
+const createMap = () => {
   map.value = new Map({
     target: 'map',
     layers: [
@@ -162,7 +207,7 @@ onMounted(() => {
     view: new View({
       center: center.value,
       zoom: zoom.value,
-      projection: 'EPSG:4326',
+      projection: projection.value,
     }),
   });
 
@@ -178,10 +223,14 @@ onMounted(() => {
     }),
   });
 
-  map.value.addLayer(vectorLayer);  // Camada de pontos
-  map.value.addLayer(routeLayer);// Camada de linhas
-});
+  map.value.addLayer(vectorLayer);
+  map.value.addLayer(routeLayer);
+}
+onMounted(() => {
 
+  createMap()
+
+});
 </script>
 
 <style scoped>
