@@ -15,6 +15,6 @@
   position: fixed;
   display: flex;
   bottom: 10px;
-  right: 3%;
+  right: 41px;
 }
 </style>

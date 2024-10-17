@@ -32,7 +32,7 @@ position: fixed;
 appearance: none; 
 color: transparent;
 bottom: 10px;
-left: 12%;
+left: 165px;
 }
 
 .dropdown-speed option {
@@ -49,7 +49,7 @@ cursor: pointer;
 position: fixed;
 display: flex;
 bottom: 10px;
-left: 12%;
+left: 165px;
 }
 
 </style>
