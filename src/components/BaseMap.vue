@@ -2,8 +2,7 @@
   <div class="map-wrapper">
     <GeoFilterView 
       class="filter-overlay" 
-      @saveFilter="handleFilterData" 
-      @toggle-playback="togglePlayback" 
+      @saveFilter="handleFilterData"
     />
     <div v-if="showPlayback" class="playback-layer">
       <PlaybackControl 
@@ -47,20 +46,12 @@ let pointFeatures = ref<Feature[]>([]);
 let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
-let anguloInicial: number;
+let anguloInicial = 0;
+
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
-
 const showPlayback = ref(false);
-
-function togglePlayback() {
-  if (!showPlayback.value)
-    showPlayback.value = !showPlayback.value;
-  else {
-    showPlayback.value = true;
-  }
-}
 
 function getInitialRotation() {
   const [lon1, lat1] = allCoordinatesAnimation.value[0];
@@ -69,10 +60,8 @@ function getInitialRotation() {
   const deltaLon = lon2 - lon1;
   const deltaLat = lat2 - lat1;
 
-  anguloInicial = (Math.atan2(deltaLat, deltaLon)*-1);
-
-  const styleIconMap = startPointIconMap.value.getStyle().getImage() as Icon;
-  styleIconMap.setRotation(anguloInicial);
+  anguloInicial = Math.atan2(deltaLat, deltaLon)*-1;
+  console.log(anguloInicial)
 }
 
 function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
@@ -84,7 +73,10 @@ function handleFilterData(filterData: { person: number | null, startDate: string
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
 
   getAllPoints(getUrl).then((points) => {
-    if (points.length === 0) {
+    if (!points) {
+      if (showPlayback.value) {
+        showPlayback.value = false;
+      }
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
     } else {
       let pointList = new ref(points);
@@ -117,7 +109,7 @@ function createStartLayer(pointFinalStarArrayOfFeatures) {
 }
 
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
-  if (arrayOfGeometryObjects.length === 0) return [];
+  if (arrayOfGeometryObjects.length === 0) return;
 
   if (nameFilter) {
     const startPointStartPin = new Feature({
@@ -132,17 +124,18 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
         }),
       }));
 
-    startPointIconMap.value = new Feature({
-      geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-    });
+      startPointIconMap.value = new Feature({
+        geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
+      });
 
-    startPointIconMap.value.setStyle(new Style({
-      image: new Icon({
-        src: IconPositionMap,
-        anchor: [0.5, 0.5],
-        scale: 0.2
-      }),
-    }));
+      startPointIconMap.value.setStyle(new Style({
+        image: new Icon({
+          src: IconPositionMap,
+          anchor: [0.5, 0.5],
+          scale: 0.2,
+          rotation: anguloInicial
+        }),
+      }));  
 
     const endPoint = new Feature({
       geometry: new Point([arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].longitude, arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].latitude]),
@@ -156,7 +149,13 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       }),
     }));
 
-    if(startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
+    if(startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]) {
+      
+      toast.info("O ponto inicial está na mesma localização do ponto final.");
+      if (showPlayback.value) {
+        showPlayback.value = false;
+      }
+      
       const startAndEnd = new Feature({
         geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
       });
@@ -175,29 +174,36 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
         pointFinalStar.value.push(startPointIconMap.value);
         pointFinalStar.value.push(endPoint);
         createStartLayer(pointFinalStar);
-      center.value = endPoint.getGeometry().getCoordinates();
-      }
-    center.value = endPoint.getGeometry().getCoordinates();
-  }
+        center.value = endPoint.getGeometry().getCoordinates();
 
-  arrayOfGeometryObjects.value.forEach((pointObj) => {
-    const point = new Feature({
-      geometry: new Point([pointObj.longitude, pointObj.latitude]),
+        setTimeout(() => {
+          if (!showPlayback.value) {
+            showPlayback.value = !showPlayback.value;
+          } else {
+            showPlayback.value = true;
+          }
+        }, 500);
+      center.value = endPoint.getGeometry().getCoordinates();
+    }
+
+    arrayOfGeometryObjects.value.forEach((pointObj) => {
+      const point = new Feature({
+        geometry: new Point([pointObj.longitude, pointObj.latitude]),
+      });
+      point.setStyle(new Style({
+        image: new Icon({
+          src: IconEndPin,
+          scale: 0.7,
+          anchor: [0.5, 1],
+        }),
+      }));
+      pointFeatures.value.push(point);
     });
-    point.setStyle(new Style({
-      image: new Icon({
-        src: IconEndPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    }));
-    pointFeatures.value.push(point);
-  });
+  }
 }
 
 function makeLineFromPoints(featureList) {
   if (featureList.value.length === 0) {
-    console.log('Nenhum ponto disponível para criar linhas');
     toast.info("Nenhum ponto disponível para criar linhas.");
     return null;
   }
@@ -217,12 +223,15 @@ function makeLineFromPoints(featureList) {
         const point1 = points[i];
         const point2 = points[i + 1];
   
-        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates(), point2.getGeometry().getCoordinates())
+        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates())
+        allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates())
       }
       
       route.value = new LineString(allCoordinatesAnimation.value)
 
       getInitialRotation();
+
+
 
       const lineFeature = new Feature({
         geometry: route.value,
@@ -278,15 +287,15 @@ const createMap = () => {
       features: pointFeatures.value,
     }),
   });
-    const routeLayer = new VectorLayer({
-      source: new VectorSource({
-        features: routeLine.value,
-      }),
-    });
+  
+  const routeLayer = new VectorLayer({
+    source: new VectorSource({
+      features: routeLine.value,
+    }),
+  });
 
   map.value.addLayer(vectorLayer);
   map.value.addLayer(routeLayer);
-
 }
 
 onMounted(() => {
@@ -319,5 +328,6 @@ onMounted(() => {
   height: 6.8%;
   bottom: 0px;
   z-index: 2;
+  transition: bottom 0.5s ease;
 }
 </style>

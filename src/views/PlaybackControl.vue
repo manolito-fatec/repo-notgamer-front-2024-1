@@ -36,7 +36,7 @@
 import 'ol/ol.css';
 import DropdownSpeed from '@/components/filter/DropdownSpeed.vue';
 import ButtonStartPause from '@/components/ButtonStartPause.vue';
-import { nextTick, ref } from 'vue';
+import { ref } from 'vue';
 import Feature from 'ol/Feature';
 import { LineString } from 'ol/geom';
 import ButtonBackward from '@/components/ButtonBackward.vue';
@@ -48,6 +48,7 @@ import IconPositionMap from '../assets/IconPositionMap.png';
 
 const animating = ref(false);
 const startTime = ref(0);
+const restarted = ref(false);
 let angulo = 0;
 
 const elapsedTime = ref(0);
@@ -99,20 +100,20 @@ function handleChangeColorRange() {
     const rangeInput = document.getElementById('speed');
     const percentage = ((elapsedTime.value / duration.value) * 100) + 0.1;
     
-    // Update the range input's visual representation
     rangeInput.style.setProperty('--elapsedTime', `${percentage}%`);
     
     const progress = Math.min(elapsedTime.value / duration.value, 1); 
     const coord = props.rota.getCoordinateAt(progress);
     props.iconMap.getGeometry().setCoordinates(coord);
+
   } else {
+    
     animating.value = false;
     startTime.value = new Date().getTime() - elapsedTime.value;
 
     const rangeInput = document.getElementById('speed');
     const percentage = ((elapsedTime.value / duration.value) * 100) + 0.1;
     
-    // Update the range input's visual representation
     rangeInput.style.setProperty('--elapsedTime', `${percentage}%`);
     
     const progress = Math.min(elapsedTime.value / duration.value, 1); 
@@ -235,7 +236,9 @@ function adjustPosition() {
 
 function restartAnimation() {
   pauseAnimation();
+
   elapsedTime.value = 0;
+
   changeColorRange();
 
   props.iconMap.setStyle(new Style({
@@ -248,6 +251,8 @@ function restartAnimation() {
   }));
 
   adjustPosition();
+
+  initiateAnimation();
 }
 
 </script>
@@ -269,7 +274,7 @@ function restartAnimation() {
 }
 
 .control-movement {
-  width: 94.6%;
+  width: 100%;
   height: 50px;
   position: fixed;
   display: flex;

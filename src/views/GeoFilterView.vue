@@ -33,8 +33,8 @@
   </div>
 </template>
 
-<script setup>
-import {onMounted, ref} from 'vue';
+<script setup lang="ts">
+import {onMounted, ref, type Ref} from 'vue';
 import {fetchDevices, fetchPersons} from "@/services/apiService.js";
 import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
@@ -102,7 +102,7 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-const emit = defineEmits(['saveFilter', 'toggle-playback']);
+const emit = defineEmits(['saveFilter']);
 
 function handleSave() {
   let hasErrors = false;
@@ -131,7 +131,6 @@ function handleSave() {
       endDate: endDate.value
     };
     emit('saveFilter', filterData);
-    emit('toggle-playback')
   }
 }
 
