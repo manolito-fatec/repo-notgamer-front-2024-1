@@ -13,7 +13,6 @@
           type="date"
           v-model="startDate"
           @change="onStartDateChange"
-          :max="maxStartDate"
           class="filter-input date-input"
       />
       <span class="date-range-separator"></span>
@@ -21,8 +20,6 @@
           type="date"
           v-model="endDate"
           @change="onEndDateChange"
-          :min="minEndDate"
-          :max="maxEndDate"
           class="filter-input date-input"
       />
     </div>
@@ -30,13 +27,14 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import DropDown from "@/components/filter/DropDown.vue";
 
 const emit = defineEmits(['update:startDate', 'update:endDate', 'update:selectedPeriod']);
 const startDate = ref(null);
 const endDate = ref(null);
 const selectedPeriod = ref('');
+const recentSearches = ref([]);
 
 const props = defineProps({
   reset: Boolean
@@ -54,24 +52,12 @@ watch(() => props.reset, (newValue) => {
   }
 });
 
-
 const periodOptions = [
   { label: 'Hoje', value: 'today' },
   { label: 'Última semana', value: 'lastWeek' },
-  { label: 'Último mês', value: 'lastMonth' }
+  { label: 'Último mês', value: 'lastMonth' },
+  ...recentSearches.value.map((search) => ({ label: search.label, value: search.value }))
 ];
-
-const minEndDate = computed(() => {
-  return startDate.value ? startDate.value : null;
-});
-
-const maxEndDate = computed(() => {
-  return new Date().toISOString().split('T')[0];
-});
-
-const maxStartDate = computed(() => {
-  return new Date().toISOString().split('T')[0];
-});
 
 function updateDateRange() {
   const today = new Date().toISOString().split('T')[0];
@@ -82,9 +68,9 @@ function updateDateRange() {
   }
   if (selectedPeriod.value === 'lastWeek') {
     const lastWeekStart = new Date();
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7 - lastWeekStart.getDay());
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
     const lastWeekEnd = new Date();
-    lastWeekEnd.setDate(lastWeekEnd.getDate() - lastWeekEnd.getDay());
+    lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
     startDate.value = lastWeekStart.toISOString().split('T')[0];
     endDate.value = lastWeekEnd.toISOString().split('T')[0];
   }
@@ -93,13 +79,27 @@ function updateDateRange() {
     lastMonthStart.setDate(1);
     lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
     const lastMonthEnd = new Date();
-    lastMonthEnd.setDate(0);
+    lastMonthEnd.setMonth(lastMonthEnd.getMonth(), 0);
     startDate.value = lastMonthStart.toISOString().split('T')[0];
     endDate.value = lastMonthEnd.toISOString().split('T')[0];
   }
 
+  addSearchToHistory(selectedPeriod.value, startDate.value, endDate.value);
+
   emit('update:startDate', startDate.value);
   emit('update:endDate', endDate.value);
+}
+
+function addSearchToHistory(label, start, end) {
+  const newSearch = { label: `${label}: ${start} a ${end}`, value: `${start}:${end}` };
+  recentSearches.value.unshift(newSearch);
+
+  if (recentSearches.value.length > 3) {
+    recentSearches.value.pop();
+  }
+
+  periodOptions.splice(3);
+  periodOptions.push(...recentSearches.value.map((search) => ({ label: search.label, value: search.value })));
 }
 
 watch([startDate, endDate], ([newStartDate, newEndDate]) => {
@@ -111,7 +111,8 @@ watch([startDate, endDate], ([newStartDate, newEndDate]) => {
 
 function onStartDateChange() {
   selectedPeriod.value = '';
-  emit('update:startDate', startDate.value);
+  endDate.value = null;
+  updateDateRange();
 }
 
 function onEndDateChange() {
@@ -119,7 +120,6 @@ function onEndDateChange() {
   emit('update:endDate', endDate.value);
 }
 </script>
-
 
 <style scoped>
 .date-range-container {
