@@ -94,7 +94,6 @@ const getAllPoints = async (getPointsUrl: string) => {
     return response.data.content;
   } catch (error) {
     console.error(error);
-    toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
   }
 };
 
