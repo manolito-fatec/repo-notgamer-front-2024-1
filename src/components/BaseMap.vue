@@ -16,6 +16,7 @@ import { Point, LineString } from 'ol/geom';
 import { Icon, Style, Stroke } from 'ol/style';
 import axios from 'axios';
 import IconStartPin from '../assets/IconStartPin.png';
+import IconStartAndEnd from '../assets/InconStartAndEnd.png';
 import IconEndPin from '../assets/IconEndPin.png';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import {useToast} from "vue-toastification";
@@ -49,7 +50,6 @@ function handleFilterData(filterData:{person: number | null, startDate:string | 
       let pointList = new ref(points);
       makeGeometryPointFromArray(pointList, filterData.person);
       lineLayer.value = makeLineFromPoints(pointFeatures);
-      console.log(points);
       map.value.addLayer(lineLayer.value);
       adjustMap();
     }
@@ -104,12 +104,29 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       }),
     }));
 
-    pointFinalStar.value.push(startPoint);
-    pointFinalStar.value.push(endPoint);
-    createStartLayer(pointFinalStar);
+    if(startPoint.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
+      const startAndEnd = new Feature({
+        geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
+      });
 
+      startAndEnd.setStyle(new Style({
+        image: new Icon({
+          src: IconStartAndEnd,
+          scale: 0.7,
+          anchor: [0.5, 1],
+        })
+      }));
+      pointFinalStar.value.push(startAndEnd);
+      createStartLayer(pointFinalStar);
+    } else {
+        pointFinalStar.value.push(startPoint);
+        pointFinalStar.value.push(endPoint);
+        createStartLayer(pointFinalStar);
+      center.value = endPoint.getGeometry().getCoordinates();
+      }
     center.value = endPoint.getGeometry().getCoordinates();
-  }
+    }
+
 
   arrayOfGeometryObjects.value.forEach((pointObj) => {
     const point = new Feature({
