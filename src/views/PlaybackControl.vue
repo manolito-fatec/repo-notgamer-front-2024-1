@@ -99,7 +99,6 @@ function handleChangeColorRange() {
     const rangeInput = document.getElementById('speed');
     const percentage = ((elapsedTime.value / duration.value) * 100) + 0.1;
     
-    // Update the range input's visual representation
     rangeInput.style.setProperty('--elapsedTime', `${percentage}%`);
     
     const progress = Math.min(elapsedTime.value / duration.value, 1); 
@@ -112,7 +111,6 @@ function handleChangeColorRange() {
     const rangeInput = document.getElementById('speed');
     const percentage = ((elapsedTime.value / duration.value) * 100) + 0.1;
     
-    // Update the range input's visual representation
     rangeInput.style.setProperty('--elapsedTime', `${percentage}%`);
     
     const progress = Math.min(elapsedTime.value / duration.value, 1); 
