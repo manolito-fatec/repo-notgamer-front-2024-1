@@ -101,7 +101,7 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-const emit = defineEmits(['saveFilter']);
+const emit = defineEmits(['saveFilter', 'clearPoints']);
 
 function handleSave() {
   let hasErrors = false;
@@ -126,8 +126,13 @@ function handleSave() {
   if (startDate.value && endDate.value) {
     const start = new Date(startDate.value);
     const end = new Date(endDate.value);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (end < start) {
+      toast.error("A data de fim deve ser superior à data de início.");
+      hasErrors = true;
+    } else {
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays > 31) {
       toast.error("O intervalo selecionado não pode ser maior que 31 dias.");
@@ -158,6 +163,8 @@ function handleReset() {
   setTimeout(() => {
     resetFilters.value = false;
   }, 0);
+
+  emit('clearPoints');
 }
 </script>
 
