@@ -134,20 +134,21 @@ function handleSave() {
       const diffTime = Math.abs(end - start);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays > 31) {
-      toast.error("O intervalo selecionado não pode ser maior que 31 dias.");
-      hasErrors = true;
+      if (diffDays > 31) {
+        toast.error("O intervalo selecionado não pode ser maior que 31 dias.");
+        hasErrors = true;
+      }
     }
-  }
 
-  if (!hasErrors) {
-    const filterData = {
-      person: Person.value,
-      device: Device.value,
-      startDate: startDate.value,
-      endDate: endDate.value
-    };
-    emit('saveFilter', filterData);
+    if (!hasErrors) {
+      const filterData = {
+        person: Person.value,
+        device: Device.value,
+        startDate: startDate.value,
+        endDate: endDate.value
+      };
+      emit('saveFilter', filterData);
+    }
   }
 }
 
