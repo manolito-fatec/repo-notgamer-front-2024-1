@@ -17,7 +17,7 @@ import IconLogo from "@/components/icons/IconLogo.vue";
   position: fixed;
   left: 0;
   top: -5%;
-  width: 75px;
+  width: 100px;
   height: 110%;
   background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
   display: flex;

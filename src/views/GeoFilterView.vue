@@ -156,14 +156,14 @@ function handleReset() {
 .filters {
 position: fixed;
 top: 0;
-left: 75px;
-width: 320px;
+left: 100px;
+width: 420px;
 height: 100%;
 padding: 16px;
 background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
 border-left: 4px solid #EC1C24;
-border-top-right-radius: 16px;
-border-bottom-right-radius: 16px;
+border-top-right-radius: 8px;
+border-bottom-right-radius: 8px;
 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 overflow-y: auto;
 transition: left 0.5s ease;
