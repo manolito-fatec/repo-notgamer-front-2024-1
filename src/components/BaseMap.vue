@@ -1,6 +1,9 @@
 <template>
   <div class="map-wrapper">
-    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
+    <GeoFilterView class="filter-overlay"
+                   @saveFilter="handleFilterData"
+                   @clearPoints="clearPoints">
+    </GeoFilterView>
     <div id="map" class="map-container"></div>
   </div>
 </template>
@@ -41,6 +44,11 @@ function handleFilterData(filterData:{person: number | null, startDate:string | 
   routeLine.value = [];
   pointFinalStar.value = [];
 
+  if (lineLayer.value) {
+    map.value.removeLayer(lineLayer.value);
+    lineLayer.value = null;
+  }
+
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
 
   getAllPoints(getUrl).then((points) => {
@@ -65,6 +73,25 @@ const getAllPoints = async (getPointsUrl: string) => {
     toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
   }
 };
+
+function clearPoints() {
+  if (map.value) {
+    map.value.setTarget(null);
+    map.value = null;
+
+    pointFeatures.value = [];
+    routeLine.value = [];
+    pointFinalStar.value = [];
+
+    if (lineLayer.value) {
+      lineLayer.value = null;
+    }
+  }
+  createMap();
+
+  adjustMap();
+}
+
 
 function createStartLayer(pointFinalStarArrayOfFeatures) {
   const vectorLayer = new VectorLayer({
@@ -189,7 +216,7 @@ const adjustMap = () => {
       pontos.getGeometry().getCoordinates()
   );
   const extent = boundingExtent(coordinates);
-  if (map.value) {
+  if (map.value && coordinates.length > 0) {
     map.value
         .getView()
         .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15});
