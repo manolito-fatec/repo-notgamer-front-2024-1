@@ -34,7 +34,6 @@ const emit = defineEmits(['update:startDate', 'update:endDate', 'update:selected
 const startDate = ref(null);
 const endDate = ref(null);
 const selectedPeriod = ref('');
-const recentSearches = ref([]);
 
 const props = defineProps({
   reset: Boolean
@@ -56,7 +55,6 @@ const periodOptions = [
   { label: 'Hoje', value: 'today' },
   { label: 'Última semana', value: 'lastWeek' },
   { label: 'Último mês', value: 'lastMonth' },
-  ...recentSearches.value.map((search) => ({ label: search.label, value: search.value }))
 ];
 
 function updateDateRange() {
@@ -84,22 +82,8 @@ function updateDateRange() {
     endDate.value = lastMonthEnd.toISOString().split('T')[0];
   }
 
-  addSearchToHistory(selectedPeriod.value, startDate.value, endDate.value);
-
   emit('update:startDate', startDate.value);
   emit('update:endDate', endDate.value);
-}
-
-function addSearchToHistory(label, start, end) {
-  const newSearch = { label: `${label}: ${start} a ${end}`, value: `${start}:${end}` };
-  recentSearches.value.unshift(newSearch);
-
-  if (recentSearches.value.length > 3) {
-    recentSearches.value.pop();
-  }
-
-  periodOptions.splice(3);
-  periodOptions.push(...recentSearches.value.map((search) => ({ label: search.label, value: search.value })));
 }
 
 watch([startDate, endDate], ([newStartDate, newEndDate]) => {
