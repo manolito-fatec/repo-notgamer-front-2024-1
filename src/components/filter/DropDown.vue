@@ -25,30 +25,59 @@ const props = defineProps({
 
 <style scoped>
 .filter-item {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .filter-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: #ffffff;
-  font-size: 11px;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .filter-input {
   width: 100%;
-  padding: 4px;
-  border: none;
-  border-radius: 4px;
+  padding: 10px 12px;
+  border: 1px solid #555555;
+  border-radius: 6px;
   background-color: #444444;
-  font-size: 11px;
+  font-size: 13px;
   color: #fff;
   outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
 }
 
 .filter-input:focus {
+  border: 1px solid #888888;
+  box-shadow: 0 0 5px rgba(136, 136, 136, 0.5);
+}
+
+.filter-input:hover {
+  background-color: #555555;
+}
+
+button {
+  padding: 10px 16px;
+  background-color: #666666;
+  color: #fff;
   border: none;
-  box-shadow: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #888888;
+}
+
+button:active {
+  background-color: #444444;
+}
+
+button:focus {
   outline: none;
+  box-shadow: 0 0 5px rgba(136, 136, 136, 0.5);
 }
 </style>

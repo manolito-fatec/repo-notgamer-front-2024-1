@@ -62,7 +62,17 @@ function getInitialRotation() {
 
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
-  map.value.removeLayers;
+  if (map.value) {
+    map.value.values_.layergroup.values_.layers.array_.forEach((layer) => {
+      map.value.values_.layergroup.values_.layers.array_.pop(layer);
+    })
+  }
+  const baseLayer =    new TileLayer({
+    source: new XYZ({
+      url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+    }),
+  });
+  map.value.addLayer(baseLayer);
   routeLine.value = [];
   pointFinalStar.value = [];
 
@@ -90,7 +100,6 @@ function clearPoints() {
     pointFeatures.value = [];
     routeLine.value = [];
     pointFinalStar.value = [];
-    console.log(map.value)
     const baseLayer =    new TileLayer({
           source: new XYZ({
             url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
@@ -105,13 +114,25 @@ function clearPoints() {
 
 const getAllPoints = async (getPointsUrl: string) => {
   try {
-    let response = await axios.get(getPointsUrl);
-    return response.data.content
+    const response = await axios.get(getPointsUrl);
+
+    if (response.data && response.data.content.length === 0) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+      return [];
+    }
+
+    return response.data.content;
   } catch (error) {
-    console.error(error);
-    toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
+    if (axios.isAxiosError(error) && error.response) {
+      const errorMessage = error.response.data?.message ||
+          "Erro desconhecido ao buscar pontos.";
+    } else {
+      toast.error("Erro na conexão. Tente novamente mais tarde.");
+    }
+    return [];
   }
 };
+
 
 function createStartLayer(pointFinalStarArrayOfFeatures) {
   const vectorLayer = new VectorLayer({
