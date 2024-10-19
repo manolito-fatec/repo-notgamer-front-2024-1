@@ -1,11 +1,22 @@
 import axios from 'axios';
 
 const BASE_URL_MOCKED = 'https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json';
-const BASE_URL_ENDPOINT = 'http://localhost:8080/person'
+const BASE_URL_ENDPOINT = 'http://localhost:8080/person';
 
-export const fetchPersons = async () => {
+interface Person {
+    idPerson: number;
+    fullName: string;
+    codeDevice?: string;
+}
+
+interface Device {
+    label: string;
+    value: number;
+}
+
+export const fetchPersons = async (): Promise<Person[]> => {
     try {
-        const response = await axios.get(BASE_URL_ENDPOINT);
+        const response = await axios.get<Person[]>(BASE_URL_ENDPOINT);
         return response.data.sort((a, b) => {
             if (a.fullName < b.fullName) return -1;
             if (a.fullName > b.fullName) return 1;
@@ -17,13 +28,12 @@ export const fetchPersons = async () => {
     }
 };
 
-export const fetchDevices = async () => {
+export const fetchDevices = async (): Promise<Device[]> => {
     try {
-        const response = await axios.get(BASE_URL_ENDPOINT);
-        const devices = response.data.flatMap(person => {
+        const response = await axios.get<Person[]>(BASE_URL_ENDPOINT);
+        const devices: Device[] = response.data.flatMap(person => {
             return person.codeDevice
-                ? [{ label: person.codeDevice,
-                    value: person.idPerson }]
+                ? [{ label: person.codeDevice, value: person.idPerson }]
                 : [];
         });
 

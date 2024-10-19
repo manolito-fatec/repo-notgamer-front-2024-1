@@ -1,16 +1,27 @@
 <template>
   <div class="sidebar">
     <IconLogo />
-    <button class="toggle-btn" @click="$emit('toggle-filters')">
+    <button class="toggle-btn" @click="onToggleFilters">
       <IconFilter />
     </button>
   </div>
 </template>
 
 <script setup>
+import { getClick } from '@/components/stores/StoreGetClick.js'
 import IconFilter from "@/components/icons/IconFilter.vue";
 import IconLogo from "@/components/icons/IconLogo.vue";
-import IconAlert from "@/components/icons/IconAlert.vue";
+import {ref} from 'vue';
+
+const store = getClick();
+
+const emit = defineEmits(['toggle-filters']);
+
+function onToggleFilters() {
+  store.onClickToggleFilters();
+  emit('toggle-filters')
+}
+
 </script>
 
 <style scoped>
@@ -18,7 +29,7 @@ import IconAlert from "@/components/icons/IconAlert.vue";
   position: fixed;
   left: 0;
   top: -5%;
-  width: 75px;
+  width: 100px;
   height: 110%;
   background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
   display: flex;
@@ -26,10 +37,12 @@ import IconAlert from "@/components/icons/IconAlert.vue";
   align-items: center;
   justify-content: flex-start;
   padding-top: 18px;
+  z-index: 10;
 }
 
 .sidebar > * {
   margin: 46px 0;
+  z-index: 10;
 }
 
 .toggle-btn {

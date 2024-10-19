@@ -1,7 +1,9 @@
 <template>
   <button class="clear-button">
-    <IconBlock class="icon"/>
-    <span class="button-text">Limpar</span>
+    <div class="clear-content">
+      <IconBlock class="icon"/>
+      <span class="button-text">Limpar</span>
+    </div>
   </button>
 </template>
 
@@ -14,6 +16,7 @@ import IconBlock from "@/components/icons/IconBlock.vue";
   height: 30px;
   display: flex;
   align-items: center;
+  justify-content: center;
   background-color: #929292;
   color: #262626;
   border: none;
@@ -24,10 +27,14 @@ import IconBlock from "@/components/icons/IconBlock.vue";
   transition: background-color 0.3s ease;
 }
 
+.clear-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .clear-button .icon {
-  margin-right: 16px;
-  width: 18px;
-  height: 18px;
+  margin-right: 3px;
 }
 
 .clear-button .button-text {

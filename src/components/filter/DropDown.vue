@@ -43,5 +43,12 @@ const props = defineProps({
   background-color: #444444;
   font-size: 11px;
   color: #fff;
+  outline: none;
+}
+
+.filter-input:focus {
+  border: none;
+  box-shadow: none;
+  outline: none;
 }
 </style>
