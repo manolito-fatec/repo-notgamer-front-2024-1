@@ -11,8 +11,8 @@
         @input="handleChangeColorRange"
         >
       </div>
-        <ButtonBackward/>
-        <ButtonForward/>
+        <!-- <ButtonBackward/>
+        <ButtonForward/> -->
         <ButtonRestart 
           @click="restartAnimation"
         />
