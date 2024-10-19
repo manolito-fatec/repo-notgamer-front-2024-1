@@ -13,6 +13,7 @@ import IconCorrect from "@/components/icons/IconCorrect.vue";
 
 <style scoped>
 .start-button {
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,7 +40,8 @@ import IconCorrect from "@/components/icons/IconCorrect.vue";
 }
 
 .start-button .button-text {
-  font-size: 16px;
+  font-size: 11px;
+  font-weight: bold;
   color: #262626;
 }
 </style>

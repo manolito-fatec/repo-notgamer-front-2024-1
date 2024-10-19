@@ -45,3 +45,19 @@ export const fetchDevices = async (): Promise<Device[]> => {
         throw error;
     }
 };
+
+export const fetchHistory = async ( person, startDate, endDate)=>{
+    let urlHistory = "http://localhost:8080/tracker/history"
+    try {
+        const body = {
+            personId: person,
+            init: `${startDate}T23:59:59`,
+            end: `${endDate}T23:59:59`
+        }
+        const response = await axios.post(urlHistory, body);
+        return response.data.content;
+    } catch (error) {
+        console.error("Erro ao buscar dispositivos:",error);
+        throw error;
+    }
+}

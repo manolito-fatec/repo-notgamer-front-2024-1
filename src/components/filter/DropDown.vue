@@ -32,6 +32,7 @@ const props = defineProps({
   display: block;
   margin-bottom: 8px;
   color: #ffffff;
+  font-size: 11px;
 }
 
 .filter-input {
@@ -40,6 +41,7 @@ const props = defineProps({
   border: none;
   border-radius: 4px;
   background-color: #444444;
+  font-size: 11px;
   color: #fff;
   outline: none;
 }
