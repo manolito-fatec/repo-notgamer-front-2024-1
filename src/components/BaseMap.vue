@@ -36,6 +36,7 @@ let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
+let vectorLayer = ref<VectorLayer<VectorSource> | null>(null);
 
 
 function handleFilterData(filterData:{person: number | null, startDate:string | null, endDate:string | null}){
@@ -76,20 +77,21 @@ const getAllPoints = async (getPointsUrl: string) => {
 
 function clearPoints() {
   if (map.value) {
-    map.value.setTarget(null);
-    map.value = null;
-
+    map.value.values_.layergroup.values_.layers.array_.forEach((layer) => {
+      map.value.values_.layergroup.values_.layers.array_.pop(layer);
+    })
     pointFeatures.value = [];
     routeLine.value = [];
     pointFinalStar.value = [];
+    console.log(map.value)
+    const baseLayer = new TileLayer({
+      source: new OSM(),
+    });
+    map.value.addLayer(baseLayer);
+    adjustMap();
 
-    if (lineLayer.value) {
-      lineLayer.value = null;
-    }
   }
-  createMap();
 
-  adjustMap();
 }
 
 
