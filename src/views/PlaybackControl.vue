@@ -72,7 +72,7 @@ function watchChanges(newValue) {
   } else {
     playbackControl.style.width = '100%';
     buttonStartPause.style.left = '145px';
-    playbackControl.style.left = '100px';
+    playbackControl.style.left = '5%';
   }
 }
 
