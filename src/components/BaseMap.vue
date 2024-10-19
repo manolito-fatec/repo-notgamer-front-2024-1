@@ -63,7 +63,17 @@ function getInitialRotation() {
 
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
-  map.value.removeLayers;
+  if (map.value) {
+    map.value.values_.layergroup.values_.layers.array_.forEach((layer) => {
+      map.value.values_.layergroup.values_.layers.array_.pop(layer);
+    })
+  }
+  const baseLayer =    new TileLayer({
+    source: new XYZ({
+      url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+    }),
+  });
+  map.value.addLayer(baseLayer);
   routeLine.value = [];
   pointFinalStar.value = [];
 
@@ -91,7 +101,6 @@ function clearPoints() {
     pointFeatures.value = [];
     routeLine.value = [];
     pointFinalStar.value = [];
-    console.log(map.value)
     const baseLayer =    new TileLayer({
           source: new XYZ({
             url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
