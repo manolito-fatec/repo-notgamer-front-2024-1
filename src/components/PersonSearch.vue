@@ -121,6 +121,7 @@ onBeforeUnmount(() => {
   border-radius: 4px;
   background-color: #444444;
   color: #fff;
+  outline: none;
 }
 
 .suggestions {

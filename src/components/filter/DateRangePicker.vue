@@ -118,10 +118,16 @@ function onEndDateChange() {
 .date-input {
   width: calc(50% - 8px);
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #444444;
   border-radius: 4px;
   background-color: #444444;
   color: #fff;
+  outline: none;
+}
+
+.date-input:focus {
+  border: 1px solid #444444;
+  box-shadow: none;
 }
 
 .date-range-separator {
