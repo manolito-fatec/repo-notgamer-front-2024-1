@@ -1,6 +1,6 @@
 <template>
   <button class="clear-button">
-    <IconBlock class="icon" />
+    <IconBlock class="icon"/>
     <span class="button-text">Limpar</span>
   </button>
 </template>

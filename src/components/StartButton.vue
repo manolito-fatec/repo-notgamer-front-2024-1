@@ -1,6 +1,6 @@
 <template>
   <button class="start-button">
-    <IconCorrect class="icon" />
+    <IconCorrect class="icon"/>
     <span class="button-text">Iniciar</span>
   </button>
 </template>
