@@ -2,7 +2,7 @@
   <div class="map-wrapper">
     <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData" @clearPoints="clearPoints"/>
     <div v-if="showPlayback" class="playback-layer">
-      <PlaybackControl 
+      <PlaybackControl
         v-model:rota="route" 
         v-model:iconMap="startPointIconMap"
         v-model:allCoordinatesAnimation="allCoordinatesAnimation"
@@ -35,8 +35,7 @@ import { boundingExtent } from 'ol/extent';
 
 const toast = useToast();
 
-//Configurações de iniciação do mapa
-let center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
+let center = ref([-60.457873,0.584053]);
 let projection = ref("EPSG:4326");
 let zoom = ref(5);
 let map = ref<Map | null>(null);
@@ -61,13 +60,14 @@ function getInitialRotation() {
   anguloInicial = Math.atan2(deltaLat, deltaLon)*-1;
 }
 
-function handleFilterData(filterData:{person: number | null, startDate:string | null, endDate:string | null}){
+function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
   map.value.removeLayers;
   routeLine.value = [];
   pointFinalStar.value = [];
 
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
+  let getUrlHistory = "http://localhost:8080/tracker/history"
 
   getAllPoints(getUrl).then((points) => {
     if (points.length === 0) {
@@ -107,7 +107,6 @@ const getAllPoints = async (getPointsUrl: string) => {
   try {
     let response = await axios.get(getPointsUrl);
     return response.data.content
-
   } catch (error) {
     console.error(error);
     toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
@@ -187,15 +186,16 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       center.value = endPoint.getGeometry().getCoordinates();
 
       setTimeout(() => {
-          if (!showPlayback.value) {
-            showPlayback.value = !showPlayback.value;
-          } else {
-            showPlayback.value = true;
+        console.log(showPlayback.value)
+        if (!showPlayback.value) {
+          showPlayback.value = !showPlayback.value;
+        } else {
+          showPlayback.value = true;
           }
-        }, 500);
-      }
-    center.value = endPoint.getGeometry().getCoordinates();
+      }, 500);
     }
+    center.value = endPoint.getGeometry().getCoordinates();
+  }
 
 
   arrayOfGeometryObjects.value.forEach((pointObj) => {

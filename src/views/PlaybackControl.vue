@@ -66,13 +66,13 @@ function watchChanges(newValue) {
   const buttonStartPause = document.getElementById('button-start-pause');
 
   if (newValue) {
-    playbackControl.style.width = '72%';
+    playbackControl.style.width = '100%';
     buttonStartPause.style.left = '550px';
     playbackControl.style.left = '520px';
   } else {
-    playbackControl.style.width = '94.6%';
+    playbackControl.style.width = '100%';
     buttonStartPause.style.left = '145px';
-    playbackControl.style.left = '100px';
+    playbackControl.style.left = '5%';
   }
 }
 
@@ -284,6 +284,7 @@ onMounted(() => {
 <style scoped>
 
 .control-movement {
+  width: 92.8%;
   height: 50px;
   position: fixed;
   display: flex;
