@@ -29,7 +29,7 @@
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
       <div>
-      <History/>
+      <History :historyConfiguration= "listOfHistory" />
     </div>
     </div>
   </div>
@@ -47,12 +47,14 @@ import StartButton from "@/components/StartButton.vue";
 import PersonSearch from "@/components/PersonSearch.vue";
 import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
+import { fetchHistory } from '../services/apiService.js';
 
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
+const listOfHistory = ref([]);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
 const isPersonSelected = ref(false);
@@ -134,6 +136,17 @@ function handleSave() {
       endDate: endDate.value
     };
     emit('saveFilter', filterData);
+    getHistory(filterData.person, filterData.startDate, filterData.endDate);
+  }
+}
+
+const getHistory = async (person, startDate, endDate)=>{
+  try {
+     const bob = await fetchHistory(person, startDate, endDate);
+     listOfHistory.value = bob;
+  } catch (error) {
+    console.error(error)
+    toast.error("Erro ao buscar histórico. Tente novamente mais tarde.")
   }
 }
 

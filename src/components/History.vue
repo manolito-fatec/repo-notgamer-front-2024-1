@@ -4,7 +4,17 @@
     <div class="history-container">
     <contenthistory>
       <div class="start-icon"></div>
-      <textarea v-model="historyText" readonly></textarea>
+      <div class="grid">
+      <div class="text-detail">
+        {{formatDateTime(props.historyConfiguration[0]?.initDateTime)}}
+        </div>
+        <div class="text-detail">
+        {{props.historyConfiguration[0]?.initial?.address?.road}} - 
+        {{props.historyConfiguration[0]?.initial?.address?.town}} - 
+        {{props.historyConfiguration[0]?.initial?.address?.state}} - 
+        {{props.historyConfiguration[0]?.initial?.address?.country}}
+      </div>
+    </div>
     </contenthistory>
     <button class="expand-history" @click="expandItems">Linha do tempo
       <div class = "icon-expand"></div>
@@ -12,31 +22,62 @@
   </div>
       <ul class="history-container">
         <HistoryDetail v-if="showHistory" 
-          v-for="point in 100" 
-          :historyText="historyText">
+          v-for="config in props.historyConfiguration" :key="props.historyConfiguration.length"
+          :HistoryDetail="config" >
         </HistoryDetail>
       </ul>
       <div class="history-container">
       <contenthistory>
         <div class="end-icon"></div>
-        <textarea v-model="historyText" readonly></textarea>
+        <div class="grid">
+        <div class="text-detail">
+        {{formatDateTime(props.historyConfiguration[historyConfiguration.length -1]?.initDateTime)}}
+        </div>
+        <div class="text-detail">
+        {{props.historyConfiguration[historyConfiguration.length -1]?.initial?.address?.road}} - 
+        {{props.historyConfiguration[historyConfiguration.length -1]?.initial?.address?.town}} - 
+        {{props.historyConfiguration[historyConfiguration.length -1]?.initial?.address?.state}} - 
+        {{props.historyConfiguration[historyConfiguration.length -1]?.initial?.address?.country}}
+      </div>
+    </div>
       </contenthistory>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {ref} from 'vue'
 import iconIn from './icons/iconIn.vue';
 import iconOut from './icons/iconOut.vue';
 import iconExpand from './icons/iconExpand.vue';
 import HistoryDetail from './HistoryDetail.vue';
+import type {HistoryConfig} from './Types'
+import type {HistoryContent} from './Types'
+import type {Points} from './Types'
+import type {Address} from './Types'
 
 const showHistory = ref (false)
-const historyText = ref('dd/mm/aaaa hh:mm:ss\n[bairro] - [av/rua], [cidade] - [estado]')
+const historyText = ref('')
+const props = defineProps<{
+  historyConfiguration: HistoryConfig
+}>();
 
 function expandItems(){
   showHistory.value= !showHistory.value
+}
+
+function formatDateTime(dateString: string): string {
+  if (!dateString) return 'Data e horário indisponíveis';
+  
+  const date = new Date(dateString);
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
 }
 
 </script>
@@ -89,7 +130,7 @@ function expandItems(){
   row-gap: 2%;
 }
 
-.history-container textarea {
+.text-detail {
   align-content: center;
   width: 100%;
   height: 100%;
@@ -153,5 +194,14 @@ function expandItems(){
   justify-items: start;
   align-items: center;
 }
-
+.grid {
+    display: grid;
+    grid-template-rows: 30% 70%;
+    padding: 5px;
+    width: 100%;
+    height: auto;
+    cursor: default;
+    justify-items:center;
+    align-items: center;
+  }
 </style>

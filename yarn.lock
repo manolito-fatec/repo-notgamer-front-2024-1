@@ -627,6 +627,11 @@ lerc@^3.0.0:
   resolved "https://registry.npmjs.org/lerc/-/lerc-3.0.0.tgz"
   integrity sha512-Rm4J/WaHhRa93nCN2mwWDZFoRVF18G1f47C+kvQWyHGEZxFpTUi73p7lMVSAndyxGt6lJ2/CFbOcf9ra5p8aww==
 
+lodash@^4.17.21:
+  version "4.17.21"
+  resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
+  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
+
 magic-string@^0.30.10:
   version "0.30.11"
   resolved "https://registry.npmjs.org/magic-string/-/magic-string-0.30.11.tgz"
@@ -841,6 +846,26 @@ regenerator-runtime@^0.14.0:
   version "0.14.1"
   resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.14.1.tgz"
   integrity sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==
+
+"repo-notgamer-front-2024-1@file:":
+  version "0.0.0"
+  resolved "file:"
+  dependencies:
+    "@primevue/themes" "^4.0.7"
+    "@types/proj4" "^2.5.5"
+    axios "^1.7.7"
+    lodash "^4.17.21"
+    ol "^10.1.0"
+    ol-contextmenu "^5.5.0"
+    ol-ext "^4.0.23"
+    primeicons "^7.0.0"
+    primevue "^4.0.5"
+    proj4 "^2.12.1"
+    repo-notgamer-front-2024-1 "file:"
+    vue "^3.4.29"
+    vue-router "^4.3.3"
+    vue-toastification "^2.0.0-rc.5"
+    vue3-openlayers "^11.2.0"
 
 resolve-protobuf-schema@^2.1.0:
   version "2.1.0"

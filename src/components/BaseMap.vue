@@ -35,13 +35,14 @@ let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 
 
-function handleFilterData(filterData:{person: number | null, startDate:string | null, endDate:string | null}){
+function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
   map.value.removeLayers;
   routeLine.value = [];
   pointFinalStar.value = [];
 
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
+  let getUrlHistory = "http://localhost:8080/tracker/history"
 
   getAllPoints(getUrl).then((points) => {
     if (points.length === 0) {

@@ -1,17 +1,46 @@
 <template>
         <li class = "expanded-history">
           <div class="start-icon"></div>
-          <textarea readonly>{{historyText}}</textarea>
+          <div class="grid">
+          <div class="text-detail">
+          {{formatDateTime(HistoryDetail?.endDateTime)}}
+          </div>
+          <div class="text-detail">
+          {{HistoryDetail?.initial?.address?.road}} - 
+          {{HistoryDetail?.initial?.address?.town}} - 
+          {{HistoryDetail?.initial?.address?.state}} - 
+          {{HistoryDetail?.initial?.address?.country}}
+          </div>
+        </div>
           <!-- <div class = "icon-in"></div> -->
         </li>
   </template>
   
-  <script setup>
+  <script setup lang="ts">
   import {ref} from 'vue'
   import iconIn from './icons/iconIn.vue';
   import iconOut from './icons/iconOut.vue';
   import iconExpand from './icons/iconExpand.vue';
-  const historyText = ref('dd/mm/aaaa hh:mm:ss\n[bairro] - [av/rua], [cidade] - [estado]')
+  import type {HistoryContent} from './Types'
+  
+  const props = defineProps<{
+  HistoryDetail: HistoryContent
+  }>();
+
+  function formatDateTime(dateString: string): string {
+  if (!dateString) return 'Data e horário indisponíveis';
+  
+  const date = new Date(dateString);
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
   </script>
   
   <style scoped>
@@ -39,10 +68,10 @@
     row-gap: 2%;
   }
   
-  .history-container textarea {
+  .text-detail {
     align-content: center;
     width: 100%;
-    height: 8ch;
+    height: 100%;
     border: none;
     background-color: transparent;
     color: #ffffff;
@@ -53,18 +82,12 @@
     cursor: default;
   }
   
-  .expanded-history {
+  .grid {
     display: grid;
-    grid-template-columns: 10% 80% 10%;
+    grid-template-rows: 30% 70%;
+    padding: 5px;
     width: 100%;
-    height: 400px;
-    background-color: #4a4a4a;
-    padding: 1%;
-    resize: none;
-    border-radius: 10px;
-    border-style: solid;
-    border-color: #3D3D3D;
-    box-sizing: border-box;
+    height: auto;
     cursor: default;
     justify-items:center;
     align-items: center;
