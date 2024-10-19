@@ -13,7 +13,6 @@
           type="date"
           v-model="startDate"
           @change="onStartDateChange"
-          :max="maxStartDate"
           class="filter-input date-input"
       />
       <span class="date-range-separator"></span>
@@ -21,8 +20,6 @@
           type="date"
           v-model="endDate"
           @change="onEndDateChange"
-          :min="minEndDate"
-          :max="maxEndDate"
           class="filter-input date-input"
       />
     </div>
@@ -30,7 +27,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import DropDown from "@/components/filter/DropDown.vue";
 
 const emit = defineEmits(['update:startDate', 'update:endDate', 'update:selectedPeriod']);
@@ -54,24 +51,11 @@ watch(() => props.reset, (newValue) => {
   }
 });
 
-
 const periodOptions = [
   { label: 'Hoje', value: 'today' },
   { label: 'Última semana', value: 'lastWeek' },
-  { label: 'Último mês', value: 'lastMonth' }
+  { label: 'Último mês', value: 'lastMonth' },
 ];
-
-const minEndDate = computed(() => {
-  return startDate.value ? startDate.value : null;
-});
-
-const maxEndDate = computed(() => {
-  return new Date().toISOString().split('T')[0];
-});
-
-const maxStartDate = computed(() => {
-  return new Date().toISOString().split('T')[0];
-});
 
 function updateDateRange() {
   const today = new Date().toISOString().split('T')[0];
@@ -82,9 +66,9 @@ function updateDateRange() {
   }
   if (selectedPeriod.value === 'lastWeek') {
     const lastWeekStart = new Date();
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7 - lastWeekStart.getDay());
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
     const lastWeekEnd = new Date();
-    lastWeekEnd.setDate(lastWeekEnd.getDate() - lastWeekEnd.getDay());
+    lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
     startDate.value = lastWeekStart.toISOString().split('T')[0];
     endDate.value = lastWeekEnd.toISOString().split('T')[0];
   }
@@ -93,7 +77,7 @@ function updateDateRange() {
     lastMonthStart.setDate(1);
     lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
     const lastMonthEnd = new Date();
-    lastMonthEnd.setDate(0);
+    lastMonthEnd.setMonth(lastMonthEnd.getMonth(), 0);
     startDate.value = lastMonthStart.toISOString().split('T')[0];
     endDate.value = lastMonthEnd.toISOString().split('T')[0];
   }
@@ -111,7 +95,8 @@ watch([startDate, endDate], ([newStartDate, newEndDate]) => {
 
 function onStartDateChange() {
   selectedPeriod.value = '';
-  emit('update:startDate', startDate.value);
+  endDate.value = null;
+  updateDateRange();
 }
 
 function onEndDateChange() {
@@ -119,7 +104,6 @@ function onEndDateChange() {
   emit('update:endDate', endDate.value);
 }
 </script>
-
 
 <style scoped>
 .date-range-container {
@@ -134,10 +118,16 @@ function onEndDateChange() {
 .date-input {
   width: calc(50% - 8px);
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #444444;
   border-radius: 4px;
   background-color: #444444;
   color: #fff;
+  outline: none;
+}
+
+.date-input:focus {
+  border: 1px solid #444444;
+  box-shadow: none;
 }
 
 .date-range-separator {

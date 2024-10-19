@@ -3,6 +3,5 @@ import BaseMap from "@/components/BaseMap.vue";
 </script>
 
 <template>
-    <BaseMap></BaseMap>
+    <BaseMap/>
 </template>
-

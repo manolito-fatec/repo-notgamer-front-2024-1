@@ -4,10 +4,10 @@
     <div v-if="showFilters" class="filters">
       <PersonSearch
           id="autocomplete1"
-          label="Colaborador:"
           v-model="Person"
           :options="PersonOption"
           :reset="resetFilters"
+          label="Colaborador:"
           @update:modelValue="onPersonSelect"
       />
       <DropDown
@@ -17,8 +17,8 @@
           label="Dispositivos:"
       />
       <DataRangePicker
-          v-model:startDate="startDate"
           v-model:endDate="endDate"
+          v-model:startDate="startDate"
           :reset="resetFilters"
           @update:startDate="startDate = $event"
           @update:endDate="endDate = $event"
@@ -28,14 +28,16 @@
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
-      <History/>
+      <div>
+        <History :historyConfiguration="listOfHistory"/>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import {onMounted, ref} from 'vue';
-import {fetchDevices, fetchPersons} from "@/services/apiService.js";
+import {fetchDevices, fetchPersons} from "@/services/apiService.ts";
 import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
@@ -45,12 +47,14 @@ import StartButton from "@/components/StartButton.vue";
 import PersonSearch from "@/components/PersonSearch.vue";
 import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
+import {fetchHistory} from '../services/apiService.ts';
 
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
+const listOfHistory = ref([]);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
 const isPersonSelected = ref(false);
@@ -97,14 +101,14 @@ const onPersonSelect = async (selectedPerson) => {
   }
 };
 
+
 function toggleFilters() {
   showFilters.value = !showFilters.value;
 }
 
-const emit = defineEmits(['saveFilter']);
+const emit = defineEmits(['saveFilter', 'clearPoints']);
 
 function handleSave() {
-
   let hasErrors = false;
 
   if (!Person.value) {
@@ -124,14 +128,43 @@ function handleSave() {
     hasErrors = true;
   }
 
-  if (!hasErrors) {
-    const filterData = {
-      person: Person.value,
-      device: Device.value,
-      startDate: startDate.value,
-      endDate: endDate.value
-    };
-    emit('saveFilter', filterData);
+  if (startDate.value && endDate.value) {
+    const start = new Date(startDate.value);
+    const end = new Date(endDate.value);
+
+    if (end < start) {
+      toast.error("A data de fim deve ser superior à data de início.");
+      hasErrors = true;
+    } else {
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 31) {
+        toast.error("O intervalo selecionado não pode ser maior que 31 dias.");
+        hasErrors = true;
+      }
+    }
+
+    if (!hasErrors) {
+      const filterData = {
+        person: Person.value,
+        device: Device.value,
+        startDate: startDate.value,
+        endDate: endDate.value
+      };
+      emit('saveFilter', filterData);
+      getHistory(filterData.person, filterData.startDate, filterData.endDate);
+    }
+  }
+}
+
+const getHistory = async (person, startDate, endDate) => {
+  try {
+    const bob = await fetchHistory(person, startDate, endDate);
+    listOfHistory.value = bob;
+  } catch (error) {
+    console.error(error)
+    toast.error("Erro ao buscar histórico. Tente novamente mais tarde.")
   }
 }
 
@@ -142,14 +175,16 @@ function handleReset() {
   startDate.value = null;
   endDate.value = null;
   selectedPeriod.value = '';
+  listOfHistory.value = [];
 
   resetFilters.value = true;
   setTimeout(() => {
     resetFilters.value = false;
   }, 0);
+
+  emit('clearPoints');
 }
 </script>
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
@@ -157,19 +192,19 @@ function handleReset() {
 .filters {
   position: fixed;
   top: 0;
-  left: 75px;
-  width: 320px;
+  left: 100px;
+  width: 420px;
   height: 100%;
   padding: 16px;
   background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
   border-left: 4px solid #EC1C24;
-  border-top-right-radius: 16px;
-  border-bottom-right-radius: 16px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 999;
   overflow-y: auto;
   transition: left 0.5s ease;
   font-family: 'Poppins', regular, sans-serif;
+  z-index: 10;
 }
 
 .button-group {
