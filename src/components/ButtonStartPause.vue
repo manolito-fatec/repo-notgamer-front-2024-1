@@ -29,6 +29,6 @@ function startAndPause() {
   position: fixed;
   display: flex;
   bottom: 10px;
-  left: 118px;
+  left: 145px;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="control-movement">
+    <div id="control-movement" class="control-movement">
       <div class = "reproduction-bar">
         <input 
         id="speed" 
@@ -11,44 +11,43 @@
         @input="handleChangeColorRange"
         >
       </div>
-    <div class="date">
-      <h6> 19/09/2024 <br> 17:38</h6>
+        <ButtonBackward/>
+        <ButtonForward/>
+        <ButtonRestart 
+          @click="restartAnimation"
+        />
+        <ButtonStartPause 
+          id="button-start-pause"
+          v-model="animating"
+          @click="startAndPause"
+        />
+        <DropdownSpeed
+          v-model="selectedValue" 
+          @change="typeVelocity"
+        />
     </div>
-  </div>
-    <ButtonBackward/>
-    <ButtonForward/>
-    <ButtonRestart 
-      @click="restartAnimation"
-    />
-    <ButtonStartPause 
-      v-model="animating"
-      @click="startAndPause"
-    />
-    <DropdownSpeed 
-      v-model="selectedValue" 
-      @change="typeVelocity"
-    />
   </div> 
 </template>
 
 <script setup lang="ts">
-
 import 'ol/ol.css';
+import { getClick } from '@/components/stores/StoreGetClick.js' 
 import DropdownSpeed from '@/components/filter/DropdownSpeed.vue';
 import ButtonStartPause from '@/components/ButtonStartPause.vue';
-import { ref } from 'vue';
+import { ref, defineProps, watch } from 'vue';
 import Feature from 'ol/Feature';
 import { LineString } from 'ol/geom';
 import ButtonBackward from '@/components/ButtonBackward.vue';
 import ButtonForward from '@/components/ButtonForward.vue';
 import ButtonRestart from '@/components/ButtonRestart.vue';
-import type { Coordinate } from 'ol/coordinate';
 import { Icon, Style } from 'ol/style';
 import IconPositionMap from '../assets/IconPositionMap.png';
+import Coordinate from 'ol/coordinate';
+import { onMounted } from 'vue';
 
+const store = getClick();
 const animating = ref(false);
 const startTime = ref(0);
-const restarted = ref(false);
 let angulo = 0;
 
 const elapsedTime = ref(0);
@@ -59,8 +58,30 @@ const props = defineProps<{
   rota: LineString,
   iconMap: Feature,
   allCoordinatesAnimation: Coordinate[],
-  anguloInicial: number
+  anguloInicial: number,
 }>();
+
+function watchChanges(newValue) {
+  const playbackControl = document.getElementById('control-movement');
+  const buttonStartPause = document.getElementById('button-start-pause');
+
+  if (newValue) {
+    playbackControl.style.width = '59.78%';
+    buttonStartPause.style.left = '550px';
+    playbackControl.style.left = '520px';
+  } else {
+    playbackControl.style.width = '92.6%';
+    buttonStartPause.style.left = '145px';
+    playbackControl.style.left = '100px';
+  }
+}
+
+watch(
+  () => store.onClickFilters,
+  (newValue) => {
+    watchChanges(newValue);
+  }
+);
 
 function getRotationIcon() {
   const coordinates = props.rota.getCoordinates();
@@ -164,7 +185,7 @@ function typeVelocity() {
   }
 }
 
-function adjustVelocity(duracao: number) {
+function adjustVelocity(duracao) {
   if (!animating.value) {
     const progress = elapsedTime.value / duration.value;
     duration.value = 30000 / duracao;
@@ -212,13 +233,13 @@ function routeAnimation() {
     getRotationIcon();
 
     props.iconMap.setStyle(new Style({
-    image: new Icon({
-      src: IconPositionMap,
-      anchor: [0.5, 0.5],
-      scale: 0.2,
-      rotation: angulo
-    }),
-  }));
+      image: new Icon({
+        src: IconPositionMap,
+        anchor: [0.5, 0.5],
+        scale: 0.2,
+        rotation: angulo
+      }),
+    }));
 
     if (progress < 1) {
       requestAnimationFrame(routeAnimation);
@@ -231,12 +252,9 @@ function adjustPosition() {
   const coord = props.rota.getCoordinateAt(progress);
   props.iconMap.getGeometry().setCoordinates(coord);
   elapsedTime.value = progress * duration.value;
-
 }
 
 function restartAnimation() {
-  pauseAnimation();
-
   elapsedTime.value = 0;
 
   changeColorRange();
@@ -251,37 +269,28 @@ function restartAnimation() {
   }));
 
   adjustPosition();
-
-  initiateAnimation();
+  
+  if (animating.value) {
+    initiateAnimation();
+  }
 }
+
+onMounted(() => {
+  watchChanges(store.onClickFilters);
+})
 
 </script>
 
 <style scoped>
 
-.playback-control {
-  position: fixed;
-  width: 88.8%;
-  height: 100%;
-  z-index: 10;
-}
-
-.reproduction-bar {
-  width: 100%;
-  position: absolute;
-  display: flex;
-  bottom: 50px;
-}
-
 .control-movement {
-  width: 100%;
+  width: 92.8%;
   height: 50px;
   position: fixed;
   display: flex;
   bottom: 0px;
   background: linear-gradient(rgb(50, 50, 50), rgb(0, 0, 0));
-  opacity: 70%;
-  left: 75px;
+  left: 100px;
 }
 
 .reproduction-bar {
@@ -318,17 +327,6 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: pointer;
   border-radius: 30px;
   margin-top: -5px; 
-}
-
-.date { 
-  color: white;
-  font-family: 'Poppins';
-  font-size: 30px;
-  position: absolute;
-  display: flex;
-  height: 43px;
-  bottom: 0px;
-  left: 140px;
 }
 
 </style>

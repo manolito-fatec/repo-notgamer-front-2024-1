@@ -1,15 +1,27 @@
 <template>
   <div class="sidebar">
     <IconLogo />
-    <button class="toggle-btn" @click="$emit('toggle-filters')">
+    <button class="toggle-btn" @click="onToggleFilters">
       <IconFilter />
     </button>
   </div>
 </template>
 
 <script setup>
+import { getClick } from '@/components/stores/StoreGetClick.js'
 import IconFilter from "@/components/icons/IconFilter.vue";
 import IconLogo from "@/components/icons/IconLogo.vue";
+import {ref} from 'vue';
+
+const store = getClick();
+
+const emit = defineEmits(['toggle-filters']);
+
+function onToggleFilters() {
+  store.onClickToggleFilters();
+  emit('toggle-filters')
+}
+
 </script>
 
 <style scoped>
