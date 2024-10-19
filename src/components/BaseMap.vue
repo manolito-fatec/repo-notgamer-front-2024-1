@@ -91,8 +91,10 @@ function clearPoints() {
     routeLine.value = [];
     pointFinalStar.value = [];
     console.log(map.value)
-    const baseLayer = new TileLayer({
-      source: new OSM(),
+    const baseLayer =    new TileLayer({
+          source: new XYZ({
+            url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+          }),
     });
     map.value.addLayer(baseLayer);
     adjustMap();
