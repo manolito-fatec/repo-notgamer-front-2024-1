@@ -66,11 +66,11 @@ function watchChanges(newValue) {
   const buttonStartPause = document.getElementById('button-start-pause');
 
   if (newValue) {
-    playbackControl.style.width = '59.78%';
+    playbackControl.style.width = '100%';
     buttonStartPause.style.left = '550px';
     playbackControl.style.left = '520px';
   } else {
-    playbackControl.style.width = '92.6%';
+    playbackControl.style.width = '100%';
     buttonStartPause.style.left = '145px';
     playbackControl.style.left = '100px';
   }
