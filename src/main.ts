@@ -27,7 +27,6 @@ app.use(PrimeVue, {
     unstyled: true
 });
 
-app.use(OpenLayersMap);
 app.use(pinia);
 app.use(Toast);
 app.use(Map,Layers,Sources,Geometries,MapControls)
