@@ -106,14 +106,25 @@ function clearPoints() {
 
 const getAllPoints = async (getPointsUrl: string) => {
   try {
-    let response = await axios.get(getPointsUrl);
-    return response.data.content
+    const response = await axios.get(getPointsUrl);
 
+    if (response.data && response.data.content.length === 0) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+      return [];
+    }
+
+    return response.data.content;
   } catch (error) {
-    console.error(error);
-    toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
+    if (axios.isAxiosError(error) && error.response) {
+      const errorMessage = error.response.data?.message ||
+          "Erro desconhecido ao buscar pontos.";
+    } else {
+      toast.error("Erro na conexão. Tente novamente mais tarde.");
+    }
+    return [];
   }
 };
+
 
 function createStartLayer(pointFinalStarArrayOfFeatures) {
   const vectorLayer = new VectorLayer({
