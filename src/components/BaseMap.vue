@@ -211,9 +211,6 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
   });
 }
 
-//Função responsável por criar as rotas no mapa. Objetivamente falando, cria um objeto LineString baseado em dois
-// objetos Point presentes na lista iterada pelo mapa.
-//Cada verificação lógica do tamanho da lista é verificado para garantir que as linhas sejam criadas.
 function makeLineFromPoints(featureList) {
   if (!featureList) {
     toast.info("Nenhum ponto disponível para criar linhas.");
