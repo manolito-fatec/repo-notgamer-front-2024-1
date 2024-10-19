@@ -2,73 +2,67 @@
   <div class="history-title">Histórico:</div>
   <div class="history-wrapper">
     <div class="history-container">
-    <contenthistory>
-      <div class="start-icon"></div>
-      <div class="grid">
-      <div class="text-detail">
-        {{formatDateTime(props.historyConfiguration[0]?.initDateTime)}}
+      <contenthistory>
+        <div class="start-icon"></div>
+        <div class="grid">
+          <div class="text-detail">
+            {{ formatDateTime(props.historyConfiguration[0]?.initDateTime) }}
+          </div>
+          <div class="text-detail">
+            {{ props.historyConfiguration[0]?.initial?.address?.road }} -
+            {{ props.historyConfiguration[0]?.initial?.address?.town }} -
+            {{ props.historyConfiguration[0]?.initial?.address?.state }} -
+            {{ props.historyConfiguration[0]?.initial?.address?.country }}
+          </div>
         </div>
-        <div class="text-detail">
-        {{props.historyConfiguration[0]?.initial?.address?.road}} - 
-        {{props.historyConfiguration[0]?.initial?.address?.town}} - 
-        {{props.historyConfiguration[0]?.initial?.address?.state}} - 
-        {{props.historyConfiguration[0]?.initial?.address?.country}}
-      </div>
+      </contenthistory>
+      <button class="expand-history" @click="expandItems">Linha do tempo
+        <div class="icon-expand"></div>
+      </button>
     </div>
-    </contenthistory>
-    <button class="expand-history" @click="expandItems">Linha do tempo
-      <div class = "icon-expand"></div>
-    </button>
-  </div>
-      <ul class="history-container">
-        <HistoryDetail v-if="showHistory" 
-          v-for="config in props.historyConfiguration" :key="props.historyConfiguration.length"
-          :HistoryDetail="config" >
-        </HistoryDetail>
-      </ul>
-      <div class="history-container">
+    <ul class="history-container">
+      <HistoryDetail v-for="config in props.historyConfiguration"
+                     v-if="showHistory" :key="props.historyConfiguration.length"
+                     :HistoryDetail="config">
+      </HistoryDetail>
+    </ul>
+    <div class="history-container">
       <contenthistory>
         <div class="end-icon"></div>
         <div class="grid">
-        <div class="text-detail">
-        {{formatDateTime(props.historyConfiguration[historyConfiguration.length -1]?.initDateTime)}}
+          <div class="text-detail">
+            {{ formatDateTime(props.historyConfiguration[historyConfiguration.length - 1]?.initDateTime) }}
+          </div>
+          <div class="text-detail">
+            {{ props.historyConfiguration[historyConfiguration.length - 1]?.initial?.address?.road }} -
+            {{ props.historyConfiguration[historyConfiguration.length - 1]?.initial?.address?.town }} -
+            {{ props.historyConfiguration[historyConfiguration.length - 1]?.initial?.address?.state }} -
+            {{ props.historyConfiguration[historyConfiguration.length - 1]?.initial?.address?.country }}
+          </div>
         </div>
-        <div class="text-detail">
-        {{props.historyConfiguration[historyConfiguration.length -1]?.initial?.address?.road}} - 
-        {{props.historyConfiguration[historyConfiguration.length -1]?.initial?.address?.town}} - 
-        {{props.historyConfiguration[historyConfiguration.length -1]?.initial?.address?.state}} - 
-        {{props.historyConfiguration[historyConfiguration.length -1]?.initial?.address?.country}}
-      </div>
-    </div>
       </contenthistory>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import {ref} from 'vue'
-import iconIn from './icons/iconIn.vue';
-import iconOut from './icons/iconOut.vue';
-import iconExpand from './icons/iconExpand.vue';
 import HistoryDetail from './HistoryDetail.vue';
 import type {HistoryConfig} from './Types'
-import type {HistoryContent} from './Types'
-import type {Points} from './Types'
-import type {Address} from './Types'
 
-const showHistory = ref (false)
+const showHistory = ref(false)
 const historyText = ref('')
 const props = defineProps<{
   historyConfiguration: HistoryConfig
 }>();
 
-function expandItems(){
-  showHistory.value= !showHistory.value
+function expandItems() {
+  showHistory.value = !showHistory.value
 }
 
 function formatDateTime(dateString: string): string {
   if (!dateString) return 'Data e horário indisponíveis';
-  
+
   const date = new Date(dateString);
   return date.toLocaleString('pt-BR', {
     day: '2-digit',
@@ -110,24 +104,21 @@ function formatDateTime(dateString: string): string {
 
 .history-title {
   color: #ffffff;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  font-size: 11px;
-  font-family: 'Poppins', regular, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 12px;
+  margin-top: 25px;
 }
 
 .history-container {
-  overflow:auto;
-  max-height: 160px;
-  border-radius: 8px;
-  box-sizing: border-box;
-  background-color: #3D3D3D;
-  display: flexbox;
-  grid-template-rows: repeat(auto, 100%);
-  padding: 0%;
-  align-items: center;
-  justify-items: center;
-  row-gap: 2%;
+  overflow: auto;
+  max-height: 260px;
+  padding: 0;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-rows: auto;
+  row-gap: 10px;
 }
 
 .text-detail {
@@ -137,7 +128,7 @@ function formatDateTime(dateString: string): string {
   border: none;
   background-color: transparent;
   color: #ffffff;
-  font-size: 10px;
+  font-size: 13px;
   font-family: 'Poppins', regular, sans-serif;
   resize: none;
   box-sizing: border-box;
@@ -151,12 +142,12 @@ function formatDateTime(dateString: string): string {
   height: 100%;
   border-color: #3D3D3D;
   border-style: solid;
-  border-radius: 10px;
+  border-radius: 8px;
   background-color: #686D76;
   padding: 2%;
   resize: none;
   box-sizing: border-box;
-  cursor:default;
+  cursor: default;
   justify-items: center;
   align-items: center;
 }
@@ -174,7 +165,7 @@ function formatDateTime(dateString: string): string {
   border-color: #3D3D3D;
   box-sizing: border-box;
   cursor: default;
-  justify-items:center;
+  justify-items: center;
   align-items: center;
 }
 
@@ -185,7 +176,7 @@ function formatDateTime(dateString: string): string {
   height: 100%;
   background-color: #4a4a4a;
   color: white;
-  font-size: 10px;
+  font-size: 13px;
   padding: 2%;
   border-radius: 10px;
   border-style: solid;
@@ -194,14 +185,15 @@ function formatDateTime(dateString: string): string {
   justify-items: start;
   align-items: center;
 }
+
 .grid {
-    display: grid;
-    grid-template-rows: 30% 70%;
-    padding: 5px;
-    width: 100%;
-    height: auto;
-    cursor: default;
-    justify-items:center;
-    align-items: center;
-  }
+  display: grid;
+  grid-template-rows: 30% 70%;
+  padding: 5px;
+  width: 100%;
+  height: auto;
+  cursor: default;
+  justify-items: center;
+  align-items: center;
+}
 </style>
