@@ -1,17 +1,6 @@
 <template>
   <div class="map-wrapper">
-    <GeoFilterView 
-      class="filter-overlay" 
-      @saveFilter="handleFilterData"
-    />
-    <div v-if="showPlayback" class="playback-layer">
-      <PlaybackControl 
-        v-model:rota="route" 
-        v-model:iconMap="startPointIconMap"
-        v-model:allCoordinatesAnimation="allCoordinatesAnimation"
-        v-model:anguloInicial="anguloInicial"
-      />
-    </div>
+    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData"></GeoFilterView>
     <div id="map" class="map-container"></div>
   </div>
 </template>
@@ -20,63 +9,41 @@
 import { ref, onMounted } from 'vue';
 import { Map, View, Feature } from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import { XYZ } from 'ol/source';
+import { OSM } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
-import { Point, LineString, Geometry } from 'ol/geom';
+import { Point, LineString } from 'ol/geom';
 import { Icon, Style, Stroke } from 'ol/style';
 import axios from 'axios';
 import IconStartPin from '../assets/IconStartPin.png';
-import IconStartAndEnd from '../assets/IconStartAndEnd.png';
+import IconStartAndEnd from '../assets/InconStartAndEnd.png';
 import IconEndPin from '../assets/IconEndPin.png';
 import GeoFilterView from "@/views/GeoFilterView.vue";
-import IconPositionMap from '../assets/IconPositionMap.png';
-import PlaybackControl from '@/views/PlaybackControl.vue';
-import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
-import { boundingExtent } from 'ol/extent';
+import {boundingExtent} from "ol/extent";
 
-const toast = useToast();
-
+//Configurações de iniciação do mapa
+let center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
 let projection = ref("EPSG:4326");
-let center = ref([-60.457873, 0.584053]);
 let zoom = ref(5);
 let map = ref<Map | null>(null);
 let pointFeatures = ref<Feature[]>([]);
 let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
+
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
-let anguloInicial = 0;
 
-const startPointIconMap = ref<Feature<Geometry>>();
-const route = ref<LineString>();
-const allCoordinatesAnimation = ref<Coordinate[]>([]);
-const showPlayback = ref(false);
 
-function getInitialRotation() {
-  const [lon1, lat1] = allCoordinatesAnimation.value[0];
-  const [lon2, lat2] = allCoordinatesAnimation.value[1];
-
-  const deltaLon = lon2 - lon1;
-  const deltaLat = lat2 - lat1;
-
-  anguloInicial = Math.atan2(deltaLat, deltaLon)*-1;
-  console.log(anguloInicial)
-}
-
-function handleFilterData(filterData: { person: number | null, startDate: string | null, endDate: string | null }) {
+function handleFilterData(filterData:{person: number | null, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
   map.value.removeLayers;
   routeLine.value = [];
   pointFinalStar.value = [];
-  
+
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
 
   getAllPoints(getUrl).then((points) => {
-    if (!points) {
-      if (showPlayback.value) {
-        showPlayback.value = false;
-      }
+    if (points.length === 0) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
     } else {
       let pointList = new ref(points);
@@ -90,10 +57,12 @@ function handleFilterData(filterData: { person: number | null, startDate: string
 
 const getAllPoints = async (getPointsUrl: string) => {
   try {
-    const response = await axios.get(getPointsUrl);
-    return response.data.content;
+    let response = await axios.get(getPointsUrl);
+    return response.data.content
+
   } catch (error) {
     console.error(error);
+    toast.error("Erro ao buscar pontos. Tente novamente mais tarde.");
   }
 };
 
@@ -104,37 +73,24 @@ function createStartLayer(pointFinalStarArrayOfFeatures) {
     }),
     zIndex: 2,
   });
-  map.value.addLayer(vectorLayer); 
+  map.value.addLayer(vectorLayer);
 }
 
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
-  if (arrayOfGeometryObjects.length === 0) return;
+  if (arrayOfGeometryObjects.length === 0) return [];
 
   if (nameFilter) {
-    const startPointStartPin = new Feature({
+    const startPoint = new Feature({
       geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
     });
 
-    startPointStartPin.setStyle(new Style({
-        image: new Icon({
-          src: IconStartPin,
-          scale: 0.7,
-          anchor: [0.5, 1],
-        }),
-      }));
-
-      startPointIconMap.value = new Feature({
-        geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-      });
-
-      startPointIconMap.value.setStyle(new Style({
-        image: new Icon({
-          src: IconPositionMap,
-          anchor: [0.5, 0.5],
-          scale: 0.2,
-          rotation: anguloInicial
-        }),
-      }));  
+    startPoint.setStyle(new Style({
+      image: new Icon({
+        src: IconStartPin,
+        scale: 0.7,
+        anchor: [0.5, 1],
+      }),
+    }));
 
     const endPoint = new Feature({
       geometry: new Point([arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].longitude, arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].latitude]),
@@ -148,13 +104,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       }),
     }));
 
-    if(startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]) {
-      
-      toast.info("O ponto inicial está na mesma localização do ponto final.");
-      if (showPlayback.value) {
-        showPlayback.value = false;
-      }
-      
+    if(startPoint.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
       const startAndEnd = new Feature({
         geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
       });
@@ -169,44 +119,41 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       pointFinalStar.value.push(startAndEnd);
       createStartLayer(pointFinalStar);
     } else {
-        pointFinalStar.value.push(startPointStartPin);
-        pointFinalStar.value.push(startPointIconMap.value);
+        pointFinalStar.value.push(startPoint);
         pointFinalStar.value.push(endPoint);
         createStartLayer(pointFinalStar);
-        center.value = endPoint.getGeometry().getCoordinates();
-
-        setTimeout(() => {
-          if (!showPlayback.value) {
-            showPlayback.value = !showPlayback.value;
-          } else {
-            showPlayback.value = true;
-          }
-        }, 500);
       center.value = endPoint.getGeometry().getCoordinates();
+      }
+    center.value = endPoint.getGeometry().getCoordinates();
     }
 
-    arrayOfGeometryObjects.value.forEach((pointObj) => {
-      const point = new Feature({
-        geometry: new Point([pointObj.longitude, pointObj.latitude]),
-      });
-      point.setStyle(new Style({
-        image: new Icon({
-          src: IconEndPin,
-          scale: 0.7,
-          anchor: [0.5, 1],
-        }),
-      }));
-      pointFeatures.value.push(point);
+
+  arrayOfGeometryObjects.value.forEach((pointObj) => {
+    const point = new Feature({
+      geometry: new Point([pointObj.longitude, pointObj.latitude]),
     });
-  }
+    point.setStyle(new Style({
+      image: new Icon({
+        src: IconEndPin,
+        scale: 0.7,
+        anchor: [0.5, 1],
+      }),
+    }));
+    pointFeatures.value.push(point);
+  });
 }
 
+//Função responsável por criar as rotas no mapa. Objetivamente falando, cria um objeto LineString baseado em dois
+// objetos Point presentes na lista iterada pelo mapa.
+//Cada verificação lógica do tamanho da lista é verificado para garantir que as linhas sejam criadas.
 function makeLineFromPoints(featureList) {
   if (featureList.value.length === 0) {
+    console.log('Nenhum ponto disponível para criar linhas');
     toast.info("Nenhum ponto disponível para criar linhas.");
     return null;
   }
-    const groupedById = featureList.value.reduce((acc, feature) => {
+
+  const groupedById = featureList.value.reduce((acc, feature) => {
     const idText = feature.get('idText');
     if (!acc[idText]) acc[idText] = [];
     acc[idText].push(feature);
@@ -215,8 +162,6 @@ function makeLineFromPoints(featureList) {
 
   Object.keys(groupedById).forEach((idText) => {
     const points = groupedById[idText];
-    allCoordinatesAnimation.value = [];
-
     if (points.length >= 2) {
       for (let i = 0; i < points.length - 1; i++) {
         const point1 = points[i];
@@ -232,19 +177,19 @@ function makeLineFromPoints(featureList) {
 
 
 
-      const lineFeature = new Feature({
-        geometry: route.value,
-      });
-
-      lineFeature.setStyle(new Style({
-        stroke: new Stroke({
-          color: '#ec1c24',
-          width: 6,
-        }),
-      }));
-      routeLine.value.push(lineFeature);
+        const lineFeature = new Feature({
+          geometry: new LineString([point1.getGeometry().getCoordinates(), point2.getGeometry().getCoordinates()]),
+        });
+        lineFeature.setStyle(new Style({
+          stroke: new Stroke({
+            color: '#ec1c24',
+            width: 6,
+          }),
+        }));
+        routeLine.value.push(lineFeature);
+      }
     }
-  })
+  });
   return new VectorLayer({
     source: new VectorSource({
       features: routeLine.value,
@@ -269,9 +214,7 @@ const createMap = () => {
     target: 'map',
     layers: [
       new TileLayer({
-        source: new XYZ({
-          url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
-        }),
+        source: new OSM(),
       }),
     ],
     view: new View({
@@ -286,7 +229,7 @@ const createMap = () => {
       features: pointFeatures.value,
     }),
   });
-  
+
   const routeLayer = new VectorLayer({
     source: new VectorSource({
       features: routeLine.value,
@@ -296,19 +239,17 @@ const createMap = () => {
   map.value.addLayer(vectorLayer);
   map.value.addLayer(routeLayer);
 }
-
 onMounted(() => {
-  createMap();
-});
 
+  createMap()
+
+});
 </script>
 
 <style scoped>
 .map-container {
   width: 100vw;
   height: 100vh;
-  position: relative;
-  z-index: 1;
 }
 
 .filter-overlay {
@@ -329,4 +270,17 @@ onMounted(() => {
   z-index: 2;
   transition: bottom 0.5s ease;
 }
+
+:global(.ol-zoom-in) {
+  bottom: 6em;
+  right: 2em;
+  position: fixed;
+}
+
+:global(.ol-zoom-out) {
+  bottom: 4.5em;
+  right: 2em;
+  position: fixed;
+}
+
 </style>
