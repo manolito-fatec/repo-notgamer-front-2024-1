@@ -61,11 +61,11 @@ const props = defineProps<{
   anguloInicial: number,
 }>();
 
-function watchChanges(newValue) {
+function watchWidthPlayback(stateGetClick) {
   const playbackControl = document.getElementById('control-movement');
   const buttonStartPause = document.getElementById('button-start-pause');
 
-  if (newValue) {
+  if (stateGetClick) {
     playbackControl.style.width = '100%';
     buttonStartPause.style.left = '550px';
     playbackControl.style.left = '520px';
@@ -78,8 +78,8 @@ function watchChanges(newValue) {
 
 watch(
   () => store.onClickFilters,
-  (newValue) => {
-    watchChanges(newValue);
+  (stateGetClick) => {
+    watchWidthPlayback(stateGetClick);
   }
 );
 
@@ -276,7 +276,7 @@ function restartAnimation() {
 }
 
 onMounted(() => {
-  watchChanges(store.onClickFilters);
+  watchWidthPlayback(store.onClickFilters);
 })
 
 </script>
