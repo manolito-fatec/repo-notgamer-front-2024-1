@@ -2,7 +2,7 @@
   <div class="map-wrapper">
     <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData" @clearPoints="clearPoints"/>
     <div v-if="showPlayback" class="playback-layer">
-      <PlaybackControl 
+      <PlaybackControl
         v-model:rota="route" 
         v-model:iconMap="startPointIconMap"
         v-model:allCoordinatesAnimation="allCoordinatesAnimation"
@@ -35,8 +35,7 @@ import { boundingExtent } from 'ol/extent';
 
 const toast = useToast();
 
-//Configurações de iniciação do mapa
-let center = ref([-60.457873,0.584053]); // Centro do mapa em EPSG:4326
+let center = ref([-60.457873,0.584053]);
 let projection = ref("EPSG:4326");
 let zoom = ref(5);
 let map = ref<Map | null>(null);
@@ -68,7 +67,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       map.value.values_.layergroup.values_.layers.array_.pop(layer);
     })
   }
-  const baseLayer =    new TileLayer({
+  const baseLayer = new TileLayer({
     source: new XYZ({
       url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
     }),
@@ -78,11 +77,13 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   pointFinalStar.value = [];
 
   let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
-  let getUrlHistory = "http://localhost:8080/tracker/history"
 
   getAllPoints(getUrl).then((points) => {
-    if (points.length === 0) {
+    if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+      if (showPlayback.value) {
+        showPlayback.value = false;
+      }
     } else {
       let pointList = new ref(points);
       makeGeometryPointFromArray(pointList, filterData.person);
@@ -101,16 +102,15 @@ function clearPoints() {
     pointFeatures.value = [];
     routeLine.value = [];
     pointFinalStar.value = [];
-    const baseLayer =    new TileLayer({
+
+    const baseLayer = new TileLayer({
           source: new XYZ({
             url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
           }),
     });
     map.value.addLayer(baseLayer);
     adjustMap();
-
   }
-
 }
 
 const getAllPoints = async (getPointsUrl: string) => {
@@ -133,7 +133,6 @@ const getAllPoints = async (getPointsUrl: string) => {
     return [];
   }
 };
-
 
 function createStartLayer(pointFinalStarArrayOfFeatures) {
   const vectorLayer = new VectorLayer({
@@ -187,6 +186,11 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
     }));
 
     if(startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
+      if (showPlayback.value) {
+        showPlayback.value = false;
+      }
+      toast.info("A localização do ponto de início é o mesmo do ponto de fim.");
+
       const startAndEnd = new Feature({
         geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
       });
@@ -207,17 +211,17 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
         createStartLayer(pointFinalStar);
       center.value = endPoint.getGeometry().getCoordinates();
 
-      setTimeout(() => {
-          if (!showPlayback.value) {
-            showPlayback.value = !showPlayback.value;
-          } else {
-            showPlayback.value = true;
-          }
-        }, 500);
+      if (!showPlayback.value) {
+        showPlayback.value = !showPlayback.value;
+      } else {
+        showPlayback.value = false;
+        setTimeout(() => {
+          showPlayback.value = true;
+        }, 1);
       }
-    center.value = endPoint.getGeometry().getCoordinates();
     }
-
+    center.value = endPoint.getGeometry().getCoordinates();
+  }
 
   arrayOfGeometryObjects.value.forEach((pointObj) => {
     const point = new Feature({
@@ -328,9 +332,7 @@ const createMap = () => {
   map.value.addLayer(routeLayer);
 }
 onMounted(() => {
-
-  createMap()
-
+  createMap();
 });
 </script>
 
