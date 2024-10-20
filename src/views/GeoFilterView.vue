@@ -29,7 +29,7 @@
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
       <div>
-        <History :historyConfiguration="listOfHistory" :loading="loading" :listIsEmpty ="listIsEmpty"/>
+        <History :historyConfiguration="listOfHistory" :loading="loading"/>
       </div>
     </div>
   </div>
@@ -55,7 +55,6 @@ const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
 const listOfHistory = ref([]);
-const listIsEmpty = ref(false);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
 const isPersonSelected = ref(false);
@@ -165,9 +164,6 @@ const getHistory = async (person, startDate, endDate) => {
   try {
     const historyRequest = await fetchHistory(person, startDate, endDate);
     listOfHistory.value = historyRequest;
-    if(listOfHistory.value.length == 0){
-      listIsEmpty.value = true;
-    }
     loading.value = false;
   } catch (error) {
     console.error(error)

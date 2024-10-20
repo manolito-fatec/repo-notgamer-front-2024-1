@@ -26,7 +26,7 @@
                      v-if="!props.loading" :key="props.historyConfiguration.length"
                      :HistoryDetail="config">
       </HistoryDetail>
-      <span v-if="props.listIsEmpty && !props.loading">
+      <span v-if="props.historyConfiguration.length == 0 && !props.loading">
         <p style="margin-left:10px;">Nenhum histórico para este período.</p>
       </span>
     </ul>
@@ -59,7 +59,6 @@ const showHistory = ref(false)
 const props = defineProps<{
   historyConfiguration: HistoryConfig
   loading: Boolean
-  listIsEmpty: Boolean
 }>();
 
 
