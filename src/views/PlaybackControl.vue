@@ -1,49 +1,49 @@
 <template>
   <div>
     <div id="control-movement" class="control-movement">
-      <div class = "reproduction-bar">
-        <input 
-        id="speed" 
-        type="range" 
-        min="0" 
-        :max="duration" 
-        v-model="elapsedTime"
-        @input="handleChangeColorRange"
+      <div class="reproduction-bar">
+        <input
+            id="speed"
+            v-model="elapsedTime"
+            :max="duration"
+            min="0"
+            type="range"
+            @input="handleChangeColorRange"
         >
       </div>
-        <!-- <ButtonBackward/>
-        <ButtonForward/> -->
-        <ButtonRestart 
+      <!-- <ButtonBackward/>
+      <ButtonForward/> -->
+      <ButtonRestart
           @click="restartAnimation"
-        />
-        <ButtonStartPause 
+      />
+      <ButtonStartPause
           id="button-start-pause"
           v-model="animating"
           @click="startAndPause"
-        />
-        <DropdownSpeed
-          v-model="selectedValue" 
+      />
+      <DropdownSpeed
+          v-model="selectedValue"
           @change="typeVelocity"
-        />
+      />
     </div>
-  </div> 
+  </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import 'ol/ol.css';
-import { getClick } from '@/components/stores/StoreGetClick.js' 
+import {getClick} from '@/components/stores/StoreGetClick.js'
 import DropdownSpeed from '@/components/filter/DropdownSpeed.vue';
 import ButtonStartPause from '@/components/ButtonStartPause.vue';
-import { ref, defineProps, watch } from 'vue';
+import {ref, defineProps, watch} from 'vue';
 import Feature from 'ol/Feature';
-import { LineString } from 'ol/geom';
+import {LineString} from 'ol/geom';
 import ButtonBackward from '@/components/ButtonBackward.vue';
 import ButtonForward from '@/components/ButtonForward.vue';
 import ButtonRestart from '@/components/ButtonRestart.vue';
-import { Icon, Style } from 'ol/style';
+import {Icon, Style} from 'ol/style';
 import IconPositionMap from '../assets/IconPositionMap.png';
 import Coordinate from 'ol/coordinate';
-import { onMounted } from 'vue';
+import {onMounted} from 'vue';
 
 const store = getClick();
 const animating = ref(false);
@@ -64,23 +64,30 @@ const props = defineProps<{
 function watchChanges(newValue) {
   const playbackControl = document.getElementById('control-movement');
   const buttonStartPause = document.getElementById('button-start-pause');
+  const rangeInput = playbackControl.querySelector("input[type='range']");
 
   if (newValue) {
     playbackControl.style.width = '100%';
     buttonStartPause.style.left = '550px';
     playbackControl.style.left = '520px';
+    if (rangeInput) {
+      rangeInput.style.width = '72.9%';
+    }
   } else {
     playbackControl.style.width = '100%';
     buttonStartPause.style.left = '145px';
     playbackControl.style.left = '5%';
+    if (rangeInput) {
+      rangeInput.style.width = '95%';
+    }
   }
 }
 
 watch(
-  () => store.onClickFilters,
-  (newValue) => {
-    watchChanges(newValue);
-  }
+    () => store.onClickFilters,
+    (newValue) => {
+      watchChanges(newValue);
+    }
 );
 
 function getRotationIcon() {
@@ -120,24 +127,24 @@ function handleChangeColorRange() {
 
     const rangeInput = document.getElementById('speed');
     const percentage = ((elapsedTime.value / duration.value) * 100) + 0.1;
-    
+
     rangeInput.style.setProperty('--elapsedTime', `${percentage}%`);
-    
-    const progress = Math.min(elapsedTime.value / duration.value, 1); 
+
+    const progress = Math.min(elapsedTime.value / duration.value, 1);
     const coord = props.rota.getCoordinateAt(progress);
     props.iconMap.getGeometry().setCoordinates(coord);
 
   } else {
-    
+
     animating.value = false;
     startTime.value = new Date().getTime() - elapsedTime.value;
 
     const rangeInput = document.getElementById('speed');
     const percentage = ((elapsedTime.value / duration.value) * 100) + 0.1;
-    
+
     rangeInput.style.setProperty('--elapsedTime', `${percentage}%`);
-    
-    const progress = Math.min(elapsedTime.value / duration.value, 1); 
+
+    const progress = Math.min(elapsedTime.value / duration.value, 1);
     const coord = props.rota.getCoordinateAt(progress);
     props.iconMap.getGeometry().setCoordinates(coord);
 
@@ -149,12 +156,12 @@ function changeColorRange() {
   const rangeInput = document.getElementById('speed');
   const percentage = ((elapsedTime.value / duration.value) * 100) + 0.1;
   rangeInput.style.setProperty('--elapsedTime', `${percentage}%`);
-} 
+}
 
 function continueAnimation() {
   if (!animating.value) {
     initiateAnimation();
-  } 
+  }
 }
 
 function typeVelocity() {
@@ -211,7 +218,7 @@ function startAndPause() {
 function initiateAnimation() {
   animating.value = true;
   startTime.value = new Date().getTime() - elapsedTime.value;
-  requestAnimationFrame(routeAnimation); 
+  requestAnimationFrame(routeAnimation);
 }
 
 function pauseAnimation() {
@@ -223,7 +230,7 @@ function pauseAnimation() {
 
 function routeAnimation() {
   if (animating.value) {
-    const progress = Math.min(elapsedTime.value / duration.value, 1); 
+    const progress = Math.min(elapsedTime.value / duration.value, 1);
     elapsedTime.value = new Date().getTime() - startTime.value;
 
     const coord = props.rota.getCoordinateAt(progress);
@@ -269,7 +276,7 @@ function restartAnimation() {
   }));
 
   adjustPosition();
-  
+
   if (animating.value) {
     initiateAnimation();
   }
@@ -290,7 +297,6 @@ onMounted(() => {
   display: flex;
   bottom: 0px;
   background: linear-gradient(rgb(50, 50, 50), rgb(0, 0, 0));
-  left: 100px;
 }
 
 .reproduction-bar {
@@ -326,7 +332,7 @@ input[type="range"]::-webkit-slider-thumb {
   background: #EC1C24;
   cursor: pointer;
   border-radius: 30px;
-  margin-top: -5px; 
+  margin-top: -5px;
 }
 
 </style>
