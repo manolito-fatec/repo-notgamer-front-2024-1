@@ -23,11 +23,11 @@
     <Loading  v-if="props.loading"/>
     <ul class="history-container">
       <HistoryDetail v-for="config in props.historyConfiguration"
-                     v-if="!props.loading" :key="props.historyConfiguration.length"
+                     v-if="!props.loading && showHistory " :key="props.historyConfiguration.length"
                      :HistoryDetail="config">
       </HistoryDetail>
-      <span v-if="props.historyConfiguration.length == 0 && !props.loading">
-        <p style="margin-left:10px;">Nenhum histórico para este período.</p>
+      <span style="display: flex; justify-content: center;" v-if="props.historyConfiguration.length == 0 && !props.loading && showHistory">
+        <p>Histórico Vazio</p>
       </span>
     </ul>
     <div class="history-container">
@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts" setup>
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 import HistoryDetail from './HistoryDetail.vue';
 import type {HistoryConfig} from './Types'
 import Loading from '@/components/Loading.vue'
@@ -61,6 +61,9 @@ const props = defineProps<{
   loading: Boolean
 }>();
 
+watch(() => props.historyConfiguration,() => {
+  showHistory.value = true;
+});
 
 function expandItems() {
   showHistory.value = !showHistory.value
