@@ -32,7 +32,6 @@ import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
-import {error} from "ol/console";
 
 const toast = useToast();
 
@@ -81,6 +80,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
 
   getAllPoints(getUrl).then((points) => {
     if (!points) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
       if (showPlayback.value) {
         showPlayback.value = false;
       }
@@ -114,25 +114,28 @@ function clearPoints() {
 }
 
 const getAllPoints = async (getPointsUrl: string) => {
-  const response = await axios.get(getPointsUrl) .catch(function (error) {
-      if(error.response) {
-          toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-        if (axios.isAxiosError(error) && error.response) {
-          const errorMessage = error.response.data?.message ||
-              "Erro desconhecido ao buscar pontos.";
-        } else {
-          console.error(error);
-          toast.error("Erro na conexão. Tente novamente mais tarde.");
-        }
-        return [];
-      }
+  try {
+    const response = await axios.get(getPointsUrl);
+
+    if (response.data && response.data.content.length === 0) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+      return [];
+    }
+
     return response.data.content;
-  })
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const errorMessage = error.response.data?.message ||
+          "Erro desconhecido ao buscar pontos.";
+    } if(error.code == 'ERR_BAD_RESPONSE'){
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+    }
+    else {
+      toast.error("Erro na conexão. Tente novamente mais tarde.");
+    }
+    return [];
   }
-
-
-
-
+};
 
 function createStartLayer(pointFinalStarArrayOfFeatures) {
   const vectorLayer = new VectorLayer({
