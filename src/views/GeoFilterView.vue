@@ -29,7 +29,7 @@
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
       <div>
-        <History :historyConfiguration="listOfHistory"/>
+        <History :historyConfiguration="listOfHistory" :loading="loading"/>
       </div>
     </div>
   </div>
@@ -59,6 +59,7 @@ const originalPersonOption = ref([]);
 const showFilters = ref(false);
 const isPersonSelected = ref(false);
 const startDate = ref(null);
+const loading = ref(false);
 const endDate = ref(null);
 const selectedPeriod = ref('');
 const resetFilters = ref(false);
@@ -153,6 +154,7 @@ function handleSave() {
         endDate: endDate.value
       };
       emit('saveFilter', filterData);
+      loading.value = true;
       getHistory(filterData.person, filterData.startDate, filterData.endDate);
     }
   }
@@ -160,8 +162,9 @@ function handleSave() {
 
 const getHistory = async (person, startDate, endDate) => {
   try {
-    const bob = await fetchHistory(person, startDate, endDate);
-    listOfHistory.value = bob;
+    const historyRequest = await fetchHistory(person, startDate, endDate);
+    listOfHistory.value = historyRequest;
+    loading.value = false;
   } catch (error) {
     console.error(error)
     toast.error("Erro ao buscar histórico. Tente novamente mais tarde.")
@@ -212,7 +215,7 @@ function handleReset() {
   display: flex;
   gap: 10px;
 }
-
+listIsEmpty
 .full-width {
   flex: 1;
 }

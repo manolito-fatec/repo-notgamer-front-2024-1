@@ -20,11 +20,15 @@
         <div class="icon-expand"></div>
       </button>
     </div>
+    <Loading  v-if="props.loading"/>
     <ul class="history-container">
       <HistoryDetail v-for="config in props.historyConfiguration"
-                     v-if="showHistory" :key="props.historyConfiguration.length"
+                     v-if="!props.loading" :key="props.historyConfiguration.length"
                      :HistoryDetail="config">
       </HistoryDetail>
+      <span v-if="props.historyConfiguration.length == 0 && !props.loading">
+        <p style="margin-left:10px;">Nenhum histórico para este período.</p>
+      </span>
     </ul>
     <div class="history-container">
       <contenthistory>
@@ -34,10 +38,10 @@
             {{ formatDateTime(props.historyConfiguration[historyConfiguration.length - 1]?.initDateTime) }}
           </div>
           <div class="text-detail">
-            {{ props.historyConfiguration[historyConfiguration.length - 1]?.initial?.address?.road }} -
-            {{ props.historyConfiguration[historyConfiguration.length - 1]?.initial?.address?.town }} -
-            {{ props.historyConfiguration[historyConfiguration.length - 1]?.initial?.address?.state }} -
-            {{ props.historyConfiguration[historyConfiguration.length - 1]?.initial?.address?.country }}
+            {{ props.historyConfiguration[historyConfiguration.length - 1]?.finality?.address?.road }} -
+            {{ props.historyConfiguration[historyConfiguration.length - 1]?.finality?.address?.town }} -
+            {{ props.historyConfiguration[historyConfiguration.length - 1]?.finality?.address?.state }} -
+            {{ props.historyConfiguration[historyConfiguration.length - 1]?.finality?.address?.country }}
           </div>
         </div>
       </contenthistory>
@@ -49,12 +53,14 @@
 import {ref} from 'vue'
 import HistoryDetail from './HistoryDetail.vue';
 import type {HistoryConfig} from './Types'
+import Loading from '@/components/Loading.vue'
 
 const showHistory = ref(false)
-const historyText = ref('')
 const props = defineProps<{
   historyConfiguration: HistoryConfig
+  loading: Boolean
 }>();
+
 
 function expandItems() {
   showHistory.value = !showHistory.value

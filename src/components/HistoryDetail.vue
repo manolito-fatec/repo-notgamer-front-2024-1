@@ -3,13 +3,26 @@
     <div class="start-icon"></div>
     <div class="grid">
       <div class="text-detail">
-        {{ formatDateTime(HistoryDetail?.endDateTime) }}
+        {{ formatDateTime(HistoryDetail?.initDateTime) }}
       </div>
       <div class="text-detail">
         {{ HistoryDetail?.initial?.address?.road }} -
         {{ HistoryDetail?.initial?.address?.town }} -
         {{ HistoryDetail?.initial?.address?.state }} -
         {{ HistoryDetail?.initial?.address?.country }}
+      </div>
+    </div>
+    <br>
+    <div class="end-icon"></div>
+    <div class="grid">
+      <div class="text-detail">
+        {{ formatDateTime(HistoryDetail?.endDateTime) }}
+      </div>
+      <div class="text-detail">
+        {{ HistoryDetail?.finality?.address?.road }} -
+        {{ HistoryDetail?.finality?.address?.town }} -
+        {{ HistoryDetail?.finality?.address?.state }} -
+        {{ HistoryDetail?.finality?.address?.country }}
       </div>
     </div>
   </li>
@@ -45,6 +58,15 @@ function formatDateTime(dateString: string): string {
   width: 30px;
   height: 30px;
   background-image: url('@/assets/IconStartPin.png');
+  background-size: 75%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.end-icon {
+  width: 30px;
+  height: 30px;
+  background-image: url('@/assets/IconEndPin.png');
   background-size: 75%;
   background-repeat: no-repeat;
   background-position: center;
