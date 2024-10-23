@@ -33,7 +33,7 @@ import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
 import {fetchGeomData} from "@/services/apiService";
-import {createMap, createNewVectorLayer, createNewVectorSource} from "@/services/mapService";
+import {createMap, createNewVectorLayer, createNewVectorSource, createStartLayer} from "@/services/mapService";
 
 const toast = useToast();
 
@@ -118,15 +118,7 @@ function clearPoints() {
 
 
 
-function createStartLayer(pointFinalStarArrayOfFeatures) {
-  const vectorLayer = new VectorLayer({
-    source: new VectorSource({
-      features: pointFinalStarArrayOfFeatures.value,
-    }),
-    zIndex: 2,
-  });
-  map.value.addLayer(vectorLayer);
-}
+
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
   if (arrayOfGeometryObjects.length === 0) return [];
 
@@ -186,12 +178,12 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
         })
       }));
       pointFinalStar.value.push(startAndEnd);
-      createStartLayer(pointFinalStar);
+      map.value.addLayer(createStartLayer(pointFinalStar));
     } else {
       pointFinalStar.value.push(startPointStartPin);
       pointFinalStar.value.push(startPointIconMap.value);
       pointFinalStar.value.push(endPoint);
-      createStartLayer(pointFinalStar);
+      map.value.addLayer(createStartLayer(pointFinalStar));
       center.value = endPoint.getGeometry().getCoordinates();
 
       if (!showPlayback.value) {

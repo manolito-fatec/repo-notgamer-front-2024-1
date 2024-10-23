@@ -36,3 +36,12 @@ export function createNewVectorSource(routeLine) {
     })
 }
 
+export function createStartLayer(pointFinalStarArrayOfFeatures) {
+    return new VectorLayer({
+        source: new VectorSource({
+            features: pointFinalStarArrayOfFeatures.value,
+        }),
+        zIndex: 2,
+    });
+}
+
