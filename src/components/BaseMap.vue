@@ -32,6 +32,8 @@ import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
+import {fetchGeomData} from "@/services/apiService";
+import {createMap, createNewVectorLayer, createNewVectorSource} from "@/services/mapService";
 
 const toast = useToast();
 
@@ -76,9 +78,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   routeLine.value = [];
   pointFinalStar.value = [];
 
-  let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
-
-  getAllPoints(getUrl).then((points) => {
+  fetchGeomData(filterData.person, filterData.startDate, filterData.endDate).then((points) => {
     if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
       if (showPlayback.value) {
@@ -92,6 +92,9 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       adjustMap();
     }
   });
+
+  map.value.addLayer(createNewVectorLayer(pointFeatures));
+  map.value.addLayer(createNewVectorSource(routeLine));
 }
 
 function clearPoints() {
@@ -113,29 +116,7 @@ function clearPoints() {
   }
 }
 
-const getAllPoints = async (getPointsUrl: string) => {
-  try {
-    const response = await axios.get(getPointsUrl);
 
-    if (response.data && response.data.content.length === 0) {
-      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-      return [];
-    }
-
-    return response.data.content;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorMessage = error.response.data?.message ||
-          "Erro desconhecido ao buscar pontos.";
-    } if(error.code == 'ERR_BAD_RESPONSE'){
-      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-    }
-    else {
-      toast.error("Erro na conexão. Tente novamente mais tarde.");
-    }
-    return [];
-  }
-};
 
 function createStartLayer(pointFinalStarArrayOfFeatures) {
   const vectorLayer = new VectorLayer({
@@ -146,7 +127,6 @@ function createStartLayer(pointFinalStarArrayOfFeatures) {
   });
   map.value.addLayer(vectorLayer);
 }
-
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
   if (arrayOfGeometryObjects.length === 0) return [];
 
@@ -175,7 +155,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
         rotation: anguloInicial
       }),
     }));
-    
+
     const endPoint = new Feature({
       geometry: new Point([arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].longitude, arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].latitude]),
     });
@@ -208,10 +188,10 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       pointFinalStar.value.push(startAndEnd);
       createStartLayer(pointFinalStar);
     } else {
-        pointFinalStar.value.push(startPointStartPin);
-        pointFinalStar.value.push(startPointIconMap.value);
-        pointFinalStar.value.push(endPoint);
-        createStartLayer(pointFinalStar);
+      pointFinalStar.value.push(startPointStartPin);
+      pointFinalStar.value.push(startPointIconMap.value);
+      pointFinalStar.value.push(endPoint);
+      createStartLayer(pointFinalStar);
       center.value = endPoint.getGeometry().getCoordinates();
 
       if (!showPlayback.value) {
@@ -262,11 +242,11 @@ function makeLineFromPoints(featureList) {
       for (let i = 0; i < points.length - 1; i++) {
         const point1 = points[i];
         const point2 = points[i + 1];
-  
+
         allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates())
         allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates())
       }
-      
+
       route.value = new LineString(allCoordinatesAnimation.value)
 
       getInitialRotation();
@@ -290,6 +270,7 @@ function makeLineFromPoints(featureList) {
   })
 }
 
+
 const adjustMap = () => {
   const coordinates = pointFeatures.value.map((pontos) =>
       pontos.getGeometry().getCoordinates()
@@ -302,40 +283,9 @@ const adjustMap = () => {
   }
 };
 
-const createMap = () => {
-  map.value = new Map({
-    target: 'map',
-    layers: [
-      new TileLayer({
-        source: new XYZ({
-          url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
-        }),
-      }),
-    ],
-    view: new View({
-      center: center.value,
-      zoom: zoom.value,
-      projection: projection.value,
-    }),
-  });
 
-  const vectorLayer = new VectorLayer({
-    source: new VectorSource({
-      features: pointFeatures.value,
-    }),
-  });
-
-  const routeLayer = new VectorLayer({
-    source: new VectorSource({
-      features: routeLine.value,
-    }),
-  });
-
-  map.value.addLayer(vectorLayer);
-  map.value.addLayer(routeLayer);
-}
 onMounted(() => {
-  createMap();
+  map.value = createMap(center, zoom, projection);
 });
 </script>
 
