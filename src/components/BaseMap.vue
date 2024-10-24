@@ -10,6 +10,18 @@
       />
     </div>
     <div id="map" class="map-container"></div>
+    <div
+        class="icon-center"
+        @mouseover="handleMouseOver"
+        @mouseleave="handleMouseLeave"
+        @click="centerMap"
+        :style="{ cursor: 'pointer', opacity: iconOpacity }"
+    >
+      <img
+          :src="iconSrc"
+          :style="{ width: '33px', height: '33px', transform: `scale(${iconScale})` }"
+      />
+    </div>
   </div>
 </template>
 
@@ -44,6 +56,9 @@ let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
+const iconScale = ref(1);
+const iconOpacity = ref(1);
+const iconSrc = 'src/assets/IconCenter.png'
 
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
@@ -334,6 +349,36 @@ const createMap = () => {
   map.value.addLayer(vectorLayer);
   map.value.addLayer(routeLayer);
 }
+
+function centerMap() {
+  if (map.value) {
+    if (pointFeatures.value.length === 0) {
+      const defaultCenter = [-60.457873, 0.584053];
+      const defaultZoom = 5;
+
+      map.value.getView().setCenter(defaultCenter);
+      map.value.getView().setZoom(defaultZoom);
+    } else {
+      const coordinates = pointFeatures.value.map((ponto) =>
+          ponto.getGeometry().getCoordinates()
+      );
+      const extent = boundingExtent(coordinates);
+
+      map.value.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
+    }
+  }
+}
+
+function handleMouseOver() {
+  iconScale.value = 1.2;
+  iconOpacity.value = 0.8;
+}
+
+function handleMouseLeave() {
+  iconScale.value = 1;
+  iconOpacity.value = 1;
+}
+
 onMounted(() => {
   createMap();
 });
@@ -376,4 +421,12 @@ onMounted(() => {
   position: fixed;
 }
 
+.icon-center {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+
+}
 </style>
