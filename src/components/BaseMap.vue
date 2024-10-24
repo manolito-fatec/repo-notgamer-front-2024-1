@@ -69,7 +69,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   }
   const baseLayer = new TileLayer({
     source: new XYZ({
-      url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+      url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
     }),
   });
   map.value.addLayer(baseLayer);
@@ -105,7 +105,7 @@ function clearPoints() {
 
     const baseLayer = new TileLayer({
           source: new XYZ({
-            url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+            url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
           }),
     });
     map.value.addLayer(baseLayer);
@@ -308,7 +308,7 @@ const createMap = () => {
     layers: [
       new TileLayer({
         source: new XYZ({
-          url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+          url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
         }),
       }),
     ],
