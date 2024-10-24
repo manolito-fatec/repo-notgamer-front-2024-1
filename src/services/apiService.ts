@@ -13,6 +13,16 @@ interface Device {
     label: string;
     value: number;
 }
+export const fetchPersonById  = async (id: number): Promise<Person> => {
+    try{
+        const response = await axios.get<Person>(BASE_URL_ENDPOINT + '/' + id);
+        return response.data;
+    }catch (error){
+        console.log("Pessoa não encontrada: ",error);
+        throw error;
+    }
+
+}
 
 export const fetchPersons = async (): Promise<Person[]> => {
     try {

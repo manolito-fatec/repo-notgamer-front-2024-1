@@ -10,12 +10,17 @@
       />
     </div>
     <div id="map" class="map-container"></div>
+    <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content"></div>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Map, View, Feature } from 'ol';
+import {Map, View, Feature, Overlay} from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
 import { OSM, XYZ } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
@@ -32,7 +37,7 @@ import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
-import {fetchGeomData} from "@/services/apiService";
+import {fetchGeomData, fetchPersonById} from "@/services/apiService";
 import {createMap, createNewVectorLayer, createNewVectorSource, createStartLayer} from "@/services/mapService";
 
 const toast = useToast();
@@ -51,6 +56,43 @@ const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
 const showPlayback = ref(false);
+
+let popup = ref<Overlay | null>(null);
+let popupContent = ref<HTMLElement | null>(null);
+let popupCloser = ref<HTMLElement | null>(null);
+
+function initializePopup() {
+  popupContent.value = document.getElementById('popup-content');
+  popupCloser.value = document.getElementById('popup-closer');
+
+  popup.value = new Overlay({
+    element: document.getElementById('popup')!,
+    autoPan: true,
+    autoPanAnimation: { duration: 250 },
+  });
+
+  popupCloser.value.onclick = function () {
+    popup.value?.setPosition(undefined);
+    popupCloser.value?.blur();
+    return false;
+  };
+
+  map.value?.addOverlay(popup.value);
+}
+
+function handleMapClick(event) {
+  map.value?.forEachFeatureAtPixel(event.pixel, function (feature) {
+    const coordinates = (feature.getGeometry() as Point).getCoordinates();
+    console.log(feature)
+    const name = feature.values_.person.fullName
+
+    // Atualizar o conteúdo do popup e posicioná-lo
+    if (popupContent.value) {
+      popupContent.value.innerHTML = `<p><b>${name}</b></p><p>Coordenadas: ${coordinates}</p>`;
+      popup.value?.setPosition(coordinates);
+    }
+  });
+}
 
 function getInitialRotation() {
   const [lon1, lat1] = allCoordinatesAnimation.value[0];
@@ -126,6 +168,10 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
     const startPointStartPin = new Feature({
       geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
     });
+    const personInPoint = ref();
+    fetchPersonById(nameFilter).then( person => {
+      personInPoint.value = person;
+    });
 
     startPointStartPin.setStyle(new Style({
       image: new Icon({
@@ -177,9 +223,14 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
           anchor: [0.5, 1],
         })
       }));
+      startPointStartPin.setProperties({person: personInPoint});
+      endPoint.setProperties({person: personInPoint});
+      startAndEnd.setProperties({person: personInPoint});
       pointFinalStar.value.push(startAndEnd);
       map.value.addLayer(createStartLayer(pointFinalStar));
     } else {
+      startPointStartPin.setProperties({person: personInPoint});
+      endPoint.setProperties({person: personInPoint});
       pointFinalStar.value.push(startPointStartPin);
       pointFinalStar.value.push(startPointIconMap.value);
       pointFinalStar.value.push(endPoint);
@@ -278,6 +329,8 @@ const adjustMap = () => {
 
 onMounted(() => {
   map.value = createMap(center, zoom, projection);
+  initializePopup();
+  map.value?.on('singleclick', handleMapClick);
 });
 </script>
 
@@ -317,5 +370,27 @@ onMounted(() => {
   right: 2em;
   position: fixed;
 }
+.ol-popup {
+  position: absolute;
+  background-color: black;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #c1060a;
+  min-width: 200px;
+  z-index: 10;
+  bottom: 12px;
+  left: -50px;
+  transform: translate(-50%, -100%);
+}
+
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-size: 1.2em;
+}
+
 
 </style>
