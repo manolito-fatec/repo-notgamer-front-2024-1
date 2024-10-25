@@ -107,7 +107,7 @@ function onEndDateChange() {
 
 <style scoped>
 .date-range-container {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .date-range {
@@ -117,8 +117,8 @@ function onEndDateChange() {
 
 .date-input {
   width: calc(50% - 8px);
-  padding: 8px;
-  border: 1px solid #444444;
+  padding: 5px 12px;
+  border: 1px solid #555555;
   border-radius: 4px;
   background-color: #444444;
   color: #fff;

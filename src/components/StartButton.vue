@@ -13,17 +13,16 @@ import IconCorrect from "@/components/icons/IconCorrect.vue";
 
 <style scoped>
 .start-button {
-  height: 40px;
+  height: 30px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #929292;
-  color: #ffffff;
   border: none;
   border-radius: 8px;
   padding: 8px 20px;
-  font-size: 16px;
+  font-size: 12px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -35,13 +34,14 @@ import IconCorrect from "@/components/icons/IconCorrect.vue";
 }
 
 .start-button .icon {
-  width: 24px;
-  height: 24px;
+  width:15px;
+  height: 15px;
   margin-right: 3px;
 }
 
 .start-button .button-text {
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 550;
   color: #262626;
 }
 </style>

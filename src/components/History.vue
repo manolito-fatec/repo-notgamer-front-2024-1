@@ -114,9 +114,9 @@ function formatDateTime(dateString: string): string {
 .history-title {
   color: #ffffff;
   font-weight: 500;
-  font-size: 14px;
-  margin-bottom: 12px;
-  margin-top: 25px;
+  font-size: 12px;
+  margin-bottom: 5px;
+  margin-top: 5px;
 }
 
 .history-container {
@@ -124,10 +124,10 @@ function formatDateTime(dateString: string): string {
   max-height: 260px;
   padding: 0;
   border-radius: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 0px;
   display: grid;
   grid-template-rows: auto;
-  row-gap: 10px;
+  row-gap: 1px;
 }
 
 .text-detail {
@@ -137,7 +137,7 @@ function formatDateTime(dateString: string): string {
   border: none;
   background-color: transparent;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-family: 'Poppins', regular, sans-serif;
   resize: none;
   box-sizing: border-box;
@@ -153,7 +153,7 @@ function formatDateTime(dateString: string): string {
   border-style: solid;
   border-radius: 8px;
   background-color: #686D76;
-  padding: 2%;
+  padding: 0%;
   resize: none;
   box-sizing: border-box;
   cursor: default;
@@ -179,13 +179,12 @@ function formatDateTime(dateString: string): string {
 }
 
 .expand-history {
-  display: grid;
-  grid-template-columns: 95% 5%;
+  display:block;
   width: 100%;
   height: 100%;
   background-color: #4a4a4a;
   color: white;
-  font-size: 13px;
+  font-size: 11px;
   padding: 2%;
   border-radius: 10px;
   border-style: solid;
@@ -204,5 +203,19 @@ function formatDateTime(dateString: string): string {
   cursor: default;
   justify-items: center;
   align-items: center;
+}
+
+.history-container ::-webkit-scrollbar {
+  width: 5px;
+  height: 10px;
+}
+
+.history-container ::-webkit-scrollbar-thumb {
+  border-radius: 50px;
+  background: #EC1C24;
+}
+
+.history-container ::-webkit-scrollbar-track {
+  background: transparent;
 }
 </style>

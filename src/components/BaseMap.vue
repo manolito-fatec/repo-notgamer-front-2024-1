@@ -349,7 +349,7 @@ onMounted(() => {
   position: absolute;
   top: 20px;
   left: 20px;
-  background-color: white;
+  background-color: transparent;
   padding: 10px;
   border-radius: 8px;
   z-index: 3;

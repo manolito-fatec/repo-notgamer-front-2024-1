@@ -2,6 +2,7 @@
   <div class="filter-container">
     <Sidebar @toggle-filters="toggleFilters"/>
     <div v-if="showFilters" class="filters">
+      <div class="title">FILTRAR</div>
       <PersonSearch
           id="autocomplete1"
           v-model="Person"
@@ -194,20 +195,28 @@ function handleReset() {
 
 .filters {
   position: fixed;
-  top: 0;
+  top: 3%;
   left: 100px;
-  width: 420px;
-  height: 100%;
+  width: 380px;
+  height: 87%;
   padding: 16px;
   background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
-  border-left: 4px solid #EC1C24;
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-right: 4px solid #EC1C24;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: left 0.5s ease;
   font-family: 'Poppins', regular, sans-serif;
+  font-size: 12px;
   z-index: 10;
+}
+
+.title {
+  font-family: 'Poppins', regular, sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #fff;
+  padding-bottom: 0%;
 }
 
 .button-group {
@@ -218,5 +227,18 @@ function handleReset() {
 listIsEmpty
 .full-width {
   flex: 1;
+}
+
+.filter-container ::-webkit-scrollbar {
+  width: 5px;
+}
+
+.filter-container ::-webkit-scrollbar-thumb {
+  border-radius: 50px;
+  background: linear-gradient(180deg, transparent 25%, #929292 50%, transparent 75%);
+}
+
+.filter-container ::-webkit-scrollbar-track {
+  background: transparent;
 }
 </style>

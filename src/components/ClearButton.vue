@@ -13,7 +13,7 @@ import IconBlock from "@/components/icons/IconBlock.vue";
 
 <style scoped>
 .clear-button {
-  height: 40px;
+  height: 30px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -23,7 +23,6 @@ import IconBlock from "@/components/icons/IconBlock.vue";
   border: none;
   border-radius: 8px;
   padding: 8px 20px;
-  font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -35,11 +34,14 @@ import IconBlock from "@/components/icons/IconBlock.vue";
 }
 
 .clear-button .icon {
+  width:15px;
+  height: 15px;
   margin-right: 3px;
 }
 
 .clear-button .button-text {
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 550;
   color: #262626;
 }
 </style>

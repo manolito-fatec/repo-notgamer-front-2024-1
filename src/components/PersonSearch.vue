@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .filter-item {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   position: relative;
 }
 
@@ -114,16 +114,16 @@ onBeforeUnmount(() => {
   margin-bottom: 6px;
   color: #ffffff;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .filter-input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 5px 12px;
   border: 1px solid #555555;
   border-radius: 6px;
   background-color: #444444;
-  font-size: 13px;
+  font-size: 12px;
   color: #fff;
   outline: none;
   transition: border 0.2s, box-shadow 0.2s;
@@ -149,7 +149,9 @@ onBeforeUnmount(() => {
 }
 
 .suggestion-item {
-  padding: 10px;
+  padding: 5px;
+  border-bottom:solid ;
+  border-color: #555555;
   cursor: pointer;
   color: #ffffff;
   transition: background 0.2s;
