@@ -370,14 +370,16 @@ function startDrawing() {
   });
 
   map.value.addInteraction(draw.value);
-
   map.value.getViewport().addEventListener('contextmenu', (event) => {
     event.preventDefault();
     if (draw.value) {
-      draw.value.abortDrawing()
-      console.log('Desenho abortado com clique direito');
+      draw.value.abortDrawing();
+      toggleDrawing();
+      const geometry = event.feature.getGeometry();
+      console.log('Geometria desenhada:', geometry);
       useToast().info('Desenho finalizado com clique direito!');
-      drawingActive.value = false;
+      // drawingActive.value = false;
+
     }
   });
 }
