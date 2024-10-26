@@ -74,7 +74,7 @@ const source = new VectorSource();
 const drawLayer = new VectorLayer({ source });
 let draw = ref<Draw | null>(null); // Armazena a interação de desenho
 let drawingActive = ref(false); // Controla se o desenho está ativo
-let drawType = ref('Point'); // Tipo de geometria selecionada
+let drawType = ref('Circle'); // Tipo de geometria selecionada
 
 function initializePopup() {
   popupContent.value = document.getElementById('popup-content');
@@ -343,9 +343,12 @@ const adjustMap = () => {
 };
 function toggleDrawing() {
   if (drawingActive.value) {
+    if(pointFinalStar.value){
+      map.value?.on('singleclick', handleMapClick);
+    }
     stopDrawing();
   } else {
-    map.value?.on('singleclick', null);
+    map.value?.removeEventListener('singleclick', handleMapClick);
     startDrawing();
   }
 }
