@@ -16,8 +16,7 @@
     </div>
     <div class="controls">
       <select v-model="drawType">
-        <option value="Point">Desenhar Ponto</option>
-        <option value="LineString">Desenhar Linha</option>
+        <option value="Circle">Desenhar Círculo</option>
         <option value="Polygon">Desenhar Polígono</option>
       </select>
       <button class="draw-button" @click="toggleDrawing">
@@ -355,7 +354,7 @@ function startDrawing() {
     drawingActive.value = true;
   draw.value = new Draw({
     source,
-    type: drawType.value as 'Point' | 'LineString' | 'Polygon',
+    type: drawType.value as 'Circle' | 'Polygon',
     style: new Style({
       fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
       stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
@@ -375,11 +374,6 @@ function startDrawing() {
     if (draw.value) {
       draw.value.abortDrawing();
       toggleDrawing();
-      const geometry = event.feature.getGeometry();
-      console.log('Geometria desenhada:', geometry);
-      useToast().info('Desenho finalizado com clique direito!');
-      // drawingActive.value = false;
-
     }
   });
 }
