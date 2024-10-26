@@ -1,23 +1,39 @@
 import {Map, View} from "ol";
 import {Tile as TileLayer, Vector as VectorLayer} from "ol/layer";
-import {Vector as VectorSource, XYZ} from "ol/source";
+import {OSM, Vector as VectorSource, XYZ} from "ol/source";
 
-export function createMap(center, zoom, projection) {
-    return new Map({
-        target: 'map',
-        layers: [
-            new TileLayer({
-                source: new XYZ({
-                    url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+export function createMap(center, zoom, projection, drawLayer?) {
+    if (drawLayer) {
+        return new Map({
+            target: 'map',
+            layers: [
+                new TileLayer({
+                    source: new OSM(),
                 }),
+                drawLayer
+            ],
+            view: new View({
+                center: center.value,
+                zoom: zoom.value,
+                projection: projection.value,
             }),
-        ],
-        view: new View({
-            center: center.value,
-            zoom: zoom.value,
-            projection: projection.value,
-        }),
-    })
+        })
+    }else{
+        return new Map({
+            target: 'map',
+            layers: [
+                new TileLayer({
+                    source: new OSM(),
+                }),
+            ],
+            view: new View({
+                center: center.value,
+                zoom: zoom.value,
+                projection: projection.value,
+            }),
+        })
+    }
+
 }
 
 export function createNewVectorLayer(pointFeatures) {

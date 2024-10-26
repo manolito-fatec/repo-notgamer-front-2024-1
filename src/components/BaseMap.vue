@@ -14,20 +14,29 @@
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content"></div>
     </div>
+    <div class="controls">
+      <select v-model="drawType">
+        <option value="Point">Desenhar Ponto</option>
+        <option value="LineString">Desenhar Linha</option>
+        <option value="Polygon">Desenhar Polígono</option>
+      </select>
+      <button class="draw-button" @click="toggleDrawing">
+        {{ drawingActive ? 'Desativar Desenho' : 'Ativar Desenho' }}
+      </button>
+    </div>
 
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import {Map, View, Feature, Overlay} from 'ol';
+import {Map, Feature, Overlay} from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import { OSM, XYZ } from 'ol/source';
+import {OSM, XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import { Point, LineString, Geometry } from 'ol/geom';
-import { Icon, Style, Stroke } from 'ol/style';
-import axios from 'axios';
+import {Icon, Style, Stroke, Fill} from 'ol/style';
 import IconStartPin from '../assets/IconStartPin.png';
 import IconStartAndEnd from '../assets/IconStartAndEnd.png';
 import IconEndPin from '../assets/IconEndPin.png';
@@ -39,6 +48,7 @@ import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
 import {fetchGeomData, fetchPersonById} from "@/services/apiService";
 import {createMap, createNewVectorLayer, createNewVectorSource, createStartLayer} from "@/services/mapService";
+import {Draw} from "ol/interaction";
 
 const toast = useToast();
 
@@ -61,6 +71,12 @@ let popup = ref<Overlay | null>(null);
 let popupContent = ref<HTMLElement | null>(null);
 let popupCloser = ref<HTMLElement | null>(null);
 
+const source = new VectorSource();
+const drawLayer = new VectorLayer({ source });
+let draw = ref<Draw | null>(null); // Armazena a interação de desenho
+let drawingActive = ref(false); // Controla se o desenho está ativo
+let drawType = ref('Point'); // Tipo de geometria selecionada
+
 function initializePopup() {
   popupContent.value = document.getElementById('popup-content');
   popupCloser.value = document.getElementById('popup-closer');
@@ -81,18 +97,21 @@ function initializePopup() {
 }
 
 function handleMapClick(event) {
+  if (popupContent.value) {
+    popupContent.value.innerHTML = null;
+    popup.value?.setPosition(null);
+  }
   map.value?.forEachFeatureAtPixel(event.pixel, function (feature) {
-    const coordinates = (feature.getGeometry() as Point).getCoordinates();
-    console.log(feature)
-    const name = feature.values_.person.fullName
 
-    // Atualizar o conteúdo do popup e posicioná-lo
+    let coordinates = (feature.getGeometry() as Point).getCoordinates();
+    let name = feature.values_.person.fullName
     if (popupContent.value) {
       popupContent.value.innerHTML = `<p><b>${name}</b></p><p>Coordenadas: ${coordinates}</p>`;
       popup.value?.setPosition(coordinates);
     }
   });
 }
+
 
 function getInitialRotation() {
   const [lon1, lat1] = allCoordinatesAnimation.value[0];
@@ -112,9 +131,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
     })
   }
   const baseLayer = new TileLayer({
-    source: new XYZ({
-      url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
-    }),
+    source: new OSM(),
   });
   map.value.addLayer(baseLayer);
   routeLine.value = [];
@@ -137,6 +154,8 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
 
   map.value.addLayer(createNewVectorLayer(pointFeatures));
   map.value.addLayer(createNewVectorSource(routeLine));
+  initializePopup();
+  map.value?.on('singleclick', handleMapClick);
 }
 
 function clearPoints() {
@@ -149,18 +168,16 @@ function clearPoints() {
     pointFinalStar.value = [];
 
     const baseLayer = new TileLayer({
-          source: new XYZ({
-            url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
-          }),
+          source: new OSM(),
     });
     map.value.addLayer(baseLayer);
+    if (popupContent.value) {
+      popupContent.value.innerHTML = null;
+      popup.value?.setPosition(null);
+    }
     adjustMap();
   }
 }
-
-
-
-
 function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
   if (arrayOfGeometryObjects.length === 0) return [];
 
@@ -325,12 +342,55 @@ const adjustMap = () => {
         .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15});
   }
 };
+function toggleDrawing() {
+  if (drawingActive.value) {
+    stopDrawing();
+  } else {
+    map.value?.on('singleclick', null);
+    startDrawing();
+  }
+}
+function startDrawing() {
+  if (!map.value) return;
+    drawingActive.value = true;
+  draw.value = new Draw({
+    source,
+    type: drawType.value as 'Point' | 'LineString' | 'Polygon',
+    style: new Style({
+      fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
+      stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
+    }),
+  });
 
+
+  draw.value.on('drawend', (event) => {
+    const geometry = event.feature.getGeometry();
+    console.log('Geometria desenhada:', geometry);
+    useToast().info('Desenho finalizado!');
+  });
+
+  map.value.addInteraction(draw.value);
+
+  map.value.getViewport().addEventListener('contextmenu', (event) => {
+    event.preventDefault();
+    if (draw.value) {
+      draw.value.abortDrawing()
+      console.log('Desenho abortado com clique direito');
+      useToast().info('Desenho finalizado com clique direito!');
+      drawingActive.value = false;
+    }
+  });
+}
+function stopDrawing() {
+  if (draw.value && map.value) {
+    map.value.removeInteraction(draw.value);
+    draw.value = null;
+    drawingActive.value = false;
+  }
+}
 
 onMounted(() => {
-  map.value = createMap(center, zoom, projection);
-  initializePopup();
-  map.value?.on('singleclick', handleMapClick);
+  map.value = createMap(center, zoom, projection, drawLayer);
 });
 </script>
 
@@ -380,7 +440,7 @@ onMounted(() => {
   min-width: 200px;
   z-index: 10;
   bottom: 12px;
-  left: -50px;
+  left: 50px;
   transform: translate(-50%, -100%);
 }
 
@@ -390,6 +450,28 @@ onMounted(() => {
   top: 2px;
   right: 8px;
   font-size: 1.2em;
+}
+.controls {
+  position: absolute;
+  top: 200px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 4;
+}
+
+.draw-button {
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.draw-button:hover {
+  background-color: #45a049;
 }
 
 
