@@ -223,7 +223,6 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       toast.info("A localização do ponto de início é o mesmo do ponto de fim.");
 
       const startAndEnd = new Feature({
-        properties:
         geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
       });
 
