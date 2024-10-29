@@ -1,6 +1,6 @@
 import {Map, View} from "ol";
 import {Tile as TileLayer, Vector as VectorLayer} from "ol/layer";
-import {OSM, Vector as VectorSource, XYZ} from "ol/source";
+import {OSM, Vector as VectorSource} from "ol/source";
 
 export function createMap(center, zoom, projection, drawLayer?) {
     if (drawLayer) {
@@ -36,20 +36,13 @@ export function createMap(center, zoom, projection, drawLayer?) {
 
 }
 
-export function createNewVectorLayer(pointFeatures) {
+export function createNewVectorLayer(featureArray, layername?: string) {
     return new VectorLayer({
         source: new VectorSource({
-            features: pointFeatures.value,
+            features: featureArray.value,
         }),
+        properties: {layerName: layername},
     });
-}
-
-export function createNewVectorSource(routeLine) {
-    return new VectorLayer({
-        source: new VectorSource({
-            features: routeLine.value,
-        }),
-    })
 }
 
 export function createStartLayer(pointFinalStarArrayOfFeatures) {

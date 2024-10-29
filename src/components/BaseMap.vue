@@ -46,7 +46,7 @@ import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
 import {fetchGeomData, fetchPersonById} from "@/services/apiService";
-import {createMap, createNewVectorLayer, createNewVectorSource, createStartLayer} from "@/services/mapService";
+import {createMap, createNewVectorLayer, createStartLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 
 const toast = useToast();
@@ -129,10 +129,6 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       map.value.values_.layergroup.values_.layers.array_.pop(layer);
     })
   }
-  const baseLayer = new TileLayer({
-    source: new OSM(),
-  });
-  map.value.addLayer(baseLayer);
   routeLine.value = [];
   pointFinalStar.value = [];
 
@@ -150,9 +146,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       adjustMap();
     }
   });
-
-  map.value.addLayer(createNewVectorLayer(pointFeatures));
-  map.value.addLayer(createNewVectorSource(routeLine));
+  map.value.addLayer(createNewVectorLayer(routeLine, 'Layer das Rotas'));
   initializePopup();
   map.value?.on('singleclick', handleMapClick);
 }
@@ -243,7 +237,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       endPoint.setProperties({person: personInPoint});
       startAndEnd.setProperties({person: personInPoint});
       pointFinalStar.value.push(startAndEnd);
-      map.value.addLayer(createStartLayer(pointFinalStar));
+      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer da animação'));
     } else {
       startPointStartPin.setProperties({person: personInPoint});
       endPoint.setProperties({person: personInPoint});
@@ -346,9 +340,12 @@ function toggleDrawing() {
     if(pointFinalStar.value){
       map.value?.on('singleclick', handleMapClick);
     }
+    console.log(map.value?.getLayers().array_);
     stopDrawing();
+
+    // map.value?.removeLayer(map.value?.getLayers().array_[map.value?.getLayers().array_.length - 1]);
   } else {
-    map.value?.removeEventListener('singleclick', handleMapClick);
+    map.value.removeEventListener('singleclick', handleMapClick);
     startDrawing();
   }
 }
