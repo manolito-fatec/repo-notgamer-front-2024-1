@@ -46,7 +46,7 @@ import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
 import {fetchGeomData, fetchPersonById} from "@/services/apiService";
-import {createMap, createNewVectorLayer, createStartLayer} from "@/services/mapService";
+import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 
 const toast = useToast();
@@ -223,6 +223,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       toast.info("A localização do ponto de início é o mesmo do ponto de fim.");
 
       const startAndEnd = new Feature({
+        properties:
         geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
       });
 
@@ -237,14 +238,14 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       endPoint.setProperties({person: personInPoint});
       startAndEnd.setProperties({person: personInPoint});
       pointFinalStar.value.push(startAndEnd);
-      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer da animação'));
+      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos'));
     } else {
       startPointStartPin.setProperties({person: personInPoint});
       endPoint.setProperties({person: personInPoint});
       pointFinalStar.value.push(startPointStartPin);
       pointFinalStar.value.push(startPointIconMap.value);
       pointFinalStar.value.push(endPoint);
-      map.value.addLayer(createStartLayer(pointFinalStar));
+      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos'));
       center.value = endPoint.getGeometry().getCoordinates();
 
       if (!showPlayback.value) {
