@@ -348,7 +348,7 @@ const createMap = () => {
   map.value = new Map({
     target: 'map',
     layers: [
-      new TileLayer({
+      baseLayer.value = new TileLayer({
         source: new XYZ({
           url: `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
         })
