@@ -9,6 +9,7 @@
         v-model:anguloInicial="anguloInicial"
       />
     </div>
+    <DarkOrLight class="toggle-dark-white-mode" @toggleDarkLightMode="toggleTheme"/>
     <div id="map" class="map-container"></div>
     <div
         class="icon-center"
@@ -29,7 +30,7 @@
 import { ref, onMounted } from 'vue';
 import { Map, View, Feature } from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import { OSM, XYZ } from 'ol/source';
+import { XYZ } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import { Point, LineString, Geometry } from 'ol/geom';
@@ -44,6 +45,7 @@ import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
+import DarkOrLight from '@/views/DarkOrLight.vue';
 
 const toast = useToast();
 
@@ -56,14 +58,33 @@ let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
+let darkOrWhiteMap: string;
 const iconScale = ref(1);
 const iconOpacity = ref(1);
 const iconSrc = 'src/assets/IconCenter.png'
 
+const baseLayer = ref<BaseLayer>();
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
 const showPlayback = ref(false);
+const mapMode = ref(false);
+
+function toggleTheme() {
+  mapMode.value = !mapMode.value;
+
+  if (mapMode.value) {
+    darkOrWhiteMap = 'streets-v2-dark';
+  } else {
+    darkOrWhiteMap = 'streets-v2';
+  }
+
+  baseLayer.value?.setSource(
+    new XYZ({
+      url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+    })
+  );
+}
 
 function getInitialRotation() {
   const [lon1, lat1] = allCoordinatesAnimation.value[0];
@@ -82,12 +103,13 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       map.value.values_.layergroup.values_.layers.array_.pop(layer);
     })
   }
-  const baseLayer = new TileLayer({
+  baseLayer.value = new TileLayer({
     source: new XYZ({
-      url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+      url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`,
     }),
   });
-  map.value.addLayer(baseLayer);
+
+  map.value.addLayer(baseLayer.value);
   routeLine.value = [];
   pointFinalStar.value = [];
 
@@ -118,12 +140,16 @@ function clearPoints() {
     routeLine.value = [];
     pointFinalStar.value = [];
 
-    const baseLayer = new TileLayer({
-          source: new XYZ({
-            url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
-          }),
+    if (showPlayback.value) {
+      showPlayback.value = false;
+    }
+
+    baseLayer.value = new TileLayer({
+      source: new XYZ({
+        url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+      }),
     });
-    map.value.addLayer(baseLayer);
+    map.value.addLayer(baseLayer.value);
     adjustMap();
   }
 }
@@ -301,7 +327,8 @@ function makeLineFromPoints(featureList) {
   return new VectorLayer({
     source: new VectorSource({
       features: routeLine.value,
-    })
+    }),
+    zIndex: 1
   })
 }
 
@@ -323,10 +350,10 @@ const createMap = () => {
     layers: [
       new TileLayer({
         source: new XYZ({
-          url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
-        }),
-      }),
-    ],
+          url: `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+        })
+      })
+      ],
     view: new View({
       center: center.value,
       zoom: zoom.value,
@@ -382,6 +409,7 @@ function handleMouseLeave() {
 onMounted(() => {
   createMap();
 });
+
 </script>
 
 <style scoped>
@@ -409,14 +437,22 @@ onMounted(() => {
   transition: bottom 0.5s ease;
 }
 
+.toggle-dark-white-mode {
+  justify-content: center;
+  position: absolute;
+  right: 24px;
+  bottom: 77px;
+  z-index: 2;
+}
+
 :global(.ol-zoom-in) {
-  bottom: 6em;
+  bottom: 11.5em;
   right: 2em;
   position: fixed;
 }
 
 :global(.ol-zoom-out) {
-  bottom: 4.5em;
+  bottom: 9em;
   right: 2em;
   position: fixed;
 }
