@@ -42,14 +42,6 @@ export function createNewVectorLayer(featureArray, layername?: string) {
             features: featureArray.value,
         }),
         properties: {layerName: layername},
-    });
-}
-
-export function createStartLayer(pointFinalStarArrayOfFeatures) {
-    return new VectorLayer({
-        source: new VectorSource({
-            features: pointFinalStarArrayOfFeatures.value,
-        }),
         zIndex: 2,
     });
 }
