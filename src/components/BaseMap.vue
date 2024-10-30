@@ -179,19 +179,19 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
   initializePopup();
   map.value?.on('singleclick', handleMapClick);
-  console.log(map.value?.getLayers().array_)
 }
 
 function clearPoints() {
   if (map.value) {
-    map.value.values_.layergroup.values_.layers.array_.forEach((layer) => {
-      map.value.values_.layergroup.values_.layers.array_.pop(layer);
+    map.value?.getLayers().array_.forEach(layer => {
+      while (map.value?.getLayers().array_[map.value?.getLayers().array_.length-1].values_.layerName != 'TileLayer'){
+        map.value?.removeLayer(map.value?.getLayers().array_[map.value?.getLayers().array_.length-1]);
+      }
     })
+    route.value = [];
     pointFeatures.value = [];
     routeLine.value = [];
     pointFinalStar.value = [];
-
-    map.value.addLayer(createTileLayer('TileLayer',darkOrWhiteMap));
     if (popupContent.value) {
       popupContent.value.innerHTML = null;
       popup.value?.setPosition(null);
