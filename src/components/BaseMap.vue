@@ -24,15 +24,7 @@
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content"></div>
     </div>
-    <div class="controls">
-      <select v-model="drawType">
-        <option value="Circle">Desenhar Círculo</option>
-        <option value="Polygon">Desenhar Polígono</option>
-      </select>
-      <button class="draw-button" @click="toggleDrawing">
-        {{ drawingActive ? 'Desativar Desenho' : 'Ativar Desenho' }}
-      </button>
-    </div>
+    
 
   </div>
 </template>
