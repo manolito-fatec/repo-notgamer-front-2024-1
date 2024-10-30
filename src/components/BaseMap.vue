@@ -18,10 +18,7 @@
         @click="centerMap"
         :style="{ cursor: 'pointer', opacity: iconOpacity }"
     >
-      <img
-          :src="iconSrc"
-          :style="{ width: '33px', height: '33px', transform: `scale(${iconScale})` }"
-      />
+      <i class="fa-solid fa-location-crosshairs icon-center-icon"></i>
     </div>
   </div>
 </template>
@@ -61,7 +58,6 @@ let anguloInicial = 0;
 let darkOrWhiteMap: string;
 const iconScale = ref(1);
 const iconOpacity = ref(1);
-const iconSrc = 'src/assets/IconCenter.png'
 
 const baseLayer = ref<BaseLayer>();
 const startPointIconMap = ref<Feature<Geometry>>();
@@ -71,6 +67,7 @@ const showPlayback = ref(false);
 const mapMode = ref(false);
 
 function toggleTheme() {
+  const iconCenter = document.getElementById("icon-center");
   mapMode.value = !mapMode.value;
 
   if (mapMode.value) {
@@ -168,7 +165,8 @@ const getAllPoints = async (getPointsUrl: string) => {
     if (axios.isAxiosError(error) && error.response) {
       const errorMessage = error.response.data?.message ||
           "Erro desconhecido ao buscar pontos.";
-    } if(error.code == 'ERR_BAD_RESPONSE'){
+    }
+    if(error.code == 'ERR_BAD_RESPONSE'){
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
     }
     else {
@@ -216,7 +214,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
         rotation: anguloInicial
       }),
     }));
-    
+
     const endPoint = new Feature({
       geometry: new Point([arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].longitude, arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].latitude]),
     });
@@ -229,7 +227,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       }),
     }));
 
-    if(startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
+    if (startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]) {
       if (showPlayback.value) {
         showPlayback.value = false;
       }
@@ -249,10 +247,10 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       pointFinalStar.value.push(startAndEnd);
       createStartLayer(pointFinalStar);
     } else {
-        pointFinalStar.value.push(startPointStartPin);
-        pointFinalStar.value.push(startPointIconMap.value);
-        pointFinalStar.value.push(endPoint);
-        createStartLayer(pointFinalStar);
+      pointFinalStar.value.push(startPointStartPin);
+      pointFinalStar.value.push(startPointIconMap.value);
+      pointFinalStar.value.push(endPoint);
+      createStartLayer(pointFinalStar);
       center.value = endPoint.getGeometry().getCoordinates();
 
       if (!showPlayback.value) {
@@ -303,12 +301,12 @@ function makeLineFromPoints(featureList) {
       for (let i = 0; i < points.length - 1; i++) {
         const point1 = points[i];
         const point2 = points[i + 1];
-  
-        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates())
-        allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates())
+
+        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates());
+        allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates());
       }
-      
-      route.value = new LineString(allCoordinatesAnimation.value)
+
+      route.value = new LineString(allCoordinatesAnimation.value);
 
       getInitialRotation();
 
@@ -323,13 +321,13 @@ function makeLineFromPoints(featureList) {
       }));
       routeLine.value.push(lineFeature);
     }
-  })
+  });
   return new VectorLayer({
     source: new VectorSource({
       features: routeLine.value,
     }),
     zIndex: 1
-  })
+  });
 }
 
 const adjustMap = () => {
@@ -353,7 +351,7 @@ const createMap = () => {
           url: `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
         })
       })
-      ],
+    ],
     view: new View({
       center: center.value,
       zoom: zoom.value,
@@ -395,21 +393,9 @@ function centerMap() {
     }
   }
 }
-
-function handleMouseOver() {
-  iconScale.value = 1.2;
-  iconOpacity.value = 0.8;
-}
-
-function handleMouseLeave() {
-  iconScale.value = 1;
-  iconOpacity.value = 1;
-}
-
 onMounted(() => {
   createMap();
 });
-
 </script>
 
 <style scoped>
@@ -440,29 +426,42 @@ onMounted(() => {
 .toggle-dark-white-mode {
   justify-content: center;
   position: absolute;
-  right: 24px;
-  bottom: 77px;
+  right: 10px;
+  bottom: 81px;
   z-index: 2;
 }
 
 :global(.ol-zoom-in) {
-  bottom: 11.5em;
-  right: 2em;
+  bottom: 2.5em;
+  right: 10px;
   position: fixed;
 }
 
 :global(.ol-zoom-out) {
-  bottom: 9em;
-  right: 2em;
+  bottom: 1em;
+  right: 10px;
   position: fixed;
 }
 
 .icon-center {
   position: absolute;
-  top: 10px;
+  bottom: 60px;
   right: 10px;
   z-index: 4;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  background-color: white;
+  width: 21px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.icon-center-icon {
+  font-size: 10px;
+  color: #3A3A3A;
 
 }
 </style>
