@@ -2,20 +2,7 @@ import {Feature, Map, View} from "ol";
 import {Tile as TileLayer, Vector as VectorLayer} from "ol/layer";
 import {OSM, Vector as VectorSource} from "ol/source";
 
-export function createMap(center: number[], zoom: number, projection: string, layer?: TileLayer) {
-    if(layer){
-        return new Map({
-            target: 'map',
-            layers: [
-                layer
-            ],
-            view: new View({
-                center: center.value,
-                zoom: zoom.value,
-                projection: projection.value,
-            }),
-        })
-    }
+export function createMap(center: number[], zoom: number, projection: string) {
     return new Map({
         target: 'map',
         layers: [
