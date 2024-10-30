@@ -72,9 +72,9 @@ let popupCloser = ref<HTMLElement | null>(null);
 
 const source = new VectorSource();
 const drawLayer = new VectorLayer({ source });
-let draw = ref<Draw | null>(null); // Armazena a interação de desenho
-let drawingActive = ref(false); // Controla se o desenho está ativo
-let drawType = ref('Circle'); // Tipo de geometria selecionada
+let draw = ref<Draw | null>(null);
+let drawingActive = ref(false);
+let drawType = ref('Circle');
 
 function initializePopup() {
   popupContent.value = document.getElementById('popup-content');
@@ -125,14 +125,12 @@ function getInitialRotation() {
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
   if (map.value) {
-    map.value.values_.layergroup.values_.layers.array_.forEach((layer) => {
-      map.value.values_.layergroup.values_.layers.array_.pop(layer);
-    })
+    map.value?.getLayers().array_.forEach(layer => {})
   }
   routeLine.value = [];
   pointFinalStar.value = [];
 
-  fetchGeomData(filterData.person, filterData.startDate, filterData.endDate).then((points) => {
+  fetchGeomData(filterData.person, filterData.startDate, filterData.endDate, 0).then((points) => {
     if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
       if (showPlayback.value) {
@@ -147,8 +145,10 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
     }
   });
   map.value.addLayer(createNewVectorLayer(routeLine, 'Layer das Rotas'));
+  map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
   initializePopup();
   map.value?.on('singleclick', handleMapClick);
+  console.log(map.value?.getLayers().array_);
 }
 
 function clearPoints() {
@@ -168,6 +168,7 @@ function clearPoints() {
       popupContent.value.innerHTML = null;
       popup.value?.setPosition(null);
     }
+    map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
     adjustMap();
   }
 }
@@ -237,14 +238,14 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       endPoint.setProperties({person: personInPoint});
       startAndEnd.setProperties({person: personInPoint});
       pointFinalStar.value.push(startAndEnd);
-      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos'));
+      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos finais e iniciais'));
     } else {
       startPointStartPin.setProperties({person: personInPoint});
       endPoint.setProperties({person: personInPoint});
       pointFinalStar.value.push(startPointStartPin);
       pointFinalStar.value.push(startPointIconMap.value);
       pointFinalStar.value.push(endPoint);
-      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos'));
+      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos finais e iniciais'));
       center.value = endPoint.getGeometry().getCoordinates();
 
       if (!showPlayback.value) {
@@ -340,10 +341,7 @@ function toggleDrawing() {
     if(pointFinalStar.value){
       map.value?.on('singleclick', handleMapClick);
     }
-    console.log(map.value?.getLayers().array_);
     stopDrawing();
-
-    // map.value?.removeLayer(map.value?.getLayers().array_[map.value?.getLayers().array_.length - 1]);
   } else {
     map.value.removeEventListener('singleclick', handleMapClick);
     startDrawing();
@@ -352,22 +350,18 @@ function toggleDrawing() {
 function startDrawing() {
   if (!map.value) return;
     drawingActive.value = true;
-  draw.value = new Draw({
-    source,
+    draw.value = new Draw({
+    source: source,
+    stopClick: true,
     type: drawType.value as 'Circle' | 'Polygon',
     style: new Style({
-      fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
-      stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
+    fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
+    stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
     }),
   });
-
-
   draw.value.on('drawend', (event) => {
-    const geometry = event.feature.getGeometry();
-    console.log('Geometria desenhada:', geometry);
     useToast().info('Desenho finalizado!');
   });
-
   map.value.addInteraction(draw.value);
   map.value.getViewport().addEventListener('contextmenu', (event) => {
     event.preventDefault();
@@ -386,7 +380,8 @@ function stopDrawing() {
 }
 
 onMounted(() => {
-  map.value = createMap(center, zoom, projection, drawLayer);
+  map.value = createMap(center, zoom, projection);
+  map.value.addLayer(createNewVectorLayer(source, 'Draw Layer',source));
 });
 </script>
 
