@@ -1,8 +1,8 @@
-import {Map, View} from "ol";
+import {Feature, Map, View} from "ol";
 import {Tile as TileLayer, Vector as VectorLayer} from "ol/layer";
 import {OSM, Vector as VectorSource} from "ol/source";
 
-export function createMap(center, zoom, projection) {
+export function createMap(center: number[], zoom: number, projection: string) {
     return new Map({
         target: 'map',
         layers: [
@@ -17,7 +17,7 @@ export function createMap(center, zoom, projection) {
         }),
     })
 }
-export function createNewVectorLayer(featureArray?, layername?: string, drawSource?) {
+export function createNewVectorLayer(featureArray?: Feature[], layername?: string, drawSource?: VectorSource) {
     if (drawSource) {
             return new VectorLayer({
                 source: drawSource,
