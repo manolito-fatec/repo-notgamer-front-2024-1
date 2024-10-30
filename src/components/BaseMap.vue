@@ -46,9 +46,9 @@ import DarkOrLight from '@/views/DarkOrLight.vue';
 
 const toast = useToast();
 
-let center = ref([-60.457873,0.584053]);
+let center = ref([-55.491477, -14.235004]);
 let projection = ref("EPSG:4326");
-let zoom = ref(5);
+let zoom = ref(4.5);
 let map = ref<Map | null>(null);
 let pointFeatures = ref<Feature[]>([]);
 let routeLine = ref<Feature[]>([]);
@@ -378,8 +378,8 @@ const createMap = () => {
 function centerMap() {
   if (map.value) {
     if (pointFeatures.value.length === 0) {
-      const defaultCenter = [-60.457873, 0.584053];
-      const defaultZoom = 5;
+      const defaultCenter = [-55.491477, -14.235004];
+      const defaultZoom = 4.5;
 
       map.value.getView().setCenter(defaultCenter);
       map.value.getView().setZoom(defaultZoom);
@@ -418,7 +418,7 @@ onMounted(() => {
   position: absolute;
   width: 100%;
   height: 6.8%;
-  bottom: 0px;
+  bottom: 0;
   z-index: 2;
   transition: bottom 0.5s ease;
 }
@@ -426,13 +426,13 @@ onMounted(() => {
 .toggle-dark-white-mode {
   justify-content: center;
   position: absolute;
-  right: 10px;
-  bottom: 81px;
+  right: 11px;
+  bottom: 138px;
   z-index: 2;
 }
 
 :global(.ol-zoom-in) {
-  bottom: 2.5em;
+  bottom: 3.5em;
   right: 10px;
   position: fixed;
 }
@@ -443,24 +443,36 @@ onMounted(() => {
   position: fixed;
 }
 
+:global(.ol-control button)  {
+  color: #000000;
+  display: block;
+  font-weight: bold;
+  font-size: inherit;
+  text-align: center;
+  height: 2.67em;
+  width: 2.67em;
+  line-height: .4em;
+  border: none;
+  border-radius: 2px;
+}
+
 .icon-center {
   position: absolute;
-  bottom: 60px;
-  right: 10px;
+  bottom: 97.91px;
+  right: 11px;
   z-index: 4;
   background-color: white;
-  width: 21px;
-  height: 21px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
 }
 
 .icon-center-icon {
-  font-size: 10px;
+  font-size: 20px;
   color: #3A3A3A;
 
 }

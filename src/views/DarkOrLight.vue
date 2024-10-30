@@ -24,17 +24,17 @@ input[type="checkbox"] {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 21px;
-  height: 21px;
+  width: 40px;
+  height: 40px;
   background-color: white;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
 }
 
 .sun, .moon {
   text-align: center;
   position: absolute;
-  font-size: 15px;
+  font-size: 20px;
   transition: 0.3s;
   color: #3A3A3A;
 }
