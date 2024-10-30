@@ -9,7 +9,17 @@
         v-model:anguloInicial="anguloInicial"
       />
     </div>
+    <DarkOrLight class="toggle-dark-white-mode" @toggleDarkLightMode="toggleTheme"/>
     <div id="map" class="map-container"></div>
+    <div
+        class="icon-center"
+        @mouseover="handleMouseOver"
+        @mouseleave="handleMouseLeave"
+        @click="centerMap"
+        :style="{ cursor: 'pointer', opacity: iconOpacity }"
+    >
+      <i class="fa-solid fa-location-crosshairs icon-center-icon"></i>
+    </div>
     <div id="popup" class="ol-popup">
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content"></div>
@@ -46,8 +56,9 @@ import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
 import {fetchGeomData, fetchPersonById} from "@/services/apiService";
-import {createMap, createNewVectorLayer} from "@/services/mapService";
+import {createMap, createNewVectorLayer, createTileLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
+import DarkOrLight from '@/views/DarkOrLight.vue';
 
 const toast = useToast();
 
@@ -75,6 +86,31 @@ const drawLayer = new VectorLayer({ source });
 let draw = ref<Draw | null>(null);
 let drawingActive = ref(false);
 let drawType = ref('Circle');
+
+const mapMode = ref(false);
+let darkOrWhiteMap: string;
+const iconScale = ref(1);
+const iconOpacity = ref(1);
+
+function toggleTheme() {
+  const iconCenter = document.getElementById("icon-center");
+  mapMode.value = !mapMode.value;
+
+  if (mapMode.value) {
+    darkOrWhiteMap = 'streets-v2-dark';
+  } else {
+    darkOrWhiteMap = 'streets-v2';
+  }
+  if (map.value) {
+    map.value?.getLayers().array_.forEach(layer => {
+      if(layer.values_.layerName == 'TileLayer'){
+        layer.setSource(new XYZ({
+          url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+        }));
+      }
+    })
+  }
+}
 
 function initializePopup() {
   popupContent.value = document.getElementById('popup-content');
@@ -124,12 +160,15 @@ function getInitialRotation() {
 
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
   pointFeatures.value = [];
-  if (map.value) {
-    map.value?.getLayers().array_.forEach(layer => {})
-  }
   routeLine.value = [];
   pointFinalStar.value = [];
-
+  if (map.value) {
+    map.value?.getLayers().array_.forEach(layer => {
+      if(layer.values_.layerName != 'TileLayer'){
+        map.value?.removeLayer(layer)
+      }
+    })
+  }
   fetchGeomData(filterData.person, filterData.startDate, filterData.endDate, 0).then((points) => {
     if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
@@ -148,7 +187,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
   initializePopup();
   map.value?.on('singleclick', handleMapClick);
-  console.log(map.value?.getLayers().array_);
+  console.log(map.value?.getLayers().array_)
 }
 
 function clearPoints() {
@@ -160,10 +199,7 @@ function clearPoints() {
     routeLine.value = [];
     pointFinalStar.value = [];
 
-    const baseLayer = new TileLayer({
-          source: new OSM(),
-    });
-    map.value.addLayer(baseLayer);
+    map.value.addLayer(createTileLayer('TileLayer',darkOrWhiteMap));
     if (popupContent.value) {
       popupContent.value.innerHTML = null;
       popup.value?.setPosition(null);
@@ -320,7 +356,8 @@ function makeLineFromPoints(featureList) {
   return new VectorLayer({
     source: new VectorSource({
       features: routeLine.value,
-    })
+    }),
+    properties: {layerName: 'Layer das Rotas'}
   })
 }
 
@@ -380,7 +417,8 @@ function stopDrawing() {
 }
 
 onMounted(() => {
-  map.value = createMap(center, zoom, projection);
+  darkOrWhiteMap = 'streets-v2';
+  map.value = createMap(center, zoom, projection, darkOrWhiteMap);
   map.value.addLayer(createNewVectorLayer(source, 'Draw Layer',source));
 });
 </script>
@@ -411,14 +449,14 @@ onMounted(() => {
 }
 
 :global(.ol-zoom-in) {
-  bottom: 6em;
-  right: 2em;
+  bottom: 2.5em;
+  right: 10px;
   position: fixed;
 }
 
 :global(.ol-zoom-out) {
-  bottom: 4.5em;
-  right: 2em;
+  bottom: 1em;
+  right: 10px;
   position: fixed;
 }
 .ol-popup {
@@ -463,6 +501,34 @@ onMounted(() => {
 
 .draw-button:hover {
   background-color: #45a049;
+}
+.toggle-dark-white-mode {
+  justify-content: center;
+  position: absolute;
+  right: 10px;
+  bottom: 81px;
+  z-index: 2;
+}
+.icon-center {
+  position: absolute;
+  bottom: 60px;
+  right: 10px;
+  z-index: 4;
+  background-color: white;
+  width: 21px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.icon-center-icon {
+  font-size: 10px;
+  color: #3A3A3A;
+
 }
 
 

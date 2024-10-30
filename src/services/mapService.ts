@@ -1,13 +1,16 @@
 import {Feature, Map, View} from "ol";
 import {Tile as TileLayer, Vector as VectorLayer} from "ol/layer";
-import {OSM, Vector as VectorSource} from "ol/source";
+import {OSM, Vector as VectorSource, XYZ} from "ol/source";
 
-export function createMap(center: number[], zoom: number, projection: string) {
+export function createMap(center: number[], zoom: number, projection: string, darkOrWhiteMap?) {
     return new Map({
         target: 'map',
         layers: [
             new TileLayer({
-                source: new OSM(),
+                properties: {layerName: 'TileLayer'},
+                source: new XYZ({
+                    url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`,
+                }),
             }),
         ],
         view: new View({
@@ -32,4 +35,12 @@ export function createNewVectorLayer(featureArray?: Feature[], layername?: strin
         zIndex: 2,
     });
 }}
+export function createTileLayer(layername?: string, darkOrWhiteMap?: string) {
+    return new TileLayer({
+        source: new XYZ({
+            url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+        }),
+        properties: {layerName: 'TileLayer'},
+    })
+}
 
