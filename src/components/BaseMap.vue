@@ -476,6 +476,11 @@ onMounted(() => {
   text-decoration: none;
   position: absolute;
   top: 2px;
+  right: 8px;
+  font-size: 1.2em;
+}
+
+
 .draw-button {
   padding: 10px 15px;
   background-color: #4CAF50;
