@@ -406,8 +406,26 @@ function stopDrawing() {
     draw.value = null;
     drawingActive.value = false;
   }
-}
 
+}
+function centerMap() {
+  if (map.value) {
+    if (pointFeatures.value.length === 0) {
+      const defaultCenter = [-60.457873, 0.584053];
+      const defaultZoom = 5;
+
+      map.value?.getView().setCenter(defaultCenter);
+      map.value?.getView().setZoom(defaultZoom);
+    } else {
+      const coordinates = pointFeatures.value.map((ponto) =>
+          ponto.getGeometry().getCoordinates()
+      );
+      const extent = boundingExtent(coordinates);
+
+      map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
+    }
+  }
+}
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
   map.value = createMap(center, zoom, projection, darkOrWhiteMap);
