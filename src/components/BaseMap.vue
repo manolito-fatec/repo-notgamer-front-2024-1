@@ -9,7 +9,17 @@
         v-model:anguloInicial="anguloInicial"
       />
     </div>
+    <DarkOrLight class="toggle-dark-white-mode" @toggleDarkLightMode="toggleTheme"/>
     <div id="map" class="map-container"></div>
+    <div
+        class="icon-center"
+        @mouseover="handleMouseOver"
+        @mouseleave="handleMouseLeave"
+        @click="centerMap"
+        :style="{ cursor: 'pointer', opacity: iconOpacity }"
+    >
+      <i class="fa-solid fa-location-crosshairs icon-center-icon"></i>
+    </div>
     <div id="popup" class="ol-popup">
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content"></div>
@@ -23,19 +33,19 @@
         {{ drawingActive ? 'Desativar Desenho' : 'Ativar Desenho' }}
       </button>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import {Map, Feature, Overlay} from 'ol';
+import {Map, View, Feature, Overlay} from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import {OSM, XYZ} from 'ol/source';
+import { XYZ } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import { Point, LineString, Geometry } from 'ol/geom';
-import {Icon, Style, Stroke, Fill} from 'ol/style';
+import { Icon, Style, Stroke } from 'ol/style';
+import axios from 'axios';
 import IconStartPin from '../assets/IconStartPin.png';
 import IconStartAndEnd from '../assets/IconStartAndEnd.png';
 import IconEndPin from '../assets/IconEndPin.png';
@@ -48,6 +58,8 @@ import { boundingExtent } from 'ol/extent';
 import {fetchGeomData, fetchPersonById} from "@/services/apiService";
 import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
+import DarkOrLight from '@/views/DarkOrLight.vue';
+import type BaseLayer from "ol/layer/Base";
 
 const toast = useToast();
 
@@ -55,16 +67,22 @@ let center = ref([-60.457873,0.584053]);
 let projection = ref("EPSG:4326");
 let zoom = ref(5);
 let map = ref<Map | null>(null);
+
 let pointFeatures = ref<Feature[]>([]);
 let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
+let darkOrWhiteMap: string;
+const iconScale = ref(1);
+const iconOpacity = ref(1);
 
+const baseLayer = ref<BaseLayer>();
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
 const showPlayback = ref(false);
+const mapMode = ref(false);
 
 let popup = ref<Overlay | null>(null);
 let popupContent = ref<HTMLElement | null>(null);
@@ -79,19 +97,16 @@ let drawType = ref('Circle');
 function initializePopup() {
   popupContent.value = document.getElementById('popup-content');
   popupCloser.value = document.getElementById('popup-closer');
-
   popup.value = new Overlay({
     element: document.getElementById('popup')!,
     autoPan: true,
     autoPanAnimation: { duration: 250 },
   });
-
   popupCloser.value.onclick = function () {
     popup.value?.setPosition(undefined);
     popupCloser.value?.blur();
     return false;
   };
-
   map.value?.addOverlay(popup.value);
 }
 
@@ -101,16 +116,31 @@ function handleMapClick(event) {
     popup.value?.setPosition(null);
   }
   map.value?.forEachFeatureAtPixel(event.pixel, function (feature) {
+      let coordinates = (feature.getGeometry() as Point).getCoordinates();
+      let name = feature.values_.person.fullName
+      if (popupContent.value) {
+        popupContent.value.innerHTML = `<p><b>${name}</b></p><p>Coordenadas: ${coordinates}</p>`;
+        popup.value?.setPosition(coordinates);
+      }
+    });
+  }
 
-    let coordinates = (feature.getGeometry() as Point).getCoordinates();
-    let name = feature.values_.person.fullName
-    if (popupContent.value) {
-      popupContent.value.innerHTML = `<p><b>${name}</b></p><p>Coordenadas: ${coordinates}</p>`;
-      popup.value?.setPosition(coordinates);
-    }
-  });
+function toggleTheme() {
+  const iconCenter = document.getElementById("icon-center");
+  mapMode.value = !mapMode.value;
+
+  if (mapMode.value) {
+    darkOrWhiteMap = 'streets-v2-dark';
+  } else {
+    darkOrWhiteMap = 'streets-v2';
+  }
+
+  baseLayer.value?.setSource(
+    new XYZ({
+      url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+    })
+  );
 }
-
 
 function getInitialRotation() {
   const [lon1, lat1] = allCoordinatesAnimation.value[0];
@@ -127,6 +157,13 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   if (map.value) {
     map.value?.getLayers().array_.forEach(layer => {})
   }
+  baseLayer.value = new TileLayer({
+    source: new XYZ({
+      url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`,
+    }),
+  });
+
+  map.value.addLayer(baseLayer.value);
   routeLine.value = [];
   pointFinalStar.value = [];
 
@@ -144,11 +181,6 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       adjustMap();
     }
   });
-  map.value.addLayer(createNewVectorLayer(routeLine, 'Layer das Rotas'));
-  map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
-  initializePopup();
-  map.value?.on('singleclick', handleMapClick);
-  console.log(map.value?.getLayers().array_);
 }
 
 function clearPoints() {
@@ -160,15 +192,21 @@ function clearPoints() {
     routeLine.value = [];
     pointFinalStar.value = [];
 
-    const baseLayer = new TileLayer({
-          source: new OSM(),
-    });
-    map.value.addLayer(baseLayer);
     if (popupContent.value) {
       popupContent.value.innerHTML = null;
       popup.value?.setPosition(null);
     }
     map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
+    if (showPlayback.value) {
+      showPlayback.value = false;
+    }
+
+    baseLayer.value = new TileLayer({
+      source: new XYZ({
+        url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+      }),
+    });
+    map.value.addLayer(baseLayer.value);
     adjustMap();
   }
 }
@@ -178,10 +216,6 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
   if (nameFilter) {
     const startPointStartPin = new Feature({
       geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-    });
-    const personInPoint = ref();
-    fetchPersonById(nameFilter).then( person => {
-      personInPoint.value = person;
     });
 
     startPointStartPin.setStyle(new Style({
@@ -297,11 +331,11 @@ function makeLineFromPoints(featureList) {
         const point1 = points[i];
         const point2 = points[i + 1];
 
-        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates())
-        allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates())
+        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates());
+        allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates());
       }
 
-      route.value = new LineString(allCoordinatesAnimation.value)
+      route.value = new LineString(allCoordinatesAnimation.value);
 
       getInitialRotation();
 
@@ -316,14 +350,14 @@ function makeLineFromPoints(featureList) {
       }));
       routeLine.value.push(lineFeature);
     }
-  })
+  });
   return new VectorLayer({
     source: new VectorSource({
       features: routeLine.value,
-    })
-  })
+    }),
+    zIndex: 1
+  });
 }
-
 
 const adjustMap = () => {
   const coordinates = pointFeatures.value.map((pontos) =>
@@ -378,9 +412,14 @@ function stopDrawing() {
     drawingActive.value = false;
   }
 }
-
 onMounted(() => {
-  map.value = createMap(center, zoom, projection);
+  darkOrWhiteMap = 'streets-v2';
+  baseLayer.value = new TileLayer({
+    source: new XYZ({
+      url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`,
+    }),
+  });
+  map.value = createMap(center, zoom, projection, baseLayer);
   map.value.addLayer(createNewVectorLayer(source, 'Draw Layer',source));
 });
 </script>
@@ -410,17 +449,6 @@ onMounted(() => {
   transition: bottom 0.5s ease;
 }
 
-:global(.ol-zoom-in) {
-  bottom: 6em;
-  right: 2em;
-  position: fixed;
-}
-
-:global(.ol-zoom-out) {
-  bottom: 4.5em;
-  right: 2em;
-  position: fixed;
-}
 .ol-popup {
   position: absolute;
   background-color: black;
@@ -435,13 +463,6 @@ onMounted(() => {
   transform: translate(-50%, -100%);
 }
 
-.ol-popup-closer {
-  text-decoration: none;
-  position: absolute;
-  top: 2px;
-  right: 8px;
-  font-size: 1.2em;
-}
 .controls {
   position: absolute;
   top: 200px;
@@ -451,6 +472,10 @@ onMounted(() => {
   z-index: 4;
 }
 
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
 .draw-button {
   padding: 10px 15px;
   background-color: #4CAF50;
@@ -465,5 +490,45 @@ onMounted(() => {
   background-color: #45a049;
 }
 
+.toggle-dark-white-mode {
+  justify-content: center;
+  position: absolute;
+  right: 10px;
+  bottom: 81px;
+  z-index: 2;
+}
 
+:global(.ol-zoom-in) {
+  bottom: 2.5em;
+  right: 10px;
+  position: fixed;
+}
+
+:global(.ol-zoom-out) {
+  bottom: 1em;
+  right: 10px;
+  position: fixed;
+}
+
+.icon-center {
+  position: absolute;
+  bottom: 60px;
+  right: 10px;
+  z-index: 4;
+  background-color: white;
+  width: 21px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.icon-center-icon {
+  font-size: 10px;
+  color: #3A3A3A;
+
+}
 </style>
