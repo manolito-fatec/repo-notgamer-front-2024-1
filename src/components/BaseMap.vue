@@ -31,6 +31,7 @@
       <button class="draw-button" @click="saveGeometry">
         Salvar
       </button>
+      <input v-model="drawGeomName">
     </div>
     <div id="popup" class="ol-popup">
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
@@ -64,6 +65,7 @@ import {createMap, createNewVectorLayer, createTileLayer} from "@/services/mapSe
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import {TRUE} from "ol/functions";
+import type {DrawedGeom} from "@/components/Types";
 
 const toast = useToast();
 
@@ -91,6 +93,7 @@ const drawLayer = new VectorLayer({ source });
 let draw = ref<Draw | null>(null);
 let drawingActive = ref(false);
 let drawType = ref('Circle');
+let drawGeomName = ref<string>();
 
 const mapMode = ref(false);
 let darkOrWhiteMap: string;
@@ -98,10 +101,13 @@ const iconScale = ref(1);
 const iconOpacity = ref(1);
 
 function saveGeometry(){
+  let cachedGeom = ref<DrawedGeom>();
   map.value?.getLayers().array_.forEach(layer =>{
     if(layer.values_.layerName == 'Draw Layer'){
       layer.getSource().getFeatures().forEach(feature =>{
-        console.log(feature.getGeometry().flatCoordinatesq);
+        cachedGeom.name = drawGeomName.value;
+        cachedGeom.coordinates = feature.getGeometry().flatCoordinates;
+        saveGeometry(drawGeomName);
       });
     }
   })
