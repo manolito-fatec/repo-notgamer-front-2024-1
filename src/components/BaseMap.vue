@@ -20,6 +20,18 @@
     >
       <i class="fa-solid fa-location-crosshairs icon-center-icon"></i>
     </div>
+    <div class="controls">
+      <select v-model="drawType" @change="toggleDrawing">
+        <option value="Circle">Desenhar Círculo</option>
+        <option value="Polygon">Desenhar Polígono</option>
+      </select>
+      <button class="draw-button" @click="toggleDrawing">
+        {{ drawingActive ? 'Desativar Desenho' : 'Ativar Desenho' }}
+      </button>
+      <button class="draw-button" @click="saveGeometry">
+        Salvar
+      </button>
+    </div>
     <div id="popup" class="ol-popup">
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content"></div>
@@ -51,6 +63,7 @@ import {fetchGeomData, fetchPersonById} from "@/services/apiService";
 import {createMap, createNewVectorLayer, createTileLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
+import {TRUE} from "ol/functions";
 
 const toast = useToast();
 
@@ -83,6 +96,16 @@ const mapMode = ref(false);
 let darkOrWhiteMap: string;
 const iconScale = ref(1);
 const iconOpacity = ref(1);
+
+function saveGeometry(){
+  map.value?.getLayers().array_.forEach(layer =>{
+    if(layer.values_.layerName == 'Draw Layer'){
+      layer.getSource().getFeatures().forEach(feature =>{
+        console.log(feature.getGeometry().flatCoordinatesq);
+      });
+    }
+  })
+}
 
 function toggleTheme() {
   const iconCenter = document.getElementById("icon-center");

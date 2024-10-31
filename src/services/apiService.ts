@@ -97,3 +97,7 @@ export const fetchGeomData = async ( person, startDate, endDate, page: number)=>
     }
 
 }
+
+export const saveGeomData = async (coordinates : string[], name :string)=>{
+
+}
