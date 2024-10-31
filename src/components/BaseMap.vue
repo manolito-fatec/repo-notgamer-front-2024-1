@@ -443,7 +443,7 @@ onMounted(() => {
   border: 1px solid #c1060a;
   min-width: 200px;
   z-index: 10;
-  bottom: 12px;
+  bottom: -200px;
   left: 50px;
   transform: translate(-50%, -100%);
 }
