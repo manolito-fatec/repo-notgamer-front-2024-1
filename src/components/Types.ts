@@ -39,3 +39,8 @@ export type Address={
     state: string
     country: string
 }
+
+export type DrawedGeom={
+    coordinates: [string[]]
+    name: string
+}
