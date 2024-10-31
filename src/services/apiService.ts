@@ -1,7 +1,9 @@
 import axios from 'axios';
+import type {DrawedGeom} from "@/components/Types";
 
 const BASE_URL_MOCKED = 'https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json';
 const BASE_URL_ENDPOINT = 'http://localhost:8080/person';
+const BASE_URL_GEOM = 'http://localhost:8080/location';
 
 interface Person {
     idPerson: number;
@@ -98,6 +100,25 @@ export const fetchGeomData = async ( person, startDate, endDate, page: number)=>
 
 }
 
-export const saveGeomData = async (coordinates : string[], name :string)=>{
-
+export const saveGeomData = async (drawedGeom : DrawedGeom)=>{
+    let postUrl = BASE_URL_GEOM + '/save-polygon'
+    try{
+        const response  = await axios.post(postUrl, drawedGeom);
+        if (response.data && response.data.content.length > 0) {
+            toast.info("Nada a salvar");
+            return [];
+        }
+        return response.data.content
+    } catch (error){
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro ao salvar geometrias.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("BAD_RESPONSE.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+        return [];
+    }
 }
