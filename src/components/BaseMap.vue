@@ -24,6 +24,8 @@
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content"></div>
     </div>
+    
+
   </div>
 </template>
 
@@ -52,42 +54,20 @@ import DarkOrLight from '@/views/DarkOrLight.vue';
 
 const toast = useToast();
 
-let center = ref([-55.491477, -14.235004]);
+let center = ref([-60.457873,0.584053]);
 let projection = ref("EPSG:4326");
-let zoom = ref(4.5);
+let zoom = ref(5);
 let map = ref<Map | null>(null);
 let pointFeatures = ref<Feature[]>([]);
 let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
-let darkOrWhiteMap: string;
-const iconScale = ref(1);
-const iconOpacity = ref(1);
 
-const baseLayer = ref<BaseLayer>();
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
 const showPlayback = ref(false);
-const mapMode = ref(false);
-
-function toggleTheme() {
-  const iconCenter = document.getElementById("icon-center");
-  mapMode.value = !mapMode.value;
-
-  if (mapMode.value) {
-    darkOrWhiteMap = 'streets-v2-dark';
-  } else {
-    darkOrWhiteMap = 'streets-v2';
-  }
-
-  baseLayer.value?.setSource(
-    new XYZ({
-      url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
-    })
-  );
-}
 
 let popup = ref<Overlay | null>(null);
 let popupContent = ref<HTMLElement | null>(null);
@@ -265,7 +245,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
       }),
     }));
 
-    if (startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]) {
+    if(startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
       if (showPlayback.value) {
         showPlayback.value = false;
       }
@@ -344,6 +324,7 @@ function makeLineFromPoints(featureList) {
       for (let i = 0; i < points.length - 1; i++) {
         const point1 = points[i];
         const point2 = points[i + 1];
+
         allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates())
         allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates())
       }
@@ -363,7 +344,7 @@ function makeLineFromPoints(featureList) {
       }));
       routeLine.value.push(lineFeature);
     }
-  });
+  })
   return new VectorLayer({
     source: new VectorSource({
       features: routeLine.value,
@@ -445,25 +426,6 @@ function centerMap() {
     }
   }
 }
-
-function centerMap() {
-  if (map.value) {
-    if (pointFeatures.value.length === 0) {
-      const defaultCenter = [-55.491477, -14.235004];
-      const defaultZoom = 4.5;
-
-      map.value.getView().setCenter(defaultCenter);
-      map.value.getView().setZoom(defaultZoom);
-    } else {
-      const coordinates = pointFeatures.value.map((ponto) =>
-          ponto.getGeometry().getCoordinates()
-      );
-      const extent = boundingExtent(coordinates);
-
-      map.value.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
-    }
-  }
-}
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
   map.value = createMap(center, zoom, projection, darkOrWhiteMap);
@@ -491,21 +453,13 @@ onMounted(() => {
   position: absolute;
   width: 100%;
   height: 6.8%;
-  bottom: 0;
+  bottom: 0px;
   z-index: 2;
   transition: bottom 0.5s ease;
 }
 
-.toggle-dark-white-mode {
-  justify-content: center;
-  position: absolute;
-  right: 11px;
-  bottom: 138px;
-  z-index: 2;
-}
-
 :global(.ol-zoom-in) {
-  bottom: 3.5em;
+  bottom: 2.5em;
   right: 10px;
   position: fixed;
 }
@@ -588,37 +542,4 @@ onMounted(() => {
 }
 
 
-:global(.ol-control button)  {
-  color: #000000;
-  display: block;
-  font-weight: bold;
-  font-size: inherit;
-  text-align: center;
-  height: 2.67em;
-  width: 2.67em;
-  line-height: .4em;
-  border: none;
-  border-radius: 2px;
-}
-
-.icon-center {
-  position: absolute;
-  bottom: 97.91px;
-  right: 11px;
-  z-index: 4;
-  background-color: white;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom-left-radius: 2px;
-  border-bottom-right-radius: 2px;
-}
-
-.icon-center-icon {
-  font-size: 20px;
-  color: #3A3A3A;
-
-}
 </style>
