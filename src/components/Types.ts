@@ -7,8 +7,8 @@ export type GeometryPoint ={
     longitude: Number
     latitude: Number
     person :  Pessoa
-
 }
+
 export type Pessoa ={
     idPerson?: Number
     idText?: string
