@@ -13,16 +13,6 @@ interface Device {
     label: string;
     value: number;
 }
-export const fetchPersonById  = async (id: number): Promise<Person> => {
-    try{
-        const response = await axios.get<Person>(BASE_URL_ENDPOINT + '/' + id);
-        return response.data;
-    }catch (error){
-        console.log("Pessoa não encontrada: ",error);
-        throw error;
-    }
-
-}
 
 export const fetchPersons = async (): Promise<Person[]> => {
     try {
@@ -70,30 +60,4 @@ export const fetchHistory = async ( person, startDate, endDate)=>{
         console.error("Erro ao buscar dispositivos:",error);
         throw error;
     }
-}
-
-export const fetchGeomData = async ( person, startDate, endDate, page: number)=>{
-    let getUrl = `http://localhost:8080/tracker/period/${person}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?page=${page}&size=500`;
-    try {
-        const response = await axios.get(getUrl);
-
-        if (response.data && response.data.content.length === 0) {
-            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-            return [];
-        }
-
-        return response.data.content;
-    } catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            const errorMessage = error.response.data?.message ||
-                "Erro desconhecido ao buscar pontos.";
-        } if(error.code == 'ERR_BAD_RESPONSE'){
-            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-        }
-        else {
-            toast.error("Erro na conexão. Tente novamente mais tarde.");
-        }
-        return [];
-    }
-
 }
