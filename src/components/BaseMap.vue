@@ -434,41 +434,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.map-container {
-  width: 100vw;
-  height: 100vh;
-}
-
-.filter-overlay {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color: white;
-  padding: 10px;
-  border-radius: 8px;
-  z-index: 3;
-}
-
-.playback-layer {
-  position: absolute;
-  width: 100%;
-  height: 6.8%;
-  bottom: 0px;
-  z-index: 2;
-  transition: bottom 0.5s ease;
-}
-
-:global(.ol-zoom-in) {
-  bottom: 2.5em;
-  right: 10px;
-  position: fixed;
-}
-
-:global(.ol-zoom-out) {
-  bottom: 1em;
-  right: 10px;
-  position: fixed;
-}
 .ol-popup {
   position: absolute;
   background-color: black;
@@ -512,34 +477,82 @@ onMounted(() => {
 .draw-button:hover {
   background-color: #45a049;
 }
+.map-container {
+  width: 100vw;
+  height: 100vh;
+}
+
+.filter-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: white;
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 3;
+}
+
+.playback-layer {
+  position: absolute;
+  width: 100%;
+  height: 6.8%;
+  bottom: 0;
+  z-index: 2;
+  transition: bottom 0.5s ease;
+}
+
 .toggle-dark-white-mode {
   justify-content: center;
   position: absolute;
-  right: 10px;
-  bottom: 81px;
+  right: 11px;
+  bottom: 138px;
   z-index: 2;
 }
+
+:global(.ol-zoom-in) {
+  bottom: 3.5em;
+  right: 10px;
+  position: fixed;
+}
+
+:global(.ol-zoom-out) {
+  bottom: 1em;
+  right: 10px;
+  position: fixed;
+}
+
+:global(.ol-control button)  {
+  color: #000000;
+  display: block;
+  font-weight: bold;
+  font-size: inherit;
+  text-align: center;
+  height: 2.67em;
+  width: 2.67em;
+  line-height: .4em;
+  border: none;
+  border-radius: 2px;
+}
+
 .icon-center {
   position: absolute;
-  bottom: 60px;
-  right: 10px;
+  bottom: 97.91px;
+  right: 11px;
   z-index: 4;
   background-color: white;
-  width: 21px;
-  height: 21px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
 }
 
 .icon-center-icon {
-  font-size: 10px;
+  font-size: 20px;
   color: #3A3A3A;
 
 }
-
 
 </style>
