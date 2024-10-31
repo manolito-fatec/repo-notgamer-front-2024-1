@@ -129,7 +129,6 @@ function handleMapClick(event) {
     popup.value?.setPosition(null);
   }
   map.value?.forEachFeatureAtPixel(event.pixel, function (feature) {
-
     let coordinates = (feature.getGeometry() as Point).getCoordinates();
     let name = feature.values_.person.fullName
     if (popupContent.value) {
@@ -430,6 +429,7 @@ onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
   map.value = createMap(center, zoom, projection, darkOrWhiteMap);
   map.value.addLayer(createNewVectorLayer(source, 'Draw Layer',source));
+  initializePopup()
 });
 </script>
 
@@ -443,7 +443,7 @@ onMounted(() => {
   border: 1px solid #c1060a;
   min-width: 200px;
   z-index: 10;
-  bottom: -200px;
+  bottom: 100px;
   left: 50px;
   transform: translate(-50%, -100%);
 }
