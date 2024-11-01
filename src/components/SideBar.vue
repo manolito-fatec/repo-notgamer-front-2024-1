@@ -4,6 +4,9 @@
     <button class="toggle-btn" @click="onToggleFilters">
       <IconFilter />
     </button>
+    <button class="toggle-zone" @click="onToggleZone">
+      Blablabla
+    </button>
   </div>
 </template>
 
@@ -20,6 +23,11 @@ const emit = defineEmits(['toggle-filters']);
 function onToggleFilters() {
   store.onClickToggleFilters();
   emit('toggle-filters')
+}
+
+function onToggleZone() {
+  emit('toggle-zone');
+
 }
 
 </script>

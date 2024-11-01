@@ -69,15 +69,16 @@ const hideZones = ref(false)
 
 <style scoped>
 .zone-of-interest {
-  background-color: #222222;
+  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
   padding: 24px;
-  border-radius: 10px;
+  border-radius: 8px;
   color: #ffffff;
   width: 480px;
-  height: 780px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .title {
@@ -149,5 +150,4 @@ const hideZones = ref(false)
   cursor: pointer;
   margin-bottom: 20px;
 }
-
 </style>

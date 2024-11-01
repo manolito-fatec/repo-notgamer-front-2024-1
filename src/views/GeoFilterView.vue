@@ -1,6 +1,6 @@
 <template>
   <div class="filter-container">
-    <Sidebar @toggle-filters="toggleFilters"/>
+    <Sidebar @toggle-filters="toggleFilters" @toggle-zone="toggleZone"/>
     <div v-if="showFilters" class="filters">
       <PersonSearch
           id="autocomplete1"
@@ -32,6 +32,10 @@
         <History :historyConfiguration="listOfHistory" :loading="loading"/>
       </div>
     </div>
+    <div v-if="showZone" class="zone-component">
+      <InterestZone>
+      </InterestZone>
+    </div>
   </div>
 </template>
 
@@ -48,6 +52,7 @@ import PersonSearch from "@/components/PersonSearch.vue";
 import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
+import InterestZone from "@/components/InterestZone.vue";
 
 const toast = useToast();
 const Person = ref(null);
@@ -57,6 +62,7 @@ const DeviceOption = ref([]);
 const listOfHistory = ref([]);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
+const showZone = ref(false);
 const isPersonSelected = ref(false);
 const startDate = ref(null);
 const loading = ref(false);
@@ -105,6 +111,9 @@ const onPersonSelect = async (selectedPerson) => {
 
 function toggleFilters() {
   showFilters.value = !showFilters.value;
+}
+function toggleZone(){
+  showZone.value = !showZone.value;
 }
 
 const emit = defineEmits(['saveFilter', 'clearPoints']);
