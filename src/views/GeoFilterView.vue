@@ -1,6 +1,11 @@
 <template>
   <div class="filter-container">
-    <Sidebar @toggle-filters="toggleFilters" @toggle-zone="toggleZone"/>
+    <Sidebar
+        @toggle-filters="toggleFilters"
+        @toggle-zone="toggleZone"
+        :showFilters="showFilters"
+        :showZone="showZone"
+    />
     <div v-if="showFilters" class="filters">
       <PersonSearch
           id="autocomplete1"
@@ -114,7 +119,6 @@ function toggleFilters() {
   showFilters.value = !showFilters.value;
   if (showFilters.value) {
     showZone.value = false;
-    emit('toggleSvgColor', false);
   }
 }
 
@@ -122,7 +126,6 @@ function toggleZone() {
   showZone.value = !showZone.value;
   if (showZone.value) {
     showFilters.value = false;
-    emit('toggleSvgColor', true);
   }
 }
 
