@@ -1,55 +1,55 @@
 <template>
-  <div class="zone-of-interest">
-    <h2 class="title">ZONA DE INTERESSE</h2>
+  <div class="zone-container">
+    <div class="zone-of-interest">
+      <h2 class="title">ZONA DE INTERESSE</h2>
 
-    <label for="zone-name" class="label">Dê um nome para sua Hot zone:</label>
-    <input type="text" id="zone-name" class="input" placeholder="Nome da Hot zone" />
+      <label for="zone-name" class="label">Dê um nome para sua Hot zone:</label>
+      <input type="text" id="zone-name" class="input" placeholder="Nome da Hot zone" />
 
-    <div class="options">
-      <Checkbox
-          id="draw-mode"
-          label="Modo desenho"
-          v-model="drawMode"
-      />
+      <div class="options">
+        <Checkbox
+            id="draw-mode"
+            label="Modo desenho"
+            v-model="drawMode"
+        />
+        <DropDown
+            id="draw-mode-dropdown"
+            label=""
+            :options="modeOptions"
+            v-model="selectedMode"
+            class="small-dropdown"
+        />
+      </div>
+
+      <div class="checkbox-and-button">
+        <Checkbox
+            id="hide-zones"
+            label="Ocultar Zonas"
+            v-model="hideZones"
+        />
+        <button class="save-button">Salvar</button>
+      </div>
 
       <DropDown
-          id="draw-mode-dropdown"
-          label=""
-          :options="modeOptions"
-          v-model="selectedMode"
-          class="small-dropdown"
-      />
-    </div>
-
-    <div class="checkbox-and-button">
-      <Checkbox
-          id="hide-zones"
-          label="Ocultar Zonas"
-          v-model="hideZones"
+          id="select-hotzone"
+          label="Selecione a Hot zone:"
+          :options="hotzoneOptions"
+          v-model="selectedHotzone"
+          class="dropdown"
       />
 
-      <button class="save-button">Salvar</button>
+      <button class="remove-button">Remover filtro</button>
+
+      <DropDown
+          id="delete-hotzone"
+          label="Exclua sua Hot zone:"
+          :options="hotzoneOptions"
+          v-model="deletedHotzone"
+          class="dropdown"
+      />
+
+      <button class="delete-button">Deletar</button>
     </div>
-
-    <DropDown
-        id="select-hotzone"
-        label="Selecione a Hot zone:"
-        :options="hotzoneOptions"
-        v-model="selectedHotzone"
-        class="dropdown"
-    />
-
-    <button class="remove-button">Remover filtro</button>
-
-    <DropDown
-        id="delete-hotzone"
-        label="Exclua sua Hot zone:"
-        :options="hotzoneOptions"
-        v-model="deletedHotzone"
-        class="dropdown"
-    />
-
-    <button class="delete-button">Deletar</button>
   </div>
 </template>
 
@@ -68,17 +68,31 @@ const hideZones = ref(false)
 </script>
 
 <style scoped>
-.zone-of-interest {
-  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
-  padding: 24px;
-  border-radius: 8px;
-  color: #ffffff;
-  width: 480px;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+.zone-container {
+  position: fixed;
+  top: 0;
+  left: 100px;
+  width: 420px;
   height: 100%;
+  padding: 8px;
+  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
+  border-left: 4px solid #EC1C24;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  transition: right 0.5s ease;
+  color: #ffffff;
+  z-index: 10;
+  font-family: 'Poppins', regular, sans-serif;
+}
+
+.zone-of-interest {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  border-radius: 8px;
 }
 
 .title {

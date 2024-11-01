@@ -54,6 +54,7 @@ import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
 import InterestZone from "@/components/InterestZone.vue";
 
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
@@ -111,12 +112,19 @@ const onPersonSelect = async (selectedPerson) => {
 
 function toggleFilters() {
   showFilters.value = !showFilters.value;
-}
-function toggleZone(){
-  showZone.value = !showZone.value;
+  if (showFilters.value) {
+    showZone.value = false;
+    emit('toggleSvgColor', false);
+  }
 }
 
-const emit = defineEmits(['saveFilter', 'clearPoints']);
+function toggleZone() {
+  showZone.value = !showZone.value;
+  if (showZone.value) {
+    showFilters.value = false;
+    emit('toggleSvgColor', true);
+  }
+}
 
 function handleSave() {
   let hasErrors = false;
