@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'vue-toastification';
 
 const BASE_URL_MOCKED = 'https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json';
 const BASE_URL_ENDPOINT = 'http://localhost:8080/person';
@@ -76,6 +77,7 @@ export const fetchGeomData = async ( person, startDate, endDate, page: number)=>
     let getUrl = `http://localhost:8080/tracker/period/${person}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?page=${page}&size=500`;
     try {
         const response = await axios.get(getUrl);
+        console.log(getUrl);
 
         if (response.data && response.data.content.length === 0) {
             toast.info("Nenhum ponto encontrado para o filtro selecionado.");

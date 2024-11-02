@@ -32,6 +32,7 @@ import { Icon, Style, Stroke, Fill } from 'ol/style';
 import IconStartPin from '../assets/IconStartPin.png';
 import IconStartAndEnd from '../assets/IconStartAndEnd.png';
 import IconEndPin from '../assets/IconEndPin.png';
+import IconParade from '../assets/IconParade.png';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import IconPositionMap from '../assets/IconPositionMap.png';
 import PlaybackControl from '@/views/PlaybackControl.vue';
@@ -54,6 +55,7 @@ let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
+let pointList;
 
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
@@ -158,11 +160,14 @@ function handleFilterData(filterData: { person: number | undefined, startDate: s
               showPlayback.value = false;
           }
       } else {
-          let pointList = new ref(points);
+          pointList = new ref(points);
           makeGeometryPointFromArray(pointList, filterData.person);
           lineLayer.value = makeLineFromPoints(pointFeatures);
           map.value.addLayer(lineLayer.value);
+        //   createStopPoints(pointList, "Não");
           adjustMap();
+          
+
       }
   });
   map.value.addLayer(createNewVectorLayer(routeLine, 'Layer das Rotas'));
@@ -194,6 +199,21 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
   if (arrayOfGeometryObjects.length === 0) return [];
 
   if (nameFilter) {
+    const stopFeature = arrayOfGeometryObjects.value.map((geometryObject) => {
+        const feature = new Feature({
+            geometry: new Point([geometryObject.longitude, geometryObject.latitude]),
+        });
+
+        feature.setStyle(new Style({
+            image: new Icon({
+                src: IconParade,
+                scale: 0.6,
+                anchor: [0.5, 1],
+            }),
+        }));
+        return feature;
+    });
+
       const startPointStartPin = new Feature({
           geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
       });
@@ -262,6 +282,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
           endPoint.setProperties({ person: personInPoint });
           pointFinalStar.value.push(startPointStartPin);
           pointFinalStar.value.push(startPointIconMap.value);
+          pointFinalStar.value.push(...stopFeature);
           pointFinalStar.value.push(endPoint);
           map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos finais e iniciais'));
           center.value = endPoint.getGeometry().getCoordinates();
@@ -417,59 +438,12 @@ function centerMap() {
   }
 }
 
-
-
-
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
   map.value = createMap(center, zoom, projection, darkOrWhiteMap);
   map.value.addLayer(createNewVectorLayer(source, 'Draw Layer', source));
-  initializePopup()
-  createStopPoints(stopPoints, "Capitais Brasileiras");
-
+  initializePopup();
 });
-
-
-const stopPoints = [
-      { latitude: -23.55052, longitude: -46.6333 }, // São Paulo, Brasil
-      { latitude: -22.9068, longitude: -43.1729 },  // Rio de Janeiro, Brasil
-      { latitude: -19.9167, longitude: -43.9345 },  // Belo Horizonte, Brasil
-      { latitude: -12.9714, longitude: -38.5014 },  // Salvador, Brasil
-      { latitude: -15.7801, longitude: -47.9292 },  // Brasília, Brasil
-  ];
-
-
-
-function createStopPoints(stopPoints: { latitude: number, longitude: number }[], nameFilter: string) {
-      const stopPointFeatures = stopPoints.map((point) => {
-          const stopFeature = new Feature({
-              geometry: new Point([point.longitude, point.latitude]),
-          });
-
-          stopFeature.setStyle(new Style({
-              image: new Icon({
-                  src: IconStartAndEnd,
-                  scale: 0.6,
-                  anchor: [0.5, 1],
-              }),
-          }));
-
-
-          stopFeature.setProperties({ group: nameFilter });
-
-          return stopFeature;
-      });
-
-
-      const stopLayer = new VectorLayer({
-          source: new VectorSource({
-              features: stopPointFeatures,
-          }),
-          properties: { layerName: `Layer dos Pontos de Parada - ${nameFilter}` }
-      });
-
-      map.value?.addLayer(stopLayer);
-  }
 
 </script>
 
