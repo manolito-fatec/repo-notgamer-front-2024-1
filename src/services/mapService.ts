@@ -29,7 +29,7 @@ export function createNewVectorLayer(featureArray?: Feature[], layername?: strin
     } else {
     return new VectorLayer({
         source: new VectorSource({
-            features: featureArray?.value,
+            features: featureArray,
         }),
         properties: {layerName: layername},
         zIndex: 2,

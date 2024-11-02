@@ -4,8 +4,7 @@ export type GeometryPoint ={
     id: number
     idText: string
     createdAt: string
-    longitude: Number
-    latitude: Number
+    coordinates: number[]
     person :  Pessoa
 }
 
