@@ -1,8 +1,10 @@
-import type {GeometryPoint} from "@/components/Types";
+import type {DrawedGeom, GeometryPoint} from "@/components/Types";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
 import {Circle, Fill, Icon, Stroke, Style} from "ol/style";
 import IconStartPin from "@/assets/IconStartPin.png";
+import {handleTypeError} from "@/utils/errorHandler";
+import {ref} from "vue";
 
 
 export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], styleColor?: string, styleIcon?: Icon): Feature {
@@ -58,4 +60,20 @@ export function makeFeature(newGeometry: Point, styleIcon?: Icon, styleColor?: s
         }));
     }
     return createdFeature;
+}
+export function saveGeoms(feature:Feature, drawGeomName?: string){
+    let cachedGeom:DrawedGeom = ref<DrawedGeom>();
+    try{
+        if(feature.getGeometry().getRadius()){
+            cachedGeom.name = drawGeomName.value;
+            cachedGeom.radius = feature.getGeometry().getRadius();
+            cachedGeom.center = feature.getGeometry().getCenter();
+            console.log('Isso é um Circulo', cachedGeom);
+        }
+    } catch (e){
+        cachedGeom.name = drawGeomName.value;
+        cachedGeom.coordinates = feature.getGeometry();
+        console.log('Isso é um Polígono' , cachedGeom);
+        handleTypeError(e);
+    }
 }

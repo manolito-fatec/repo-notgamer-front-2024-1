@@ -64,7 +64,8 @@ import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import {TRUE} from "ol/functions";
 import type {DrawedGeom, GeometryPoint, Pessoa} from "@/components/Types";
-import {makePointsFromArray} from "@/services/geomService";
+import {makePointsFromArray, saveGeoms} from "@/services/geomService";
+import {handleTypeError} from "@/utils/errorHandler";
 
 const toast = useToast();
 
@@ -100,13 +101,14 @@ const iconScale = ref(1);
 const iconOpacity = ref(1);
 
 function saveGeometry(){
-  let cachedGeom = ref<DrawedGeom>();
   map.value?.getLayers().array_.forEach(layer =>{
     if(layer.values_.layerName == 'Draw Layer'){
       layer.getSource().getFeatures().forEach(feature =>{
-        cachedGeom.name = drawGeomName.value;
-        cachedGeom.coordinates = feature.getGeometry().flatCoordinates;
-        saveGeometry(drawGeomName);
+        saveGeoms(feature,drawGeomName.value);
+
+
+
+        // saveGeometry(drawGeomName);
       });
     }
   })
