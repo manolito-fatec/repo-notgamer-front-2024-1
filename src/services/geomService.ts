@@ -2,12 +2,14 @@ import type {DrawedGeom, GeometryPoint} from "@/components/Types";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
 import {Circle, Fill, Icon, Stroke, Style} from "ol/style";
-import IconStartPin from "@/assets/IconStartPin.png";
 import {handleTypeError} from "@/utils/errorHandler";
 import {ref} from "vue";
+import IconPositionMap from "@/assets/IconPositionMap.png";
+import IconStartPin from "@/assets/IconStartPin.png";
+import InconEndPin from "@/assets/IconEndPin.png";
 
 
-export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], styleColor?: string, styleIcon?: Icon): Feature {
+export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], pointStyle?:Style): Feature {
     let newPoints: Point[] = [];
     let newFeatures: Feature[] = [];
     if(arrayOfGeomPoints.length == 0){
@@ -20,7 +22,7 @@ export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], styleCol
             newPoints.push(makeSinglePoint(point));
         })
         newPoints.forEach(point => {
-            newFeatures.push(makeFeature(point, styleIcon, styleColor));
+            newFeatures.push(makeFeature(point, pointStyle));
         })
     }
     return newFeatures;
@@ -30,21 +32,15 @@ export function  makeSinglePoint(pointObject: GeometryPoint): Point {
     return new Point(pointObject.coordinates)
 }
 
-export function makeFeature(newGeometry: Point, styleIcon?: Icon, styleColor?: string): Feature {
+export function makeFeature(newGeometry: Point, pointStyle?:Style): Feature {
     let createdFeature: Feature;
-    if(!styleColor && styleIcon) {
+    if(pointStyle) {
         createdFeature = new Feature({
             geometry: newGeometry
         });
-        createdFeature.setStyle(new Style({image: styleIcon}))
+        createdFeature.setStyle(pointStyle);
     }
-    if(!styleIcon && styleColor) {
-        createdFeature = new Feature({
-            geometry: newGeometry
-        });
-        createdFeature.setStyle(new Style({fill: styleColor}))
-    }
-    if(!styleIcon && !styleColor){
+    if(!pointStyle){
         createdFeature = new Feature({
             geometry: newGeometry
         });
@@ -76,4 +72,33 @@ export function saveGeoms(feature:Feature, drawGeomName?: string){
         console.log('Isso é um Polígono' , cachedGeom);
         handleTypeError(e);
     }
+}
+export function createStartAndEndPoint(arrayOfGeometryObjects:GeometryPoint[],anguloInicial?:number){
+    let pointStartStyle:Style = new Style({
+        image: new Icon({
+            src: IconStartPin,
+            scale: 0.7,
+            anchor: [0.5, 1],
+        }),
+    });
+    let startPointIconMapStyle:Style = new Style({
+        image: new Icon({
+            src: IconPositionMap,
+            anchor: [0.5, 0.5],
+            scale: 0.2,
+            rotation: anguloInicial
+        }),
+    });
+    let endPointStyle:Style = new Style({
+        image: new Icon({
+            src: InconEndPin,
+            scale: 0.7,
+            anchor: [0.5, 1],
+        }),
+    })
+    let startPoint:Feature = makeFeature(makeSinglePoint(arrayOfGeometryObjects[0]),pointStartStyle);
+    let startPointIconMap:Feature= makeFeature(makeSinglePoint(arrayOfGeometryObjects[0]),startPointIconMapStyle);
+    let endPoint:Feature = makeFeature(makeSinglePoint(arrayOfGeometryObjects[arrayOfGeometryObjects.length - 1]),endPointStyle);
+    let arrayOfFeatures:Feature[] = [startPoint, endPoint,startPointIconMap];
+    return arrayOfFeatures;
 }

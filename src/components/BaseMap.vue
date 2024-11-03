@@ -44,29 +44,22 @@
 import { ref, onMounted } from 'vue';
 import {Map, Feature, Overlay} from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import {OSM, XYZ} from 'ol/source';
+import {XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import { Point, LineString, Geometry } from 'ol/geom';
-import {Icon, Style, Stroke, Fill} from 'ol/style';
-import IconStartPin from '../assets/IconStartPin.png';
-import IconStartAndEnd from '../assets/IconStartAndEnd.png';
-import IconEndPin from '../assets/IconEndPin.png';
+import {Style, Stroke, Fill} from 'ol/style';
 import GeoFilterView from "@/views/GeoFilterView.vue";
-import IconPositionMap from '../assets/IconPositionMap.png';
 import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
-import {fetchGeomData, fetchPersonById} from "@/services/apiService";
-import {createMap, createNewVectorLayer, createTileLayer} from "@/services/mapService";
+import {fetchGeomData} from "@/services/apiService";
+import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
-import {TRUE} from "ol/functions";
 import type {DrawedGeom, GeometryPoint, Pessoa} from "@/components/Types";
-import {makePointsFromArray, saveGeoms} from "@/services/geomService";
-import {handleTypeError} from "@/utils/errorHandler";
-
+import {createStartAndEndPoint, makePointsFromArray, saveGeoms} from "@/services/geomService";
 const toast = useToast();
 
 let center = ref([-60.457873,0.584053]);
@@ -105,9 +98,6 @@ function saveGeometry(){
     if(layer.values_.layerName == 'Draw Layer'){
       layer.getSource().getFeatures().forEach(feature =>{
         saveGeoms(feature,drawGeomName.value);
-
-
-
         // saveGeometry(drawGeomName);
       });
     }
@@ -200,7 +190,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       }
     } else {
       const geometryPoints = convertToGeometryPoints(points);
-      map.value?.addLayer(createNewVectorLayer(makePointsFromArray(geometryPoints),'teste'))
+      // map.value?.addLayer(createNewVectorLayer(makePointsFromArray(geometryPoints),'teste'))
       map.value?.getLayers().array_.forEach(layer =>{
         if(layer.values_.layerName == 'teste'){
           layer.getSource().getFeatures().forEach(feature =>{
@@ -208,7 +198,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
           });
         }
       });
-
+      map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(geometryPoints,anguloInicial)),'Layer dos Pontos');
       //let pointList = new ref(points);
       // makeGeometryPointFromArray(pointList, filterData.person);
       // lineLayer.value = makeLineFromPoints(pointFeatures);
