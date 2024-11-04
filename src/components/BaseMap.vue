@@ -164,7 +164,6 @@ function handleFilterData(filterData: { person: number | undefined, startDate: s
           makeGeometryPointFromArray(pointList, filterData.person);
           lineLayer.value = makeLineFromPoints(pointFeatures);
           map.value.addLayer(lineLayer.value);
-        //   createStopPoints(pointList, "Não");
           adjustMap();
           
 
@@ -207,7 +206,7 @@ function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
         feature.setStyle(new Style({
             image: new Icon({
                 src: IconParade,
-                scale: 0.6,
+                scale: 0.4,
                 anchor: [0.5, 1],
             }),
         }));
