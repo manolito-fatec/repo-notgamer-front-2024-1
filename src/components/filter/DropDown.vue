@@ -1,6 +1,6 @@
 <template>
-  <div class="filter-item">
-    <label :for="id" class="filter-label">{{ label }}</label>
+  <div class="filter-item" id="filter-item">
+    <label :for="id" class="filter-label" id="filter-label">{{ label }}</label>
     <select
         :id="id"
         :value="modelValue"
@@ -15,12 +15,16 @@
 </template>
 
 <script setup>
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
+
 const props = defineProps({
   id: String,
   label: String,
   modelValue: [String, Number],
   options: Array
 })
+
+
 </script>
 
 <style scoped>

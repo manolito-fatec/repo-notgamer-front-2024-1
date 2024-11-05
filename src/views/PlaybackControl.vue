@@ -1,6 +1,15 @@
 <template>
-  <div>
+  <div class="wrap">
     <div id="control-movement" class="control-movement">
+      <ButtonStartPause
+      id="button-start-pause"
+      v-model="animating"
+      @click="startAndPause"
+      />
+      <DropdownSpeed
+      v-model="selectedValue"
+      @change="typeVelocity"
+      />
       <div class="reproduction-bar">
         <input
             id="speed"
@@ -11,19 +20,8 @@
             @input="handleChangeColorRange"
         >
       </div>
-      <!-- <ButtonBackward/>
-      <ButtonForward/> -->
       <ButtonRestart
           @click="restartAnimation"
-      />
-      <ButtonStartPause
-          id="button-start-pause"
-          v-model="animating"
-          @click="startAndPause"
-      />
-      <DropdownSpeed
-          v-model="selectedValue"
-          @change="typeVelocity"
       />
     </div>
   </div>
@@ -43,7 +41,6 @@ import ButtonRestart from '@/components/ButtonRestart.vue';
 import {Icon, Style} from 'ol/style';
 import IconPositionMap from '../assets/IconPositionMap.png';
 import Coordinate from 'ol/coordinate';
-import {onMounted} from 'vue';
 
 const store = getClick();
 const animating = ref(false);
@@ -60,35 +57,6 @@ const props = defineProps<{
   allCoordinatesAnimation: Coordinate[],
   anguloInicial: number,
 }>();
-
-function watchChanges(newValue) {
-  const playbackControl = document.getElementById('control-movement');
-  const buttonStartPause = document.getElementById('button-start-pause');
-  const rangeInput = playbackControl.querySelector("input[type='range']");
-
-  if (newValue) {
-    playbackControl.style.width = '100%';
-    buttonStartPause.style.left = '550px';
-    playbackControl.style.left = '520px';
-    if (rangeInput) {
-      rangeInput.style.width = '72.9%';
-    }
-  } else {
-    playbackControl.style.width = '100%';
-    buttonStartPause.style.left = '145px';
-    playbackControl.style.left = '5%';
-    if (rangeInput) {
-      rangeInput.style.width = '95%';
-    }
-  }
-}
-
-watch(
-    () => store.onClickFilters,
-    (newValue) => {
-      watchChanges(newValue);
-    }
-);
 
 function getRotationIcon() {
   const coordinates = props.rota.getCoordinates();
@@ -282,28 +250,35 @@ function restartAnimation() {
   }
 }
 
-onMounted(() => {
-  watchChanges(store.onClickFilters);
-})
-
 </script>
 
 <style scoped>
 
-.control-movement {
-  width: 92.8%;
+.wrap {
+  display:flex;
+  width: 100%;
   height: 50px;
-  position: fixed;
-  display: flex;
+  position: absolute;
   bottom: 0px;
-  background: linear-gradient(rgb(50, 50, 50), rgb(0, 0, 0));
+  align-items: center;
+  justify-content: center;
+}
+
+.control-movement {
+  display: grid;
+  grid-template-columns: 10% 5% 75% 10%;
+  width: 750px;
+  height: 50px;
+  border-radius: 10px;
+  background: #262626;
+  justify-items: center;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
 }
 
 .reproduction-bar {
-  width: 100%;
-  position: absolute;
-  display: flex;
-  bottom: 50px;
+  width: 95%;
 }
 
 input[type="range"] {

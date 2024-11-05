@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar">
-    <button class="toggle-btn" @click="onToggleFilters">
+    <button id="toggle-btn" class="toggle-btn" @click="onToggleFilters" @toggle-dark-white-mode="darkMode">
       <IconFilter />
     </button>
     <button class="int-btn" @click="">
@@ -17,12 +17,14 @@ import { ref } from 'vue';
 
 const store = getClick();
 
+
 const emit = defineEmits(['toggle-filters']);
 
 function onToggleFilters() {
   store.onClickToggleFilters();
   emit('toggle-filters')
 }
+
 </script>
 
 <style scoped>
