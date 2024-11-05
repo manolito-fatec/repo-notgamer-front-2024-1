@@ -1,4 +1,4 @@
-<template>  
+<template>
   <div class="dark-white-mode">
     <input type="checkbox" id="toggle" @click="$emit('toggleDarkLightMode')"/>
     <label for="toggle" class="toggle-label">
@@ -9,36 +9,42 @@
 </template>
 
 <style scoped>
-
 input[type="checkbox"] {
   display: none;
+}
+
+.dark-white-mode {
+  position: absolute;
+  right: 10px;
+  z-index: 5;
 }
 
 .toggle-label {
   cursor: pointer;
   display: flex;
-  position: relative;
   justify-content: center;
-  align-items: center; 
-  width: 35px;
-  height: 35px;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
 }
 
 .sun, .moon {
   text-align: center;
   position: absolute;
-  font-size: 35px;
+  font-size: 20px;
   transition: 0.3s;
+  color: #3A3A3A;
 }
 
 .sun {
   opacity: 0;
-  color: white;
 }
 
 .moon {
   opacity: 1;
-  color: black;
 }
 
 input[type="checkbox"]:checked + .toggle-label .sun {
@@ -48,5 +54,4 @@ input[type="checkbox"]:checked + .toggle-label .sun {
 input[type="checkbox"]:checked + .toggle-label .moon {
   opacity: 0;
 }
-
 </style>
