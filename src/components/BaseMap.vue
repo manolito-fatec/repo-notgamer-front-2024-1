@@ -476,7 +476,7 @@ onMounted(() => {
   border: 1px solid #c1060a;
   min-width: 200px;
   z-index: 10;
-  bottom: 100px;
+  bottom: 12px;
   left: 50px;
   transform: translate(-50%, -100%);
 }

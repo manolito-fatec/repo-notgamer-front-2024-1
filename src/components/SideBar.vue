@@ -2,26 +2,32 @@
   <div class="sidebar">
     <IconLogo />
     <button class="toggle-btn" @click="onToggleFilters">
-      <IconFilter />
+      <IconFilter :isActive="showFilters" />
+    </button>
+    <button class="toggle-zone" @click="onToggleZone">
+      Blablabla
     </button>
   </div>
 </template>
 
 <script setup>
-import { getClick } from '@/components/stores/StoreGetClick.js'
+import { defineEmits, defineProps } from 'vue';
 import IconFilter from "@/components/icons/IconFilter.vue";
 import IconLogo from "@/components/icons/IconLogo.vue";
-import {ref} from 'vue';
 
-const store = getClick();
-
-const emit = defineEmits(['toggle-filters']);
+const emit = defineEmits(['toggle-filters', 'toggle-zone']);
+const props = defineProps({
+  showFilters: Boolean,
+  showZone: Boolean
+});
 
 function onToggleFilters() {
-  store.onClickToggleFilters();
-  emit('toggle-filters')
+  emit('toggle-filters');
 }
 
+function onToggleZone() {
+  emit('toggle-zone');
+}
 </script>
 
 <style scoped>
