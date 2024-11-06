@@ -11,11 +11,15 @@
 </template>
 
 <script setup>
-import { defineEmits, defineProps } from 'vue';
 import IconFilter from "@/components/icons/IconFilter.vue";
 import IconLogo from "@/components/icons/IconLogo.vue";
 
 const emit = defineEmits(['toggle-filters', 'toggle-zone']);
+
+const props = defineProps({
+  showFilters: Boolean,
+  showZone: Boolean
+});
 
 function onToggleFilters() {
   emit('toggle-filters');

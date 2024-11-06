@@ -3,8 +3,8 @@
     <div class="zone-of-interest">
       <h2 class="title">ZONA DE INTERESSE</h2>
 
-      <label for="zone-name" class="label">Dê um nome para sua Hot zone:</label>
-      <input class="input" placeholder="Nome da Hot zone" v-model="zoneName" @change="changeZoneName"/>
+      <label for="zone-name" class="label">Dê um nome para sua zona de interesse:</label>
+      <input class="input" placeholder="Nome da zona de interesse" v-model="zoneName" @change="changeZoneName"/>
 
       <div class="options">
         <Checkbox
@@ -33,7 +33,7 @@
 
       <DropDown
           id="select-hotzone"
-          label="Selecione a Hot zone:"
+          label="Selecione a zona de interesse:"
           :options="hotzoneOptions"
           v-model="selectedHotzone"
           class="dropdown"
@@ -43,7 +43,7 @@
 
       <DropDown
           id="delete-hotzone"
-          label="Exclua sua Hot zone:"
+          label="Exclua sua zona de interesse:"
           :options="hotzoneOptions"
           v-model="deletedHotzone"
           class="dropdown"
@@ -75,9 +75,11 @@ const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName'
 function saveDraw() {
   emit('saveDraw');
 }
+
 function changeZoneName(){
   emit('changeZoneName',zoneName.value);
 }
+
 function drawType(){
   if(drawMode.value){
     emit('toggleDrawing');
@@ -88,8 +90,6 @@ function drawType(){
     emit('toggleDrawing');
     drawMode.value = true;
   }
-
-
 }
 </script>
 

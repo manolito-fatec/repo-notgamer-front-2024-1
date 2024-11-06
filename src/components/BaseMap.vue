@@ -387,28 +387,7 @@ onMounted(() => {
   right: 8px;
   font-size: 1.2em;
 }
-.controls {
-  position: absolute;
-  top: 500px;
-  left: 20px;
-  display: flex;
-  gap: 10px;
-  z-index: 4;
-}
 
-.draw-button {
-  padding: 10px 15px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.draw-button:hover {
-  background-color: #45a049;
-}
 .map-container {
   width: 100vw;
   height: 100vh;
@@ -484,7 +463,6 @@ onMounted(() => {
 .icon-center-icon {
   font-size: 20px;
   color: #3A3A3A;
-
 }
 
 </style>

@@ -38,7 +38,11 @@
       </div>
     </div>
     <div v-if="showZone" class="zone-component">
-      <InterestZone @saveDraw="saveDraw" @toggleDrawing="toggleDrawing" @drawType="drawType" @changeZoneName="changeZoneName"/>
+      <InterestZone
+          @saveDraw="saveDraw"
+          @toggleDrawing="toggleDrawing"
+          @drawType="drawType"
+          @changeZoneName="changeZoneName"/>
     </div>
   </div>
 </template>
