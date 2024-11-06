@@ -1,14 +1,33 @@
 <template>
-  <button class="start-button">
+  <button class="start-button" id="start-button">
     <div class="button-content">
-      <IconCorrect class="icon"/>
       <span class="button-text">Iniciar</span>
     </div>
   </button>
 </template>
 
 <script setup>
-import IconCorrect from "@/components/icons/IconCorrect.vue";
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
+import { getClick } from '@/components/stores/StoreGetClick.js'
+import { watch } from 'vue'
+
+const store = darkModeClick();
+const storeFilters = getClick();
+
+
+watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+  () => {
+  const button = document.getElementById('start-button')
+
+  if (store.onClickDarkMode && storeFilters.onClickFilters) {
+    button.style.background = "#EC1C24"
+
+  } else {
+    button.style.background = "#000059"
+    
+  }
+});
+
 </script>
 
 <style scoped>
@@ -18,7 +37,7 @@ import IconCorrect from "@/components/icons/IconCorrect.vue";
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #929292;
+  background-color: #000059;
   border: none;
   border-radius: 8px;
   padding: 8px 20px;
@@ -33,15 +52,9 @@ import IconCorrect from "@/components/icons/IconCorrect.vue";
   justify-content: center;
 }
 
-.start-button .icon {
-  width:15px;
-  height: 15px;
-  margin-right: 3px;
-}
-
 .start-button .button-text {
   font-size: 14px;
   font-weight: 550;
-  color: #262626;
+  color: #FFF;
 }
 </style>

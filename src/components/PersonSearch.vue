@@ -1,6 +1,6 @@
 <template>
   <div ref="filterItem" class="filter-item">
-    <label :for="id" class="filter-label">{{ label }}</label>
+    <label :for="id" class="filter-label" id="filter-label">{{ label }}</label>
     <input
         ref="inputField"
         v-model="searchTerm"
@@ -26,6 +26,11 @@
 
 <script setup>
 import {onBeforeUnmount, onMounted, ref, watch} from 'vue';
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
+import { getClick } from '@/components/stores/StoreGetClick.js'
+
+const store = darkModeClick();
+const storeFilters = getClick();
 
 const props = defineProps({
   id: String,
@@ -101,6 +106,21 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
+
+
+watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+  () => {
+  const filterLabel = document.getElementById('filter-label')
+
+  if (store.onClickDarkMode && storeFilters.onClickFilters) {
+    filterLabel.style.color = "#FFF"
+
+  } else {
+    filterLabel.style.color = "#000"
+    
+  }
+});
+
 </script>
 
 <style scoped>
@@ -112,7 +132,7 @@ onBeforeUnmount(() => {
 .filter-label {
   display: block;
   margin-bottom: 6px;
-  color: #ffffff;
+  color: #000;
   font-weight: 500;
   font-size: 12px;
 }

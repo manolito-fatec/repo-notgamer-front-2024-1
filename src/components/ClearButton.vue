@@ -1,14 +1,33 @@
 <template>
-  <button class="clear-button">
+  <button class="clear-button" id="clear-button">
     <div class="clear-content">
-      <IconBlock class="icon"/>
       <span class="button-text">Limpar</span>
     </div>
   </button>
 </template>
 
 <script setup>
-import IconBlock from "@/components/icons/IconBlock.vue";
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
+import { getClick } from '@/components/stores/StoreGetClick.js'
+import { watch } from 'vue'
+
+const store = darkModeClick();
+const storeFilters = getClick();
+
+
+watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+  () => {
+  const button = document.getElementById('clear-button')
+
+  if (store.onClickDarkMode && storeFilters.onClickFilters) {
+    button.style.background = "#EC1C24"
+
+  } else {
+    button.style.background = "#000059"
+    
+  }
+});
+
 </script>
 
 <style scoped>
@@ -18,8 +37,8 @@ import IconBlock from "@/components/icons/IconBlock.vue";
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #929292;
-  color: #262626;
+  background-color: #000059;
+  color: #FFF;
   border: none;
   border-radius: 8px;
   padding: 8px 20px;
@@ -33,15 +52,9 @@ import IconBlock from "@/components/icons/IconBlock.vue";
   justify-content: center;
 }
 
-.clear-button .icon {
-  width:15px;
-  height: 15px;
-  margin-right: 3px;
-}
-
 .clear-button .button-text {
   font-size: 14px;
   font-weight: 550;
-  color: #262626;
+  color: #FFF;
 }
 </style>

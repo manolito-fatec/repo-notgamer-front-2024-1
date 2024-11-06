@@ -9,11 +9,7 @@
         v-model:anguloInicial="anguloInicial"
       />
     </div>
-<<<<<<< Updated upstream
-    <DarkOrLight class="toggle-dark-white-mode" @toggleDarkLightMode="toggleTheme"/>
-=======
     <DarkOrLight class="toggle-dark-white-mode" @toggle-dark-white-mode="toggleTheme"/> 
->>>>>>> Stashed changes
     <div id="map" class="map-container"></div>
     <div
         class="icon-center"
@@ -499,12 +495,8 @@ onMounted(() => {
 .playback-layer {
   width: 100%;
   height: 6.8%;
-<<<<<<< Updated upstream
-  bottom: 0;
-=======
   position: absolute;
   bottom: 0px;
->>>>>>> Stashed changes
   z-index: 2;
   transition: bottom 0.5s ease;
   align-content: center;

@@ -1,6 +1,6 @@
 <template>
-  <div class="filter-item" id="filter-item">
-    <label :for="id" class="filter-label" id="filter-label">{{ label }}</label>
+  <div class="filter-item">
+    <label :for="id" class="filter-label">{{ label }}</label>
     <select
         :id="id"
         :value="modelValue"
@@ -15,7 +15,6 @@
 </template>
 
 <script setup>
-import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
 
 const props = defineProps({
   id: String,
@@ -35,7 +34,7 @@ const props = defineProps({
 .filter-label {
   display: block;
   margin-bottom: 6px;
-  color: #ffffff;
+  color: #000;
   font-weight: 500;
   font-size: 12px;
 }
