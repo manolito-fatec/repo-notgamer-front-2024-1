@@ -29,7 +29,7 @@
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
       <div>
-        <History :historyConfiguration="listOfHistory" :loading="loading"/>
+        <History @openTeleport="paginatorHistory" :historyConfiguration="listOfHistory" :loading="loading" :person="Person" :init="endDate" :final="endDate"/>
       </div>
     </div>
   </div>
@@ -55,6 +55,8 @@ const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
 const listOfHistory = ref([]);
+const totalPage = ref(0);
+const page = ref(0);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
 const isPersonSelected = ref(false);
@@ -155,17 +157,36 @@ function handleSave() {
       };
       emit('saveFilter', filterData);
       loading.value = true;
-      getHistory(filterData.person, filterData.startDate, filterData.endDate);
+      page.value = 1;
+      getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
     }
   }
 }
 
-const getHistory = async (person, startDate, endDate) => {
+const paginatorHistory = (event) => {
+  
+  let currentPage = page.value + 1;
+  let total = Number(totalPage.value);
+  if(total >= currentPage){
+    loading.value = true;
+    getHistory(Person.value, startDate.value, endDate.value, currentPage);
+  }
+}
+
+const getHistory = async (person, startDate, endDate, pageValue) => {
   try {
-    const historyRequest = await fetchHistory(person, startDate, endDate);
-    listOfHistory.value = historyRequest;
+    const historyRequest = await fetchHistory(person, startDate, endDate, pageValue);
+    listOfHistory.value = [...new Set([...listOfHistory.value, ...historyRequest.content])
+    ];
+    if(listOfHistory.value.length == 1){
+      if(total >= pageValue)
+      loading.value = true;
+      getHistory(person, startDate, endDate, pageValue + 1);
+    }
+    totalPage.value = historyRequest.totalPages;
+    page.value = historyRequest.pageable.pageNumber;
     loading.value = false;
-  } catch (error) {
+  } catch (error){
     console.error(error)
     toast.error("Erro ao buscar histórico. Tente novamente mais tarde.")
   }
@@ -215,7 +236,7 @@ function handleReset() {
   display: flex;
   gap: 10px;
 }
-listIsEmpty
+
 .full-width {
   flex: 1;
 }
