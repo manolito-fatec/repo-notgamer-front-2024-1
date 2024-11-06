@@ -38,13 +38,12 @@
       </div>
     </div>
     <div v-if="showZone" class="zone-component">
-      <InterestZone>
-      </InterestZone>
+      <InterestZone @saveDraw="saveDraw" @toggleDrawing="toggleDrawing" @drawType="drawType" @changeZoneName="changeZoneName"/>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {onMounted, ref} from 'vue';
 import {fetchDevices, fetchPersons} from "@/services/apiService.ts";
 import Sidebar from "@/components/SideBar.vue";
@@ -59,7 +58,7 @@ import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
 import InterestZone from "@/components/InterestZone.vue";
 
-const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor']);
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
@@ -75,6 +74,7 @@ const loading = ref(false);
 const endDate = ref(null);
 const selectedPeriod = ref('');
 const resetFilters = ref(false);
+const selectedMode = ref(null);
 
 onMounted(async () => {
   try {
@@ -91,6 +91,18 @@ onMounted(async () => {
     handleAxiosError(error, toast);
   }
 });
+function drawType(selectedMode:selectedMode){
+  emit("drawType", selectedMode);
+}
+function saveDraw(){
+  emit("saveDraw");
+}
+function toggleDrawing(){
+  emit("toggleDrawing")
+}
+function changeZoneName(changeZoneName:changeZoneName){
+  emit("changeZoneName", changeZoneName);
+}
 
 const onPersonSelect = async (selectedPerson) => {
   Person.value = selectedPerson;

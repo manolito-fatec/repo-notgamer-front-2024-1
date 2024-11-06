@@ -4,20 +4,21 @@
       <h2 class="title">ZONA DE INTERESSE</h2>
 
       <label for="zone-name" class="label">Dê um nome para sua Hot zone:</label>
-      <input type="text" id="zone-name" class="input" placeholder="Nome da Hot zone" />
+      <input class="input" placeholder="Nome da Hot zone" v-model="zoneName" @change="changeZoneName"/>
 
       <div class="options">
         <Checkbox
             id="draw-mode"
             label="Modo desenho"
             v-model="drawMode"
+            @click="$emit('toggleDrawing')"
         />
         <DropDown
             id="draw-mode-dropdown"
-            label=""
             :options="modeOptions"
             v-model="selectedMode"
             class="small-dropdown"
+            @change="drawType"
         />
       </div>
 
@@ -27,7 +28,7 @@
             label="Ocultar Zonas"
             v-model="hideZones"
         />
-        <button class="save-button">Salvar</button>
+        <button class="save-button" @click="saveDraw">Salvar</button>
       </div>
 
       <DropDown
@@ -59,12 +60,37 @@ import Checkbox from "@/components/Checkbox.vue";
 import { ref } from 'vue'
 
 const hotzoneOptions = []
-const modeOptions = []
+const modeOptions = [
+    {label:'Círculo', value:'Circle'},
+    {label:'Polígono', value:'Polygon'}
+]
 const selectedHotzone = ref('')
 const deletedHotzone = ref('')
-const selectedMode = ref('')
+let selectedMode = ref(modeOptions[0].value)
 const drawMode = ref(false)
 const hideZones = ref(false)
+const zoneName = ref(null);
+const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName']);
+
+function saveDraw() {
+  emit('saveDraw');
+}
+function changeZoneName(){
+  emit('changeZoneName',zoneName.value);
+}
+function drawType(){
+  if(drawMode.value){
+    emit('toggleDrawing');
+    emit('drawType',selectedMode.value);
+    emit('toggleDrawing');
+  }else{
+    emit('drawType',selectedMode.value);
+    emit('toggleDrawing');
+    drawMode.value = true;
+  }
+
+
+}
 </script>
 
 <style scoped>
