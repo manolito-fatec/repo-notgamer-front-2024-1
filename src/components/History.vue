@@ -20,8 +20,9 @@
         <div class="icon-expand"></div>
       </button>
     </div>
-    <Loading  v-if="props.loading"/>
-    <ul class="history-container">
+    <Loading v-if="props.loading"/>
+    
+    <ul class="history-container" @scroll="handleScroll" ref="scrollContainer">
       <HistoryDetail v-for="config in props.historyConfiguration"
                      v-if="!props.loading && showHistory " :key="props.historyConfiguration.length"
                      :HistoryDetail="config">
@@ -30,12 +31,13 @@
         <p>Histórico Vazio</p>
       </span>
     </ul>
+
     <div class="history-container">
       <contenthistory>
         <div class="end-icon"></div>
         <div class="grid">
           <div class="text-detail">
-            {{ formatDateTime(props.historyConfiguration[historyConfiguration.length - 1]?.initDateTime) }}
+            {{ formatDateTime(props.historyConfiguration[historyConfiguration.length - 1]?.endDateTime) }}
           </div>
           <div class="text-detail">
             {{ props.historyConfiguration[historyConfiguration.length - 1]?.finality?.address?.road }} -
@@ -50,23 +52,42 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from 'vue'
+import { ref, watch, defineEmits, onMounted, onUnmounted } from 'vue'
 import HistoryDetail from './HistoryDetail.vue';
-import type {HistoryConfig} from './Types'
-import Loading from '@/components/Loading.vue'
+import type { HistoryConfig } from './Types'
+import Loading from '@/components/Loading.vue';
 
 const showHistory = ref(false)
+const scrollContainer = ref(null)
+
+const emits = defineEmits(['openTeleport']); 
 const props = defineProps<{
   historyConfiguration: HistoryConfig
+  totalPage: Number
   loading: Boolean
+  person: String
+  init: String
+  final: String
 }>();
 
-watch(() => props.historyConfiguration,() => {
+watch(() => props.historyConfiguration, () => {
   showHistory.value = true;
 });
 
+let isTeleportOpen = false;
+const handleScroll = (event:any) => {
+  const element = event.target;
+  const atBottom = Math.abs(element.scrollHeight - element.clientHeight - element.scrollTop) <= 1;
+  if (atBottom &&!isTeleportOpen) {
+    isTeleportOpen = true;
+    emits('openTeleport', true);
+  } else if (!atBottom && isTeleportOpen) {
+    isTeleportOpen = false;
+  };
+};
+
 function expandItems() {
-  showHistory.value = !showHistory.value
+  showHistory.value = !showHistory.value;
 }
 
 function formatDateTime(dateString: string): string {
@@ -82,7 +103,6 @@ function formatDateTime(dateString: string): string {
     second: '2-digit',
   });
 }
-
 </script>
 
 <style scoped>
