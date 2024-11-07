@@ -21,6 +21,12 @@
           :options="DeviceOption"
           label="Dispositivos:"
       />
+      <DropDown
+        id="dropdown3"
+        v-model="Zone"
+        :options="ZoneOption"
+        label="Zonas de interesse:"
+      />
       <DataRangePicker
           v-model:endDate="endDate"
           v-model:startDate="startDate"
@@ -68,6 +74,7 @@ const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
+const ZoneOption = ref([]);
 const listOfHistory = ref([]);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
@@ -79,6 +86,19 @@ const endDate = ref(null);
 const selectedPeriod = ref('');
 const resetFilters = ref(false);
 const selectedMode = ref(null);
+
+function drawType(selectedMode:selectedMode){
+  emit("drawType", selectedMode);
+}
+function saveDraw(){
+  emit("saveDraw");
+}
+function toggleDrawing(){
+  emit("toggleDrawing")
+}
+function changeZoneName(changeZoneName:changeZoneName){
+  emit("changeZoneName", changeZoneName);
+}
 
 onMounted(async () => {
   try {
@@ -95,18 +115,6 @@ onMounted(async () => {
     handleAxiosError(error, toast);
   }
 });
-function drawType(selectedMode:selectedMode){
-  emit("drawType", selectedMode);
-}
-function saveDraw(){
-  emit("saveDraw");
-}
-function toggleDrawing(){
-  emit("toggleDrawing")
-}
-function changeZoneName(changeZoneName:changeZoneName){
-  emit("changeZoneName", changeZoneName);
-}
 
 const onPersonSelect = async (selectedPerson) => {
   Person.value = selectedPerson;
