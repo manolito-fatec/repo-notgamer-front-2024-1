@@ -1,12 +1,13 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container" >
     <Sidebar
         @toggle-filters="toggleFilters"
         @toggle-zone="toggleZone"
         :showFilters="showFilters"
         :showZone="showZone"
     />
-    <div v-if="showFilters" class="filters">
+    <div v-show="showFilters" class="filters" id="filters">
+      <div class="title" id="title">FILTRAR</div>
       <PersonSearch
           id="autocomplete1"
           v-model="Person"
@@ -45,7 +46,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import {fetchDevices, fetchPersons} from "@/services/apiService.ts";
 import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
@@ -58,6 +59,8 @@ import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
 import InterestZone from "@/components/InterestZone.vue";
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
+import { getClick } from '@/components/stores/StoreGetClick.js'
 
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor']);
 const toast = useToast();
@@ -75,6 +78,8 @@ const loading = ref(false);
 const endDate = ref(null);
 const selectedPeriod = ref('');
 const resetFilters = ref(false);
+const store = darkModeClick();
+const storeFilters = getClick();
 
 onMounted(async () => {
   try {
@@ -207,6 +212,24 @@ function handleReset() {
 
   emit('clearPoints');
 }
+
+watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+  () => {
+
+  const filter = document.getElementById('filters')
+  const title = document.getElementById('title')
+
+  if (store.onClickDarkMode && storeFilters.onClickFilters){
+    filter.style.borderRight = "4px solid #EC1C24";
+    filter.style.background = "#262626";
+    title.style.color = "#FFF";
+  } else {
+    filter.style.borderRight = "4px solid #000059",
+    filter.style.background = "#EFEFEF",
+    title.style.color = "#000";
+  }
+});
+
 </script>
 
 <style scoped>
@@ -214,20 +237,29 @@ function handleReset() {
 
 .filters {
   position: fixed;
-  top: 0;
+  top: 3%;
   left: 100px;
-  width: 420px;
-  height: 100%;
+  width: 380px;
+  height: 87%;
   padding: 16px;
-  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
-  border-left: 4px solid #EC1C24;
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-right: 4px solid #000059;
+  background: #EFEFEF;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: left 0.5s ease;
   font-family: 'Poppins', regular, sans-serif;
+  font-size: 12px;
   z-index: 10;
+  text:#fff;
+}
+
+.title {
+  font-family: 'Poppins', regular, sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #000;
+  padding-bottom: 0%;
 }
 
 .button-group {
@@ -238,5 +270,19 @@ function handleReset() {
 listIsEmpty
 .full-width {
   flex: 1;
+}
+
+.filter-container ::-webkit-scrollbar {
+  width: 5px;
+  }
+
+.filter-container ::-webkit-scrollbar-thumb {
+  border-radius: 50px;
+  background: #A0A0A080;
+}
+
+.filter-container ::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 50px;
 }
 </style>

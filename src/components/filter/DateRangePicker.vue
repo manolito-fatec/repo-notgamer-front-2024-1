@@ -1,50 +1,61 @@
 <template>
-  <div class="date-range-container">
+  <div class="date-range-container" id="filter-label2">
     <DropDown
-        id="periodDropdown"
-        label="Período:"
-        v-model="selectedPeriod"
-        :options="periodOptions"
-        @change="updateDateRange"
+      id="periodDropdown"
+      label="Período:"
+      v-model="selectedPeriod"
+      :options="periodOptions"
+      @change="updateDateRange"
     />
 
     <div class="date-range">
       <input
-          type="date"
-          v-model="startDate"
-          @change="onStartDateChange"
-          class="filter-input date-input"
+        type="date"
+        v-model="startDate"
+        @change="onStartDateChange"
+        class="filter-input date-input"
+        ref="startDateInput"
       />
-      <span class="date-range-separator"></span>
+      <span class="date-range-separator" ref="separator">-</span>
       <input
-          type="date"
-          v-model="endDate"
-          @change="onEndDateChange"
-          class="filter-input date-input"
+        type="date"
+        v-model="endDate"
+        @change="onEndDateChange"
+        class="filter-input date-input"
+        ref="endDateInput"
       />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import DropDown from "@/components/filter/DropDown.vue";
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
 
 const emit = defineEmits(['update:startDate', 'update:endDate', 'update:selectedPeriod']);
 const startDate = ref(null);
 const endDate = ref(null);
 const selectedPeriod = ref('');
+const store = darkModeClick();
 
 const props = defineProps({
-  reset: Boolean
+  reset: Boolean,
+  lightModeTextColor: { type: String, default: "#fff" },
+  lightModeBgColor: { type: String, default: "#6D6D6D" },
+  darkModeTextColor: { type: String, default: "#FFF" },
+  darkModeBgColor: { type: String, default: "#444444" }
 });
+
+const startDateInput = ref(null);
+const endDateInput = ref(null);
+const separator = ref(null);
 
 watch(() => props.reset, (newValue) => {
   if (newValue) {
     selectedPeriod.value = '';
     startDate.value = null;
     endDate.value = null;
-
     emit('update:startDate', null);
     emit('update:endDate', null);
     emit('update:selectedPeriod', '');
@@ -59,7 +70,6 @@ const periodOptions = [
 
 function updateDateRange() {
   const today = new Date().toISOString().split('T')[0];
-
   if (selectedPeriod.value === 'today') {
     startDate.value = today;
     endDate.value = today;
@@ -103,11 +113,37 @@ function onEndDateChange() {
   selectedPeriod.value = '';
   emit('update:endDate', endDate.value);
 }
+
+function updateDateInputColors() {
+  if (startDateInput.value && endDateInput.value && separator.value) {
+    const isDarkMode = store.onClickDarkMode;
+
+    const textColor = isDarkMode ? props.darkModeTextColor : props.lightModeTextColor;
+    const backgroundColor = isDarkMode ? props.darkModeBgColor : props.lightModeBgColor;
+
+    startDateInput.value.style.color = textColor;
+    startDateInput.value.style.backgroundColor = backgroundColor;
+    endDateInput.value.style.color = textColor;
+    endDateInput.value.style.backgroundColor = backgroundColor;
+    separator.value.style.color = textColor;
+  }
+}
+
+onMounted(() => {
+  updateDateInputColors();
+});
+
+watch(
+  () => store.onClickDarkMode,
+  () => {
+    updateDateInputColors();
+  }
+);
 </script>
 
 <style scoped>
 .date-range-container {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .date-range {
@@ -117,22 +153,14 @@ function onEndDateChange() {
 
 .date-input {
   width: calc(50% - 8px);
-  padding: 8px;
-  border: 1px solid #444444;
+  padding: 5px 12px;
+  border: 1px solid #555555;
   border-radius: 4px;
-  background-color: #444444;
-  color: #fff;
   outline: none;
-}
-
-.date-input:focus {
-  border: 1px solid #444444;
-  box-shadow: none;
 }
 
 .date-range-separator {
   margin: 0 8px;
-  color: #000;
 }
 
 .date-input::-webkit-calendar-picker-indicator {
