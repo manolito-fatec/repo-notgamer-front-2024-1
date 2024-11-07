@@ -1,7 +1,8 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container" >
     <Sidebar @toggle-filters="toggleFilters"/>
-    <div v-if="showFilters" class="filters">
+    <div v-show="showFilters" class="filters" id="filters">
+      <div class="title" id="title">FILTRAR</div>
       <PersonSearch
           id="autocomplete1"
           v-model="Person"
@@ -36,7 +37,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import {fetchDevices, fetchPersons} from "@/services/apiService.ts";
 import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
@@ -48,6 +49,8 @@ import PersonSearch from "@/components/PersonSearch.vue";
 import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
+import { getClick } from '@/components/stores/StoreGetClick.js'
 
 const toast = useToast();
 const Person = ref(null);
@@ -63,6 +66,8 @@ const loading = ref(false);
 const endDate = ref(null);
 const selectedPeriod = ref('');
 const resetFilters = ref(false);
+const store = darkModeClick();
+const storeFilters = getClick();
 
 onMounted(async () => {
   try {
@@ -128,24 +133,24 @@ function handleSave() {
     toast.error("Por favor, selecione uma data de fim.");
     hasErrors = true;
   }
-
+  
   if (startDate.value && endDate.value) {
     const start = new Date(startDate.value);
     const end = new Date(endDate.value);
-
+    
     if (end < start) {
       toast.error("A data de fim deve ser superior à data de início.");
       hasErrors = true;
     } else {
       const diffTime = Math.abs(end - start);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+      
       if (diffDays > 31) {
         toast.error("O intervalo selecionado não pode ser maior que 31 dias.");
         hasErrors = true;
       }
     }
-
+    
     if (!hasErrors) {
       const filterData = {
         person: Person.value,
@@ -179,14 +184,32 @@ function handleReset() {
   endDate.value = null;
   selectedPeriod.value = '';
   listOfHistory.value = [];
-
+  
   resetFilters.value = true;
   setTimeout(() => {
     resetFilters.value = false;
   }, 0);
-
+  
   emit('clearPoints');
 }
+
+watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+  () => {
+    
+  const filter = document.getElementById('filters')
+  const title = document.getElementById('title')
+
+  if (store.onClickDarkMode && storeFilters.onClickFilters){
+    filter.style.borderRight = "4px solid #EC1C24";
+    filter.style.background = "#262626";
+    title.style.color = "#FFF";
+  } else {
+    filter.style.borderRight = "4px solid #000059",
+    filter.style.background = "#EFEFEF",
+    title.style.color = "#000";
+  }
+});
+
 </script>
 
 <style scoped>
@@ -194,20 +217,29 @@ function handleReset() {
 
 .filters {
   position: fixed;
-  top: 0;
+  top: 3%;
   left: 100px;
-  width: 420px;
-  height: 100%;
+  width: 380px;
+  height: 87%;
   padding: 16px;
-  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
-  border-left: 4px solid #EC1C24;
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-right: 4px solid #000059;
+  background: #EFEFEF;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: left 0.5s ease;
   font-family: 'Poppins', regular, sans-serif;
+  font-size: 12px;
   z-index: 10;
+  text:#fff;
+}
+
+.title {
+  font-family: 'Poppins', regular, sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #000;
+  padding-bottom: 0%;
 }
 
 .button-group {
@@ -218,5 +250,19 @@ function handleReset() {
 listIsEmpty
 .full-width {
   flex: 1;
+}
+
+.filter-container ::-webkit-scrollbar {
+  width: 5px;
+  }
+
+.filter-container ::-webkit-scrollbar-thumb {
+  border-radius: 50px;
+  background: #A0A0A080;
+}
+
+.filter-container ::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 50px;
 }
 </style>

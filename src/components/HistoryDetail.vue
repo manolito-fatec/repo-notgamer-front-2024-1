@@ -1,5 +1,5 @@
 <template>
-  <li class="expanded-history">
+  <li class="expanded-history" :class="{ 'dark-mode': isDarkMode }" >
     <div class="start-icon"></div>
     <div class="grid">
       <div class="text-detail">
@@ -12,7 +12,6 @@
         {{ HistoryDetail?.initial?.address?.country }}
       </div>
     </div>
-    <br>
     <div class="end-icon"></div>
     <div class="grid">
       <div class="text-detail">
@@ -28,12 +27,20 @@
   </li>
 </template>
 
-<script lang="ts" setup>
-import type {HistoryContent} from './Types'
+<script setup lang="ts">
+import type { HistoryContent } from './Types';
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
+import { getClick } from '@/components/stores/StoreGetClick.js';
+import { computed } from 'vue';
+
+const store = darkModeClick();
+const storeFilters = getClick();
 
 const props = defineProps<{
-  HistoryDetail: HistoryContent
+  HistoryDetail: HistoryContent;
 }>();
+
+const isDarkMode = computed(() => store.onClickDarkMode && storeFilters.onClickFilters);
 
 function formatDateTime(dateString: string): string {
   if (!dateString) return 'Data e horário indisponíveis';
@@ -52,7 +59,7 @@ function formatDateTime(dateString: string): string {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
 
 .start-icon {
   width: 30px;
@@ -75,7 +82,7 @@ function formatDateTime(dateString: string): string {
 .history-container {
   border-radius: 8px;
   box-sizing: border-box;
-  background-color: #3D3D3D;
+  background: #3D3D3D;
   display: grid;
   grid-template-rows: repeat(auto, 100%);
   height: 100%;
@@ -91,12 +98,16 @@ function formatDateTime(dateString: string): string {
   height: 100%;
   border: none;
   background-color: transparent;
-  color: #ffffff;
-  font-size: 13px;
+  color: #000;
+  font-size: 11px;
   font-family: 'Poppins', regular, sans-serif;
   resize: none;
   box-sizing: border-box;
   cursor: default;
+}
+
+.dark-mode .text-detail {
+  color: #FFF;
 }
 
 .grid {
@@ -107,7 +118,23 @@ function formatDateTime(dateString: string): string {
   height: auto;
   cursor: default;
   justify-items: center;
+  background-color:transparent;
   align-items: center;
 }
+
+.expanded-history{
+  display: grid;
+  grid-template-columns: 10% 90%;
+  align-items: center;
+  justify-items: center;
+  border-radius: 10px;
+  border:2px solid #DADADA;
+  background: #c0c0c0;
+
+}
+
+.dark-mode .expanded-history {
+  border:2px solid #2d2d2d;
+  background: #3d3d3d;
+}
 </style>
-  

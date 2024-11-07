@@ -1,12 +1,26 @@
 <template>
   <div class="dark-white-mode">
-    <input type="checkbox" id="toggle" @click="$emit('toggleDarkLightMode')"/>
+    <input type="checkbox" id="toggle" @click="onToggleDarkMode"/>
     <label for="toggle" class="toggle-label">
       <i class="fas fa-moon moon"></i>
       <i class="fas fa-sun sun"></i>
     </label>
   </div>
 </template>
+
+<script setup>
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
+
+const store = darkModeClick();
+
+const emit = defineEmits(['toggle-dark-white-mode']);
+
+function onToggleDarkMode() {
+  store.onClickToggleDarkMode();
+  emit('toggle-dark-white-mode');
+}
+ 
+</script>
 
 <style scoped>
 input[type="checkbox"] {

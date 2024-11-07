@@ -1,8 +1,26 @@
-<script lang="ts">
+<script lang="ts" setup>
+import {getClick} from '@/components/stores/StoreGetClick.js'
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
+import { watch } from 'vue';
+
+const store = darkModeClick();
+const storeFilters = getClick();
+
+watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+  () => {
+  const loading = document.getElementById('loading')
+
+  if (store.onClickDarkMode && storeFilters.onClickFilters){
+    loading.style.borderTopColor = "#EC1C24";
+  } else {
+    loading.style.borderTopColor = "#000059";
+  }
+});
+
 </script>
 <template>
 <div class="loading-state">
-  <div class="loading"></div>
+  <div class="loading" id="loading"></div>
 </div>
 </template>
 <style lang="css" scoped>
@@ -20,7 +38,7 @@
   height: 60px;
   border-radius: 50%;
   border: 5px solid #fff;
-  border-top-color: #EC1C24;
+  border-top-color: #000059;
   animation: loading 1s linear infinite;
 }
 @keyframes loading {
