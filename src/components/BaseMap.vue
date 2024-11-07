@@ -89,11 +89,9 @@ const iconOpacity = ref(1);
 
 function saveGeometry(){
   map.value?.getLayers().array_.forEach(layer =>{
-    console.log(layer);
     if(layer.values_.layerName == 'Draw Layer'){
       layer.getSource().getFeatures().forEach(feature =>{
         saveGeoms(feature,drawGeomName.value);
-        // saveGeometry(drawGeomName);
       });
     }
   })
@@ -102,8 +100,8 @@ function saveGeometry(){
 function drawTypeUpdate(selectedMode:selectedMode){
   drawType.value = selectedMode;
 }
-function changeZoneName(changeZoneName:changeZoneName){
-  drawGeomName.value = changeZoneName;
+function changeZoneName(newZoneName){
+  drawGeomName.value = newZoneName;
 }
 
 function toggleTheme() {
