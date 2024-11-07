@@ -204,8 +204,8 @@ watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
     filter.style.background = "#262626";
     title.style.color = "#FFF";
   } else {
-    filter.style.borderRight = "4px solid #000059"
-    filter.style.background = "#EFEFEF";
+    filter.style.borderRight = "4px solid #000059",
+    filter.style.background = "#EFEFEF",
     title.style.color = "#000";
   }
 });
@@ -231,6 +231,7 @@ watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
   font-family: 'Poppins', regular, sans-serif;
   font-size: 12px;
   z-index: 10;
+  text:#fff;
 }
 
 .title {

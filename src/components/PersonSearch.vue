@@ -1,22 +1,23 @@
 <template>
   <div ref="filterItem" class="filter-item">
-    <label :for="id" class="filter-label" id="filter-label">{{ label }}</label>
+    <label :for="id" class="filter-label" ref="filterLabel">{{ label }}</label>
     <input
-        ref="inputField"
-        v-model="searchTerm"
-        class="filter-input"
-        placeholder="Digite para buscar..."
-        type="text"
-        @focus="handleFocus"
-        @input="filterOptions"
-        @keydown.enter="selectClosestOption"
+      ref="inputField"
+      v-model="searchTerm"
+      class="filter-input"
+      placeholder="Digite para buscar..."
+      type="text"
+      @focus="handleFocus"
+      @input="filterOptions"
+      @keydown.enter="selectClosestOption"
     />
     <ul v-if="filteredOptions.length > 0" class="suggestions">
       <li
-          v-for="option in filteredOptions"
-          :key="option.value"
-          class="suggestion-item"
-          @click="selectOption(option)"
+        v-for="option in filteredOptions"
+        :key="option.value"
+        class="suggestion-item"
+        :style="suggestionItemStyle"
+        @click="selectOption(option)"
       >
         {{ option.label }}
       </li>
@@ -25,9 +26,9 @@
 </template>
 
 <script setup>
-import {onBeforeUnmount, onMounted, ref, watch} from 'vue';
-import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
-import { getClick } from '@/components/stores/StoreGetClick.js'
+import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue';
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
+import { getClick } from '@/components/stores/StoreGetClick.js';
 
 const store = darkModeClick();
 const storeFilters = getClick();
@@ -37,14 +38,18 @@ const props = defineProps({
   label: String,
   modelValue: [String, Number],
   options: Array,
-  reset: Boolean
+  reset: Boolean,
+  lightModeTextColor: { type: String, default: "#000" },
+  lightModeBgColor: { type: String, default: "#6D6D6D" },
+  darkModeTextColor: { type: String, default: "#FFF" },
+  darkModeBgColor: { type: String, default: "#444444" }
 });
 
 const emit = defineEmits(['update:modelValue']);
-
 const searchTerm = ref('');
 const filteredOptions = ref([]);
 const filterItem = ref(null);
+const filterLabel = ref(null);
 const inputField = ref(null);
 
 watch(() => props.reset, (newValue) => {
@@ -67,7 +72,7 @@ function filterOptions() {
     filteredOptions.value = props.options;
   } else {
     filteredOptions.value = props.options.filter(option =>
-        option.label.toLowerCase().includes(searchTerm.value.toLowerCase())
+      option.label.toLowerCase().includes(searchTerm.value.toLowerCase())
     );
   }
 }
@@ -98,29 +103,50 @@ function handleClickOutside(event) {
   }
 }
 
+function updateFilterColors() {
+  const isDarkMode = store.onClickDarkMode && storeFilters.onClickFilters;
+  const textColor = isDarkMode ? props.darkModeTextColor : props.lightModeTextColor;
+  const backgroundColor = isDarkMode ? props.darkModeBgColor : props.lightModeBgColor;
+
+  if (filterLabel.value) {
+    filterLabel.value.style.color = textColor;
+  }
+  if (inputField.value) {
+    inputField.value.style.color = textColor;
+    inputField.value.style.backgroundColor = backgroundColor;
+  }
+}
+
+const suggestionItemStyle = computed(() => {
+  const isDarkMode = store.onClickDarkMode && storeFilters.onClickFilters;
+  return {
+    color: isDarkMode ? props.darkModeTextColor : props.lightModeTextColor,
+    backgroundColor: isDarkMode ? props.darkModeBgColor : props.lightModeBgColor
+  };
+});
+
+const placeholderStyle = computed(() => {
+  const isDarkMode = store.onClickDarkMode && storeFilters.onClickFilters;
+  return {
+    color: isDarkMode ? props.darkModeTextColor : props.lightModeTextColor
+  };
+});
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  updateFilterColors();
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-
-
-watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+watch(
+  () => [store.onClickDarkMode, storeFilters.onClickFilters],
   () => {
-  const filterLabel = document.getElementById('filter-label')
-
-  if (store.onClickDarkMode && storeFilters.onClickFilters) {
-    filterLabel.style.color = "#FFF"
-
-  } else {
-    filterLabel.style.color = "#000"
-    
+    updateFilterColors();
   }
-});
-
+);
 </script>
 
 <style scoped>
@@ -132,7 +158,6 @@ watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
 .filter-label {
   display: block;
   margin-bottom: 6px;
-  color: #000;
   font-weight: 500;
   font-size: 12px;
 }
@@ -142,9 +167,7 @@ watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
   padding: 5px 12px;
   border: 1px solid #555555;
   border-radius: 6px;
-  background-color: #444444;
   font-size: 12px;
-  color: #fff;
   outline: none;
   transition: border 0.2s, box-shadow 0.2s;
 }
@@ -161,7 +184,6 @@ watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
   border: 1px solid #888888;
   max-height: 150px;
   overflow-y: auto;
-  background: #444444;
   position: absolute;
   width: 100%;
   z-index: 1000;
@@ -170,14 +192,18 @@ watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
 
 .suggestion-item {
   padding: 5px;
-  border-bottom:solid ;
+  border-bottom: solid;
   border-color: #555555;
   cursor: pointer;
-  color: #ffffff;
   transition: background 0.2s;
 }
 
 .suggestion-item:hover {
   background: #555555;
+}
+
+.filter-input::placeholder {
+  transition: color 0.2s;
+  color: var(--placeholder-color);
 }
 </style>
