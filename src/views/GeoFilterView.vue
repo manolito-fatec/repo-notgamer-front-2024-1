@@ -179,7 +179,7 @@ const getHistory = async (person, startDate, endDate, pageValue) => {
     listOfHistory.value = [...new Set([...listOfHistory.value, ...historyRequest.content])
     ];
     if(listOfHistory.value.length == 1){
-      if(total >= pageValue)
+      if(totalPage.value >= pageValue)
       loading.value = true;
       getHistory(person, startDate, endDate, pageValue + 1);
     }
