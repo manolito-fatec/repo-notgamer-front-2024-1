@@ -140,11 +140,11 @@ export const fetchGeomInZoneByUser = async ( location, startDate, endDate, userI
         return [];
     }
 }
-export const fetchAllZones = async ():DrawedGeom[]=>{
-    let getUrl = BASE_URL_GEOM+`/inside/get-all-shapes`
+export const fetchAllZones = async ()=>{
+    let getUrl = BASE_URL_GEOM+`/get-all-shapes`
     try{
         const response = await axios.get(getUrl);
-        return response.date.content;
+        return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
             const errorMessage = error.response.data?.message ||
