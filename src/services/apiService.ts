@@ -140,6 +140,21 @@ export const fetchGeomInZoneByUser = async ( location, startDate, endDate, userI
         return [];
     }
 }
+export const fetchAllZones = async ():DrawedGeom[]=>{
+    let getUrl = BASE_URL_GEOM+`/inside/get-all-shapes`
+    try{
+        const response = await axios.get(getUrl);
+        return response.date.content;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro desconhecido ao buscar pontos.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
         return [];
     }
 }
