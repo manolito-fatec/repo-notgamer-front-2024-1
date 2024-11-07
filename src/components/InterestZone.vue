@@ -72,13 +72,14 @@ const hideZones = ref(false)
 
 .zone-container {
   position: fixed;
-  top: 0;
+  top: 3%;
   left: 100px;
-  width: 420px;
-  height: 100%;
+  width: 380px;
+  height: 87%;
   padding: 8px;
-  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
-  border-left: 4px solid #EC1C24;
+  background: #262626;
+  border-right: 4px solid #EC1C24;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: right 0.5s ease;
@@ -96,16 +97,18 @@ const hideZones = ref(false)
 }
 
 .title {
+  font-family: 'Poppins', regular, sans-serif;
+  font-weight: 700;
   font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 24px;
-  text-align: center;
+  color: #000;
+  padding-bottom: 8px
 }
 
 .label {
   display: block;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 12px;
+  font-family: 'Poppins', regular, sans-serif;
 }
 
 .input {
