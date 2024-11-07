@@ -97,17 +97,13 @@ export const fetchGeomData = async ( person, startDate, endDate, page: number)=>
         }
         return [];
     }
-
 }
 
 export const saveGeomData = async (drawedGeom : DrawedGeom)=>{
-    let postUrl = BASE_URL_GEOM + '/save-polygon'
+    let postUrl = BASE_URL_GEOM + '/save-shape'
     try{
         const response  = await axios.post(postUrl, drawedGeom);
-        if (response.data && response.data.content.length > 0) {
-            toast.info("Nada a salvar");
-            return [];
-        }
+        toast.success('Zona de interesse salva!')
         return response.data.content
     } catch (error){
         if (axios.isAxiosError(error) && error.response) {
