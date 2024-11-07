@@ -115,6 +115,31 @@ export const saveGeomData = async (drawedGeom : DrawedGeom)=>{
         else {
             toast.error("Erro na conexão. Tente novamente mais tarde.");
         }
+        return null;
+    }
+}
+export const fetchGeomInZoneByUser = async ( location, startDate, endDate, userId)=>{
+    let getUrl = BASE_URL_GEOM+`/inside/${location}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?userId=${userId}`
+    try {
+        const response = await axios.get(getUrl);
+        if (response.data && response.data.content.length === 0) {
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+            return [];
+        }
+        return response.data.content;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro desconhecido ao buscar pontos.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+        return [];
+    }
+}
         return [];
     }
 }
