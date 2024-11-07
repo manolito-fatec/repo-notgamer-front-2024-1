@@ -27,6 +27,7 @@
             id="hide-zones"
             label="Ocultar Zonas"
             v-model="hideZones"
+            @click="$emit('toggleZoneVisibility')"
         />
         <button class="save-button" @click="saveDraw">Salvar</button>
       </div>
@@ -70,7 +71,7 @@ let selectedMode = ref(modeOptions[0].value)
 const drawMode = ref(false)
 const hideZones = ref(false)
 const zoneName = ref(null);
-const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName']);
+const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility']);
 
 function saveDraw() {
   emit('saveDraw');

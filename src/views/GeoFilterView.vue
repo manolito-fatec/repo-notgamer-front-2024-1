@@ -48,7 +48,9 @@
           @saveDraw="saveDraw"
           @toggleDrawing="toggleDrawing"
           @drawType="drawType"
-          @changeZoneName="changeZoneName"/>
+          @changeZoneName="changeZoneName"
+          @toggleZoneVisibility="$emit('toggleZoneVisibility')"
+      />
     </div>
   </div>
 </template>
@@ -68,7 +70,7 @@ import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
 import InterestZone from "@/components/InterestZone.vue";
 
-const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName']);
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);

@@ -7,6 +7,7 @@
                    @toggleDrawing="toggleDrawing"
                    @drawType="drawTypeUpdate"
                    @changeZoneName="changeZoneName"
+                   @toggleZoneVisibility="toggleZoneVisibility"
     />
 
     <div v-if="showPlayback" class="playback-layer">
@@ -81,6 +82,7 @@ let draw = ref<Draw | null>(null);
 let drawingActive = ref(false);
 let drawType = ref('Circle');
 let drawGeomName = ref<string>();
+let zoneVisibility = ref(true);
 
 const mapMode = ref(false);
 let darkOrWhiteMap: string;
@@ -95,6 +97,23 @@ function saveGeometry(){
       });
     }
   })
+}
+function toggleZoneVisibility(){
+  if(zoneVisibility.value) {
+    zoneVisibility.value = false;
+    map.value?.getLayers().array_.forEach(layer =>{
+      if(layer.values_.layerName == 'Draw Layer'){
+        console.log(layer.setVisible(false))
+      }
+    })
+  } else {
+    zoneVisibility.value = true;
+    map.value?.getLayers().array_.forEach(layer =>{
+      if(layer.values_.layerName == 'Draw Layer'){
+        console.log(layer.setVisible(true))
+      }
+    })
+  }
 }
 
 function drawTypeUpdate(selectedMode:selectedMode){
