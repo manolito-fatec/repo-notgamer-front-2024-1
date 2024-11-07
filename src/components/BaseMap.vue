@@ -97,7 +97,7 @@ function toggleTheme() {
     map.value?.getLayers().array_.forEach(layer => {
       if(layer.values_.layerName == 'TileLayer'){
         layer.setSource(new XYZ({
-          url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+          url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
         }));
       }
     })
