@@ -45,7 +45,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {onMounted, ref, watch} from 'vue';
 import {fetchDevices, fetchPersons} from "@/services/apiService.ts";
 import Sidebar from "@/components/SideBar.vue";
@@ -59,8 +59,8 @@ import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
 import InterestZone from "@/components/InterestZone.vue";
-import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
-import { getClick } from '@/components/stores/StoreGetClick.js'
+import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
+import {getClick} from '@/components/stores/StoreGetClick.js'
 
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor']);
 const toast = useToast();
@@ -187,8 +187,7 @@ function handleSave() {
 
 const getHistory = async (person, startDate, endDate) => {
   try {
-    const historyRequest = await fetchHistory(person, startDate, endDate);
-    listOfHistory.value = historyRequest;
+    listOfHistory.value = await fetchHistory(person, startDate, endDate);
     loading.value = false;
   } catch (error) {
     console.error(error)

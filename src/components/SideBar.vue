@@ -3,7 +3,7 @@
     <button id="toggle-btn" class="toggle-btn" @click="onToggleFilters" @toggle-dark-white-mode="darkMode">
       <IconFilter />
     </button>
-    <button class="int-btn" @click="">
+    <button class="int-btn" @click="onToggleZone">
       <IconAlert />
     </button>
   </div>
