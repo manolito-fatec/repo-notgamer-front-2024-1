@@ -44,4 +44,7 @@ export type DrawedGeom={
     center?: [string[]]
     radius?: [string[]]
     name: string
+export type Coordinates={
+    longitude: number;
+    latitude: number;
 }
