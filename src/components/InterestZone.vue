@@ -58,9 +58,11 @@
 <script setup lang="ts">
 import DropDown from "@/components/filter/DropDown.vue";
 import Checkbox from "@/components/Checkbox.vue";
-import { ref } from 'vue'
+import {onMounted, ref} from 'vue'
+import {fetchAllZones} from "@/services/apiService";
+import type {Coordinates, DrawedGeom} from "@/components/Types";
 
-const hotzoneOptions = []
+let hotzoneOptions = ref([]);
 const modeOptions = [
     {label:'Círculo', value:'Circle'},
     {label:'Polígono', value:'Polygon'}
@@ -92,6 +94,38 @@ function drawType(){
     drawMode.value = true;
   }
 }
+function locationDtoToDrawedGeom(data):DrawedGeom|null{
+  let newDrawedGeom :DrawedGeom = {};
+  let newCoordinates :Coordinates = {};
+  let newCoordinatesArray :Coordinates[] = [];
+  if (data.shape =='CIRCLE'){
+    newDrawedGeom.gid = data.idLocation;
+    newDrawedGeom.name = data.name;
+    newCoordinatesArray[0] = {latitude: 0, longitude:0}
+    newDrawedGeom.coordinates = newCoordinatesArray;
+    newCoordinates = {longitude :data.center[0], latitude :data.center[1]}
+    newDrawedGeom.center = newCoordinates;
+    newDrawedGeom.radius = data.radius;
+    return newDrawedGeom;
+  } else {
+    return null;
+  }
+}
+let drawedGeomsFromDb :DrawedGeom[] =[];
+onMounted(()=>{
+  fetchAllZones().then((geoms) =>{
+    hotzoneOptions.value = geoms.map(geom => ({
+      label: geom.name,
+      value: geom.gid
+    })).filter((geom, index, self) =>
+        index === self.findIndex(g => g.label === geom.label)
+    );
+    geoms.forEach(geom => {
+      drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
+    })
+  });
+
+});
 </script>
 
 <style scoped>
