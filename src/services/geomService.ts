@@ -1,12 +1,14 @@
-import type {DrawedGeom, GeometryPoint} from "@/components/Types";
+import type {Coordinates, DrawedGeom, GeometryPoint} from "@/components/Types";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
 import {Circle, Fill, Icon, Stroke, Style} from "ol/style";
 import {handleTypeError} from "@/utils/errorHandler";
-import {ref} from "vue";
 import IconPositionMap from "@/assets/IconPositionMap.png";
 import IconStartPin from "@/assets/IconStartPin.png";
 import InconEndPin from "@/assets/IconEndPin.png";
+import {ref} from "vue";
+import {saveGeomData} from "@/services/apiService";
+
 
 
 export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], pointStyle?:Style): Feature {
@@ -57,19 +59,35 @@ export function makeFeature(newGeometry: Point, pointStyle?:Style): Feature {
     }
     return createdFeature;
 }
-export function saveGeoms(feature:Feature, drawGeomName?: string){
-    let cachedGeom:DrawedGeom = ref<DrawedGeom>();
+function convertToDrawedGeom(feature :Feature,shape :string, drawGeomName: string) :DrawedGeom| null {
+    let newDrawedGeom :DrawedGeom = {};
+    let newCoordinates:Coordinates[] =[];
+    let newCenter : Coordinates = {};
+    if(shape == 'CIRCLE'){
+        newDrawedGeom.name = drawGeomName;
+        newDrawedGeom.shape = shape;
+        newCenter.longitude = feature.getGeometry().getCenter()[0]
+        newCenter.latitude = feature.getGeometry().getCenter()[1];
+        newDrawedGeom.center= {newCenter};
+        newDrawedGeom.radius= feature.getGeometry().getRadius();
+        return newDrawedGeom;
+    } else {
+        newDrawedGeom.name = drawGeomName;
+        newDrawedGeom.shape = shape;
+        feature.getGeometry().getCoordinates()[0].forEach(point => {
+            newCoordinates.push(({longitude: point[0], latitude: point[1]}));
+        })
+        newDrawedGeom.coordinates = newCoordinates;
+        return newDrawedGeom;
+    }
+}
+export function saveGeoms(feature:Feature, drawGeomName: string){
     try{
         if(feature.getGeometry().getRadius()){
-            cachedGeom.name = drawGeomName.value;
-            cachedGeom.radius = feature.getGeometry().getRadius();
-            cachedGeom.center = feature.getGeometry().getCenter();
-            console.log('Isso é um Circulo', cachedGeom);
+            saveGeomData(convertToDrawedGeom(feature,'CIRCLE',drawGeomName));
         }
     } catch (e){
-        cachedGeom.name = drawGeomName.value;
-        cachedGeom.coordinates = feature.getGeometry();
-        console.log('Isso é um Polígono' , cachedGeom);
+        saveGeomData(convertToDrawedGeom(feature,'POLYGON',drawGeomName));
         handleTypeError(e);
     }
 }
