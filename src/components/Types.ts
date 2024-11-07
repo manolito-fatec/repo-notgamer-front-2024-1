@@ -40,10 +40,12 @@ export type Address={
 }
 
 export type DrawedGeom={
-    coordinates?: [string[]]
-    center?: [string[]]
-    radius?: [string[]]
     name: string
+    shape: string
+    coordinates?: Coordinates[]
+    center?: Coordinates
+    radius?: number
+}
 export type Coordinates={
     longitude: number;
     latitude: number;
