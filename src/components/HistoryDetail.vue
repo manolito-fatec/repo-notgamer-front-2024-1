@@ -1,24 +1,23 @@
 <template>
-  <li class="expanded-history" :class="{ 'dark-mode': isDarkMode }">
+  <li class="expanded-history" :class="{ 'dark-mode': isDarkMode }" >
     <div class="start-icon"></div>
     <div class="grid">
-      <div class="text-detail" id="text-detail1">
+      <div class="text-detail">
         {{ formatDateTime(HistoryDetail?.initDateTime) }}
       </div>
-      <div class="text-detail" id="text-detail2">
+      <div class="text-detail">
         {{ HistoryDetail?.initial?.address?.road }} -
         {{ HistoryDetail?.initial?.address?.town }} -
         {{ HistoryDetail?.initial?.address?.state }} -
         {{ HistoryDetail?.initial?.address?.country }}
       </div>
     </div>
-    <br>
     <div class="end-icon"></div>
     <div class="grid">
-      <div class="text-detail" id="text-detail3">
+      <div class="text-detail">
         {{ formatDateTime(HistoryDetail?.endDateTime) }}
       </div>
-      <div class="text-detail" id="text-detail4">
+      <div class="text-detail">
         {{ HistoryDetail?.finality?.address?.road }} -
         {{ HistoryDetail?.finality?.address?.town }} -
         {{ HistoryDetail?.finality?.address?.state }} -
@@ -32,7 +31,7 @@
 import type { HistoryContent } from './Types';
 import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
 import { getClick } from '@/components/stores/StoreGetClick.js';
-import { watch, computed } from 'vue';
+import { computed } from 'vue';
 
 const store = darkModeClick();
 const storeFilters = getClick();
@@ -56,6 +55,7 @@ function formatDateTime(dateString: string): string {
     second: '2-digit',
   });
 }
+
 </script>
 
 <style scoped>
@@ -82,7 +82,7 @@ function formatDateTime(dateString: string): string {
 .history-container {
   border-radius: 8px;
   box-sizing: border-box;
-  background-color: #3D3D3D;
+  background: #3D3D3D;
   display: grid;
   grid-template-rows: repeat(auto, 100%);
   height: 100%;
@@ -118,6 +118,23 @@ function formatDateTime(dateString: string): string {
   height: auto;
   cursor: default;
   justify-items: center;
+  background-color:transparent;
   align-items: center;
+}
+
+.expanded-history{
+  display: grid;
+  grid-template-columns: 10% 90%;
+  align-items: center;
+  justify-items: center;
+  border-radius: 10px;
+  border:2px solid #DADADA;
+  background: #c0c0c0;
+
+}
+
+.dark-mode .expanded-history {
+  border:2px solid #2d2d2d;
+  background: #3d3d3d;
 }
 </style>

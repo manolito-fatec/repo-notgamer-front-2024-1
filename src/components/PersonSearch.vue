@@ -39,7 +39,7 @@ const props = defineProps({
   modelValue: [String, Number],
   options: Array,
   reset: Boolean,
-  lightModeTextColor: { type: String, default: "#000" },
+  lightModeTextColor: { type: String, default: "#FFF" },
   lightModeBgColor: { type: String, default: "#6D6D6D" },
   darkModeTextColor: { type: String, default: "#FFF" },
   darkModeBgColor: { type: String, default: "#444444" }
@@ -106,10 +106,11 @@ function handleClickOutside(event) {
 function updateFilterColors() {
   const isDarkMode = store.onClickDarkMode && storeFilters.onClickFilters;
   const textColor = isDarkMode ? props.darkModeTextColor : props.lightModeTextColor;
+  const textLabel = isDarkMode ? "#FFF" : "#000";
   const backgroundColor = isDarkMode ? props.darkModeBgColor : props.lightModeBgColor;
 
   if (filterLabel.value) {
-    filterLabel.value.style.color = textColor;
+    filterLabel.value.style.color = textLabel;
   }
   if (inputField.value) {
     inputField.value.style.color = textColor;

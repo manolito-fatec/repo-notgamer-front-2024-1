@@ -29,7 +29,6 @@
 
 <script lang="ts" setup>
 import 'ol/ol.css';
-import {getClick} from '@/components/stores/StoreGetClick.js'
 import DropdownSpeed from '@/components/filter/DropdownSpeed.vue';
 import ButtonStartPause from '@/components/ButtonStartPause.vue';
 import {ref, defineProps, watch} from 'vue';
@@ -41,8 +40,11 @@ import ButtonRestart from '@/components/ButtonRestart.vue';
 import {Icon, Style} from 'ol/style';
 import IconPositionMap from '../assets/IconPositionMap.png';
 import Coordinate from 'ol/coordinate';
+import {getClick} from '@/components/stores/StoreGetClick.js'
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
 
-const store = getClick();
+const store = darkModeClick();
+const storeFilters = getClick();
 const animating = ref(false);
 const startTime = ref(0);
 let angulo = 0;
@@ -250,6 +252,17 @@ function restartAnimation() {
   }
 }
 
+watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+  () => {
+  const controlMovement = document.getElementById('control-movement')
+
+  if (store.onClickDarkMode && storeFilters.onClickFilters){
+    controlMovement.style.background = "#262626";
+  } else {
+    controlMovement.style.background = "#6D6D6D";
+  }
+});
+
 </script>
 
 <style scoped>
@@ -270,7 +283,7 @@ function restartAnimation() {
   width: 750px;
   height: 50px;
   border-radius: 10px;
-  background: #262626;
+  background: #6D6D6D;
   justify-items: center;
   align-content: center;
   justify-content: center;

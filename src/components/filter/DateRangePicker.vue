@@ -1,5 +1,5 @@
 <template>
-  <div class="date-range-container">
+  <div class="date-range-container" id="filter-label2">
     <DropDown
       id="periodDropdown"
       label="Período:"
@@ -41,7 +41,7 @@ const store = darkModeClick();
 
 const props = defineProps({
   reset: Boolean,
-  lightModeTextColor: { type: String, default: "#000" },
+  lightModeTextColor: { type: String, default: "#fff" },
   lightModeBgColor: { type: String, default: "#6D6D6D" },
   darkModeTextColor: { type: String, default: "#FFF" },
   darkModeBgColor: { type: String, default: "#444444" }

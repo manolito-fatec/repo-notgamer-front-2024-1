@@ -13,18 +13,15 @@
 import { getClick } from '@/components/stores/StoreGetClick.js'
 import IconFilter from "@/components/icons/IconFilter.vue";
 import IconAlert from './icons/IconAlert.vue';
-import { ref } from 'vue';
 
-const store = getClick();
-
+const storeFilters = getClick();
 
 const emit = defineEmits(['toggle-filters']);
 
 function onToggleFilters() {
-  store.onClickToggleFilters();
+  storeFilters.onClickToggleFilters();
   emit('toggle-filters')
 }
-
 </script>
 
 <style scoped>

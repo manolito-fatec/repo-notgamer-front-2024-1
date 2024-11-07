@@ -12,7 +12,7 @@
       cy="32.5" 
       r="32.5" 
       transform="rotate(90 32.5 32.5)" 
-      fill="#EC1C24"/>
+      :fill="circleThemeManipulator ? '#EC1C24' : '#000059'"/>
       
     <path 
       d="M35.5616 50.21L15.128 36.8832L19.8089 17.6764L51.7892 24.7533L35.5616 50.21Z" 
@@ -30,7 +30,7 @@
       stroke="#EFEFEF" 
       stroke-width="2"
       class="color-transition delay-bolas1"
-      :fill="pathColorManipulator ? '#EC1C24' : '#EFEFEF' "
+      :fill="circleThemeManipulator ? (pathColorManipulator ? '#EC1C24' : '#EFEFEF') : (pathColorManipulator ? '#000059' : '#EFEFEF')"
     />
     
     <circle 
@@ -41,7 +41,7 @@
       stroke="#EFEFEF" 
       stroke-width="2"
       class="color-transition delay-bolas2"
-      :fill="pathColorManipulator ? '#EC1C24' : '#EFEFEF' "
+      :fill="circleThemeManipulator ? (pathColorManipulator ? '#EC1C24' : '#EFEFEF') : (pathColorManipulator ? '#000059' : '#EFEFEF')"
     />
     
     <circle 
@@ -52,7 +52,7 @@
       stroke="#EFEFEF" 
       stroke-width="2"
       class="color-transition delay-bolas3"
-      :fill="pathColorManipulator ? '#EC1C24' : '#EFEFEF' "
+      :fill="circleThemeManipulator ? (pathColorManipulator ? '#EC1C24' : '#EFEFEF') : (pathColorManipulator ? '#000059' : '#EFEFEF')"
     />
     
     <circle 
@@ -63,19 +63,29 @@
       stroke="#EFEFEF" 
       stroke-width="2"
       class="color-transition delay-bolas4"
-      :fill="pathColorManipulator ? '#EC1C24' : '#EFEFEF' "
+      :fill="circleThemeManipulator ? (pathColorManipulator ? '#EC1C24' : '#EFEFEF') : (pathColorManipulator ? '#000059' : '#EFEFEF')"
     />
   </svg>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
 
+const store = darkModeClick();
+const circleThemeManipulator = ref<boolean>(false);
 const pathColorManipulator = ref<boolean>(true);
 
 const toggleColor = (): void => {
   pathColorManipulator.value = !pathColorManipulator.value;
 };
+
+watch(
+  () => store.onClickDarkMode,
+  (newValue) => {
+    circleThemeManipulator.value = newValue;
+  }
+);
 </script>
 
 <style scoped>

@@ -98,7 +98,7 @@ onMounted(() => {
 
 .filter-input.light-mode {
   background-color: #6D6D6D;
-  color: #000;
+  color: #fff;
 }
 
 .filter-input:focus {
@@ -116,7 +116,7 @@ onMounted(() => {
 }
 
 .option-light-mode {
-  background-color: #ffffff;
-  color: #000;
+  background-color: #444444;
+  color: #fff;
 }
 </style>
