@@ -40,7 +40,7 @@ export type Address={
 }
 
 export type DrawedGeom={
-    gid?: number;
+    gid?: number
     name: string
     shape: string
     coordinates?: Coordinates[]

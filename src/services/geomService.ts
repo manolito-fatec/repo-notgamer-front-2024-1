@@ -1,13 +1,14 @@
 import type {Coordinates, DrawedGeom, GeometryPoint} from "@/components/Types";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
-import {Circle, Fill, Icon, Stroke, Style} from "ol/style";
+import {Fill, Icon, Stroke, Style} from "ol/style";
 import {handleTypeError} from "@/utils/errorHandler";
 import IconPositionMap from "@/assets/IconPositionMap.png";
 import IconStartPin from "@/assets/IconStartPin.png";
 import InconEndPin from "@/assets/IconEndPin.png";
-import {ref} from "vue";
 import {saveGeomData} from "@/services/apiService";
+import {Polygon, Circle} from "ol/geom";
+import type {Coordinate} from "ol/coordinate";
 
 
 
@@ -33,9 +34,33 @@ export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], pointSty
 export function  makeSinglePoint(pointObject: GeometryPoint): Point {
     return new Point(pointObject.coordinates)
 }
+export function makePolygon(hotzone:DrawedGeom):Polygon {
+    if(hotzone.shape =='CIRCLE'){
+        const centerCoordinate: Coordinate = [hotzone.center?.longitude, hotzone.center?.latitude];
+        let cleber:Circle = new Circle(centerCoordinate,hotzone.radius)
+        return cleber
+    }else{
+        let hotZoneCoordinates :[] = hotzone.coordinates;
+        return new Polygon(hotZoneCoordinates,'XY')
+    }
 
-export function makeFeature(newGeometry: Point, pointStyle?:Style): Feature {
+}
+
+export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolygon?:Polygon): Feature {
     let createdFeature: Feature;
+    if(createdPolygon) {
+        createdFeature = new Feature({geometry: newGeometry});
+        createdFeature.setStyle(new Style({
+            fill: new Fill({
+                color: 'rgba(0, 123, 255, 0.5)' // Azul com 50% de transparência
+            }),
+            stroke: new Stroke({
+                color: '#007bff', // Azul mais escuro para a borda
+                width: 2
+            })
+        }))
+        return createdFeature;
+    }
     if(pointStyle) {
         createdFeature = new Feature({
             geometry: newGeometry

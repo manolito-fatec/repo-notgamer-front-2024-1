@@ -37,6 +37,7 @@
           label="Selecione a zona de interesse:"
           :options="hotzoneOptions"
           v-model="selectedHotzone"
+          @change ="drawZone"
           class="dropdown"
       />
 
@@ -61,19 +62,22 @@ import Checkbox from "@/components/Checkbox.vue";
 import {onMounted, ref} from 'vue'
 import {fetchAllZones} from "@/services/apiService";
 import type {Coordinates, DrawedGeom} from "@/components/Types";
+import {makePolygon} from "@/services/geomService";
+import type {Polygon} from "ol/geom";
 
 let hotzoneOptions = ref([]);
 const modeOptions = [
     {label:'Círculo', value:'Circle'},
     {label:'Polígono', value:'Polygon'}
 ]
-const selectedHotzone = ref('')
+const selectedHotzone = ref<number>()
 const deletedHotzone = ref('')
 let selectedMode = ref(modeOptions[0].value)
 const drawMode = ref(false)
 const hideZones = ref(false)
 const zoneName = ref(null);
-const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility']);
+let drawedGeomsFromDb :DrawedGeom[] =[];
+const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility','drawZone']);
 
 function saveDraw() {
   emit('saveDraw');
@@ -101,6 +105,7 @@ function locationDtoToDrawedGeom(data):DrawedGeom|null{
   if (data.shape =='CIRCLE'){
     newDrawedGeom.gid = data.idLocation;
     newDrawedGeom.name = data.name;
+    newDrawedGeom.shape = data.shape;
     newCoordinatesArray[0] = {latitude: 0, longitude:0}
     newDrawedGeom.coordinates = newCoordinatesArray;
     newCoordinates = {longitude :data.center[0], latitude :data.center[1]}
@@ -108,15 +113,31 @@ function locationDtoToDrawedGeom(data):DrawedGeom|null{
     newDrawedGeom.radius = data.radius;
     return newDrawedGeom;
   } else {
-    return null;
+    newDrawedGeom.gid = data.idLocation;
+    newDrawedGeom.name = data.name;
+    newDrawedGeom.shape = data.shape;
+    newCoordinates = data.coordinates
+    newDrawedGeom.coordinates = newCoordinates;
+    return newDrawedGeom;
   }
 }
-let drawedGeomsFromDb :DrawedGeom[] =[];
+function drawZone(){
+  let selectedGeom :Polygon = {};
+  let selectedId :number = Number(selectedHotzone.value);
+  console.log(drawedGeomsFromDb);
+  drawedGeomsFromDb.forEach((geom) =>{
+    if(geom.gid == selectedId){
+      selectedGeom = makePolygon(geom);
+    }
+  })
+  emit('drawZone',selectedGeom);
+
+}
 onMounted(()=>{
   fetchAllZones().then((geoms) =>{
     hotzoneOptions.value = geoms.map(geom => ({
       label: geom.name,
-      value: geom.gid
+      value: geom.idLocation
     })).filter((geom, index, self) =>
         index === self.findIndex(g => g.label === geom.label)
     );
@@ -124,7 +145,6 @@ onMounted(()=>{
       drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
     })
   });
-
 });
 </script>
 

@@ -8,6 +8,7 @@
                    @drawType="drawTypeUpdate"
                    @changeZoneName="changeZoneName"
                    @toggleZoneVisibility="toggleZoneVisibility"
+                   @drawZone="drawZone"
     />
 
     <div v-if="showPlayback" class="playback-layer">
@@ -43,7 +44,7 @@ import { Tile as TileLayer } from 'ol/layer';
 import {XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
-import { Point, LineString, Geometry } from 'ol/geom';
+import {Point, LineString, Geometry, type Polygon} from 'ol/geom';
 import {Style, Stroke, Fill} from 'ol/style';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import PlaybackControl from '@/views/PlaybackControl.vue';
@@ -55,7 +56,7 @@ import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import type {DrawedGeom, GeometryPoint, Pessoa} from "@/components/Types";
-import {createStartAndEndPoint, makePointsFromArray, saveGeoms} from "@/services/geomService";
+import {createStartAndEndPoint, makeFeature, makePointsFromArray, makePolygon, saveGeoms} from "@/services/geomService";
 const toast = useToast();
 
 let center = ref([-60.457873,0.584053]);
@@ -209,7 +210,6 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       }
     } else {
       const geometryPoints = convertToGeometryPoints(points);
-      // map.value?.addLayer(createNewVectorLayer(makePointsFromArray(geometryPoints),'teste'))
       map.value?.getLayers().array_.forEach(layer =>{
         if(layer.values_.layerName == 'teste'){
           layer.getSource().getFeatures().forEach(feature =>{
@@ -218,10 +218,6 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
         }
       });
       map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(geometryPoints,anguloInicial)),'Layer dos Pontos');
-      //let pointList = new ref(points);
-      // makeGeometryPointFromArray(pointList, filterData.person);
-      // lineLayer.value = makeLineFromPoints(pointFeatures);
-      // map.value.addLayer(lineLayer.value);
       map.value.addLayer(createNewVectorLayer(routeLine, 'Layer das Rotas'));
       map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
       initializePopup();
@@ -373,6 +369,11 @@ function centerMap() {
       map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
     }
   }
+}
+function drawZone(drawZonePolygon:drawZone){
+  let emptyFeatureArray :Feature[] = [];
+  emptyFeatureArray.push(makeFeature(undefined,undefined,drawZonePolygon));
+  map.value?.addLayer(createNewVectorLayer(emptyFeatureArray,'Layer das Zonas'));
 }
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';

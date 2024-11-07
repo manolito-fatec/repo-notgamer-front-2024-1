@@ -50,6 +50,7 @@
           @drawType="drawType"
           @changeZoneName="changeZoneName"
           @toggleZoneVisibility="$emit('toggleZoneVisibility')"
+          @drawZone="drawZone"
       />
     </div>
   </div>
@@ -70,7 +71,7 @@ import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
 import InterestZone from "@/components/InterestZone.vue";
 
-const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility']);
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
@@ -100,6 +101,9 @@ function toggleDrawing(){
 }
 function changeZoneName(changeZoneName:changeZoneName){
   emit("changeZoneName", changeZoneName);
+}
+function drawZone(drawZonePolygon:drawZone){
+  emit("drawZone", drawZonePolygon);
 }
 
 onMounted(async () => {

@@ -8,9 +8,7 @@ export function createMap(center: number[], zoom: number, projection: string, da
         layers: [
             new TileLayer({
                 properties: {layerName: 'TileLayer'},
-                source: new XYZ({
-                    url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`,
-                }),
+                source: new OSM()
             }),
         ],
         view: new View({
@@ -32,7 +30,7 @@ export function createNewVectorLayer(featureArray?: Feature[], layername?: strin
             features: featureArray,
         }),
         properties: {layerName: layername},
-        zIndex: 2,
+        zIndex: 50,
     });
 }}
 export function createTileLayer(layername?: string, darkOrWhiteMap?: string) {
