@@ -298,15 +298,24 @@ function makeLineFromPoints(featureList) {
 }
 
 
-const adjustMap = () => {
-  const coordinates = pointFeatures.value.map((pontos) =>
-      pontos.getGeometry().getCoordinates()
-  );
-  const extent = boundingExtent(coordinates);
-  if (map.value) {
-    map.value
-        .getView()
-        .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15});
+const adjustMap = (drawedZone?:Polygon|Circle) => {
+  if(drawedZone){
+    const extent = drawedZone.getExtent();
+    if (map.value) {
+      map.value
+          .getView()
+          .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15,duration: 1000});
+    }
+  } else {
+    const coordinates = pointFeatures.value.map((pontos) =>
+        pontos.getGeometry().getCoordinates()
+    );
+    const extent = boundingExtent(coordinates);
+    if (map.value) {
+      map.value
+          .getView()
+          .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15,duration: 1000});
+    }
   }
 };
 function toggleDrawing() {
