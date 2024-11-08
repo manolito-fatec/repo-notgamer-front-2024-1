@@ -7,9 +7,9 @@ import IconPositionMap from "@/assets/IconPositionMap.png";
 import IconStartPin from "@/assets/IconStartPin.png";
 import InconEndPin from "@/assets/IconEndPin.png";
 import {saveGeomData} from "@/services/apiService";
-import {Polygon, Circle} from "ol/geom";
+import {Circle, Polygon} from "ol/geom";
 import type {Coordinate} from "ol/coordinate";
-
+import {circular} from 'ol/geom/Polygon';
 
 
 export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], pointStyle?:Style): Feature {
@@ -34,11 +34,13 @@ export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], pointSty
 export function  makeSinglePoint(pointObject: GeometryPoint): Point {
     return new Point(pointObject.coordinates)
 }
-export function makePolygon(hotzone:DrawedGeom):Polygon {
+export function makePolygon(hotzone:DrawedGeom) {
     if(hotzone.shape =='CIRCLE'){
-        const centerCoordinate: Coordinate = [hotzone.center?.longitude, hotzone.center?.latitude];
-        let cleber:Circle = new Circle(centerCoordinate,hotzone.radius)
-        return cleber
+        let geomCenter :Coordinate;
+        geomCenter = [hotzone.center?.longitude,hotzone.center?.latitude]
+        let newTrueCircle :Circle = new Circle(geomCenter,hotzone.radius);
+        console.log(newTrueCircle);
+        return newTrueCircle
     }else{
         let hotZoneCoordinates :[] = hotzone.coordinates;
         return new Polygon(hotZoneCoordinates,'XY')
@@ -49,15 +51,16 @@ export function makePolygon(hotzone:DrawedGeom):Polygon {
 export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolygon?:Polygon): Feature {
     let createdFeature: Feature;
     if(createdPolygon) {
-        createdFeature = new Feature({geometry: newGeometry});
+        createdFeature = new Feature({geometry: createdPolygon});
         createdFeature.setStyle(new Style({
             fill: new Fill({
-                color: 'rgba(0, 123, 255, 0.5)' // Azul com 50% de transparência
+                color: 'rgba(0,196,255,0.04)'
             }),
             stroke: new Stroke({
-                color: '#007bff', // Azul mais escuro para a borda
+                color: '#000000',
                 width: 2
-            })
+            }),
+            zIndex: 2
         }))
         return createdFeature;
     }
@@ -87,13 +90,14 @@ export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolyg
 function convertToDrawedGeom(feature :Feature,shape :string, drawGeomName: string) :DrawedGeom| null {
     let newDrawedGeom :DrawedGeom = {};
     let newCoordinates:Coordinates[] =[];
-    let newCenter : Coordinates = {};
+    let coordinates : Coordinates = {};
     if(shape == 'CIRCLE'){
         newDrawedGeom.name = drawGeomName;
         newDrawedGeom.shape = shape;
-        newCenter.longitude = feature.getGeometry().getCenter()[0]
-        newCenter.latitude = feature.getGeometry().getCenter()[1];
-        newDrawedGeom.center= {newCenter};
+        newDrawedGeom.coordinates = null;
+        let centerCoordinate = feature.getGeometry().getCenter()
+        coordinates = {longitude: centerCoordinate[0], latitude: centerCoordinate[1]};
+        newDrawedGeom.center= coordinates
         newDrawedGeom.radius= feature.getGeometry().getRadius();
         return newDrawedGeom;
     } else {
@@ -109,7 +113,8 @@ function convertToDrawedGeom(feature :Feature,shape :string, drawGeomName: strin
 export function saveGeoms(feature:Feature, drawGeomName: string){
     try{
         if(feature.getGeometry().getRadius()){
-            saveGeomData(convertToDrawedGeom(feature,'CIRCLE',drawGeomName));
+            saveGeomData(convertToDrawedGeom(feature,'CIRCLE',drawGeomName)).then((obj) =>{
+            });
         }
     } catch (e){
         saveGeomData(convertToDrawedGeom(feature,'POLYGON',drawGeomName));
