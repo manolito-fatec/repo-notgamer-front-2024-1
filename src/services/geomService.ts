@@ -42,8 +42,15 @@ export function makePolygon(hotzone:DrawedGeom) {
         console.log(newTrueCircle);
         return newTrueCircle
     }else{
-        let hotZoneCoordinates :[] = hotzone.coordinates;
-        return new Polygon(hotZoneCoordinates,'XY')
+        let newArray : Coordinate[] = [];
+        let newCoordinate :Coordinate= {};
+        hotzone.coordinates.forEach((point):Coordinates=> {
+            newCoordinate = [point.longitude, point.latitude];
+            newArray.push(newCoordinate)
+        })
+        let newPolygon:Polygon = new Polygon([newArray])
+
+        return newPolygon
     }
 
 }
