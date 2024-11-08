@@ -123,6 +123,7 @@ const suggestionItemStyle = computed(() => {
   return {
     color: isDarkMode ? props.darkModeTextColor : props.lightModeTextColor,
     backgroundColor: isDarkMode ? props.darkModeBgColor : props.lightModeBgColor
+
   };
 });
 

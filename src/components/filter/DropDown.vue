@@ -39,7 +39,6 @@ const props = defineProps({
 const filterLabel = ref(null);
 const filterInput = ref(null);
 
-// Classes dinâmicas para o modo claro/escuro
 const dropdownClasses = computed(() => ({
   'dark-mode': store.onClickDarkMode,
   'light-mode': !(store.onClickDarkMode),
