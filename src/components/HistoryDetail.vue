@@ -7,7 +7,7 @@
       </div>
       <div class="text-detail">
         {{ HistoryDetail?.initial?.address?.road }} -
-        {{ HistoryDetail?.initial?.address?.town }} -
+        {{ HistoryDetail?.initial?.address?.town ? HistoryDetail?.initial?.address?.town: "" }} -
         {{ HistoryDetail?.initial?.address?.state }} -
         {{ HistoryDetail?.initial?.address?.country }}
       </div>
@@ -19,7 +19,7 @@
       </div>
       <div class="text-detail">
         {{ HistoryDetail?.finality?.address?.road }} -
-        {{ HistoryDetail?.finality?.address?.town }} -
+        {{ HistoryDetail?.finality?.address?.town ? HistoryDetail?.initial?.address?.town : ""}} -
         {{ HistoryDetail?.finality?.address?.state }} -
         {{ HistoryDetail?.finality?.address?.country }}
       </div>
