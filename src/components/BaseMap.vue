@@ -44,7 +44,7 @@ import { Tile as TileLayer } from 'ol/layer';
 import {XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
-import {Point, LineString, Geometry, type Polygon} from 'ol/geom';
+import {Point, LineString, Geometry, Circle, type Polygon} from 'ol/geom';
 import {Style, Stroke, Fill} from 'ol/style';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import PlaybackControl from '@/views/PlaybackControl.vue';
@@ -137,13 +137,12 @@ function toggleTheme() {
     map.value?.getLayers().array_.forEach(layer => {
       if(layer.values_.layerName == 'TileLayer'){
         layer.setSource(new XYZ({
-          url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+          url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
         }));
       }
     })
   }
 }
-
 function initializePopup() {
   popupContent.value = document.getElementById('popup-content');
   popupCloser.value = document.getElementById('popup-closer');
@@ -380,9 +379,12 @@ function centerMap() {
   }
 }
 function drawZone(drawZonePolygon:drawZone){
-  let emptyFeatureArray :Feature[] = [];
-  emptyFeatureArray.push(makeFeature(undefined,undefined,drawZonePolygon));
-  map.value?.addLayer(createNewVectorLayer(emptyFeatureArray,'Layer das Zonas'));
+  let featureArray :Feature[] = [];
+  let newFeature :Feature = makeFeature(undefined,undefined,drawZonePolygon);
+  featureArray.push(newFeature);
+  let newVectorLayer:VectorLayer = createNewVectorLayer(featureArray,'Layer das Zonas');
+  map.value?.addLayer(newVectorLayer);
+  adjustMap(drawZonePolygon);
 }
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
