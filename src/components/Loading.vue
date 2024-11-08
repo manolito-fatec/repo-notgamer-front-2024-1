@@ -6,11 +6,11 @@ import { watch } from 'vue';
 const store = darkModeClick();
 const storeFilters = getClick();
 
-watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+watch(() => store.onClickDarkMode,
   () => {
   const loading = document.getElementById('loading')
 
-  if (store.onClickDarkMode && storeFilters.onClickFilters){
+  if (store.onClickDarkMode){
     loading.style.borderTopColor = "#EC1C24";
   } else {
     loading.style.borderTopColor = "#000059";

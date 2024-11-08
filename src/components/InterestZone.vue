@@ -57,6 +57,10 @@
 import DropDown from "@/components/filter/DropDown.vue";
 import Checkbox from "@/components/Checkbox.vue";
 import { ref } from 'vue'
+import { darkModeClick } from "./stores/StoreDarkModeGetClick";
+import { getClick } from "./stores/StoreGetClick";
+import { getPathColorManipulatorState } from "./stores/StorePathManipulation";
+
 
 const hotzoneOptions = []
 const modeOptions = []
@@ -65,6 +69,26 @@ const deletedHotzone = ref('')
 const selectedMode = ref('')
 const drawMode = ref(false)
 const hideZones = ref(false)
+const storeFilters = darkModeClick();
+const storeGetClickToggleFilters = getClick();
+const storePathManipulation = getPathColorManipulatorState();
+
+// watch(() => storeFilters.onClickDarkMode,
+//   () => {
+
+//   const filter = document.getElementById('filters')
+//   const title = document.getElementById('title')
+
+//   if (storeFilters.onClickDarkMode){
+//     filter.style.borderRight = "4px solid #EC1C24";
+//     filter.style.background = "#262626";
+//     title.style.color = "#FFF";
+//   } else {
+//     filter.style.borderRight = "4px solid #000059",
+//     filter.style.background = "#EFEFEF",
+//     title.style.color = "#000";
+//   }
+// });
 </script>
 
 <style scoped>
@@ -77,8 +101,8 @@ const hideZones = ref(false)
   width: 380px;
   height: 87%;
   padding: 8px;
-  background: #262626;
-  border-right: 4px solid #EC1C24;
+  background: #EFEFEF;
+  border-right: 4px solid #000059;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
@@ -142,7 +166,7 @@ const hideZones = ref(false)
 
 .save-button {
   padding: 10px 38px;
-  background-color: #EC1C24;
+  background-color: #000059;
   color: #ffffff;
   font-weight: bold;
   border: none;
@@ -161,7 +185,7 @@ const hideZones = ref(false)
   padding: 10px;
   border: none;
   border-radius: 5px;
-  background-color: #EC1C24;
+  background-color: #000059;
   color: #ffffff;
   font-weight: bold;
   cursor: pointer;

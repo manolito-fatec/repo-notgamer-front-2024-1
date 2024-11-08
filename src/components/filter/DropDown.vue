@@ -41,23 +41,23 @@ const filterInput = ref(null);
 
 // Classes dinâmicas para o modo claro/escuro
 const dropdownClasses = computed(() => ({
-  'dark-mode': store.onClickDarkMode && storeFilters.onClickFilters,
-  'light-mode': !(store.onClickDarkMode && storeFilters.onClickFilters),
+  'dark-mode': store.onClickDarkMode,
+  'light-mode': !(store.onClickDarkMode),
 }));
 
 const dropdownOptionClasses = computed(() => ({
-  'option-dark-mode': store.onClickDarkMode && storeFilters.onClickFilters,
-  'option-light-mode': !(store.onClickDarkMode && storeFilters.onClickFilters),
+  'option-dark-mode': store.onClickDarkMode,
+  'option-light-mode': !(store.onClickDarkMode),
 }));
 
 const updateLabelColor = () => {
   if (filterLabel.value) {
-    filterLabel.value.style.color = store.onClickDarkMode && storeFilters.onClickFilters ? "#fff" : "#000";
+    filterLabel.value.style.color = store.onClickDarkMode ? "#fff" : "#000";
   }
 };
 
 watch(
-  () => [store.onClickDarkMode, storeFilters.onClickFilters], 
+  () => [store.onClickDarkMode], 
   () => {
     updateLabelColor();
   },

@@ -12,7 +12,7 @@
 <script setup>
 import { getClick } from '@/components/stores/StoreGetClick.js'
 import IconFilter from "@/components/icons/IconFilter.vue";
-import IconAlert from './icons/IconAlert.vue';
+import IconAlert from './icons/IconInterestZone.vue';
 
 const storeFilters = getClick();
 
@@ -23,7 +23,6 @@ const props = defineProps({
 });
 
 function onToggleFilters() {
-  storeFilters.onClickToggleFilters();
   emit('toggle-filters')
 }
 

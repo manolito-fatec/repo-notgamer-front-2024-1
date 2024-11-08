@@ -19,7 +19,7 @@
       stroke="#EFEFEF" 
       stroke-width="3"
       class="color-transition"
-      :fill="pathColorManipulator ? 'transparent' : '#EFEFEF' "
+      :fill="storePathManipulation.pathColorManipulatorIconInterestZone ? 'transparent' : '#EFEFEF' "
     />
     
     <circle 
@@ -30,7 +30,7 @@
       stroke="#EFEFEF" 
       stroke-width="2"
       class="color-transition delay-bolas1"
-      :fill="circleThemeManipulator ? (pathColorManipulator ? '#EC1C24' : '#EFEFEF') : (pathColorManipulator ? '#000059' : '#EFEFEF')"
+      :fill="circleThemeManipulator ? (storePathManipulation.pathColorManipulatorIconInterestZone ? '#EC1C24' : '#EFEFEF') : (storePathManipulation.pathColorManipulatorIconInterestZone ? '#000059' : '#EFEFEF')"
     />
     
     <circle 
@@ -41,7 +41,7 @@
       stroke="#EFEFEF" 
       stroke-width="2"
       class="color-transition delay-bolas2"
-      :fill="circleThemeManipulator ? (pathColorManipulator ? '#EC1C24' : '#EFEFEF') : (pathColorManipulator ? '#000059' : '#EFEFEF')"
+      :fill="circleThemeManipulator ? (storePathManipulation.pathColorManipulatorIconInterestZone ? '#EC1C24' : '#EFEFEF') : (storePathManipulation.pathColorManipulatorIconInterestZone ? '#000059' : '#EFEFEF')"
     />
     
     <circle 
@@ -52,7 +52,7 @@
       stroke="#EFEFEF" 
       stroke-width="2"
       class="color-transition delay-bolas3"
-      :fill="circleThemeManipulator ? (pathColorManipulator ? '#EC1C24' : '#EFEFEF') : (pathColorManipulator ? '#000059' : '#EFEFEF')"
+      :fill="circleThemeManipulator ? (storePathManipulation.pathColorManipulatorIconInterestZone ? '#EC1C24' : '#EFEFEF') : (storePathManipulation.pathColorManipulatorIconInterestZone ? '#000059' : '#EFEFEF')"
     />
     
     <circle 
@@ -63,7 +63,7 @@
       stroke="#EFEFEF" 
       stroke-width="2"
       class="color-transition delay-bolas4"
-      :fill="circleThemeManipulator ? (pathColorManipulator ? '#EC1C24' : '#EFEFEF') : (pathColorManipulator ? '#000059' : '#EFEFEF')"
+      :fill="circleThemeManipulator ? (storePathManipulation.pathColorManipulatorIconInterestZone ? '#EC1C24' : '#EFEFEF') : (storePathManipulation.pathColorManipulatorIconInterestZone ? '#000059' : '#EFEFEF')"
     />
   </svg>
 </template>
@@ -71,8 +71,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
+import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
+import { getClick } from '../stores/StoreGetClick';
 
-const store = darkModeClick();
+const storeDarkMode = darkModeClick();
+const storeGetClickToggleFilters = getClick();
+const storePathManipulation = getPathColorManipulatorState();
 const circleThemeManipulator = ref<boolean>(false);
 const pathColorManipulator = ref<boolean>(true);
 
@@ -81,11 +85,12 @@ const toggleColor = (): void => {
 };
 
 watch(
-  () => store.onClickDarkMode,
+  () => storeDarkMode.onClickDarkMode,
   (newValue) => {
     circleThemeManipulator.value = newValue;
   }
-);
+)
+
 </script>
 
 <style scoped>

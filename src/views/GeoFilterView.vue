@@ -61,6 +61,7 @@ import {fetchHistory} from '../services/apiService.ts';
 import InterestZone from "@/components/InterestZone.vue";
 import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
 import {getClick} from '@/components/stores/StoreGetClick.js'
+import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
 
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor']);
 const toast = useToast();
@@ -78,8 +79,9 @@ const loading = ref(false);
 const endDate = ref(null);
 const selectedPeriod = ref('');
 const resetFilters = ref(false);
-const store = darkModeClick();
-const storeFilters = getClick();
+const storeFilters = darkModeClick();
+const storeGetClickToggleFilters = getClick();
+const storePathManipulation = getPathColorManipulatorState();
 
 onMounted(async () => {
   try {
@@ -119,18 +121,23 @@ const onPersonSelect = async (selectedPerson) => {
   }
 };
 
-
 function toggleFilters() {
   showFilters.value = !showFilters.value;
-  if (showFilters.value) {
+  storeGetClickToggleFilters.onClickFilters = !storeGetClickToggleFilters.onClickFilters;
+  storePathManipulation.pathColorManipulatorIconFilter = !storePathManipulation.pathColorManipulatorIconFilter;
+  if (storePathManipulation.pathColorManipulatorIconInterestZone === false) {
     showZone.value = false;
+    storePathManipulation.pathColorManipulatorIconInterestZone = true;
   }
 }
 
 function toggleZone() {
   showZone.value = !showZone.value;
-  if (showZone.value) {
+  storeGetClickToggleFilters.onClickInterestZone = !storeGetClickToggleFilters.onClickInterestZone;
+  storePathManipulation.pathColorManipulatorIconInterestZone = !storePathManipulation.pathColorManipulatorIconInterestZone;
+  if (storePathManipulation.pathColorManipulatorIconFilter === false) {
     showFilters.value = false;
+    storePathManipulation.pathColorManipulatorIconFilter = true;
   }
 }
 
@@ -212,13 +219,13 @@ function handleReset() {
   emit('clearPoints');
 }
 
-watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+watch(() => storeFilters.onClickDarkMode,
   () => {
 
   const filter = document.getElementById('filters')
   const title = document.getElementById('title')
 
-  if (store.onClickDarkMode && storeFilters.onClickFilters){
+  if (storeFilters.onClickDarkMode){
     filter.style.borderRight = "4px solid #EC1C24";
     filter.style.background = "#262626";
     title.style.color = "#FFF";

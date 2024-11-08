@@ -50,6 +50,7 @@ import HistoryDetail from './HistoryDetail.vue'
 import Loading from '@/components/Loading.vue'
 import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
 import { getClick } from '@/components/stores/StoreGetClick.js'
+import type { HistoryConfig } from './Types'
 
 const store = darkModeClick()
 const storeFilters = getClick()
@@ -60,7 +61,7 @@ const props = defineProps<{
 }>()
 
 const showHistory = ref(false)
-const isDarkMode = computed(() => store.onClickDarkMode && storeFilters.onClickFilters)
+const isDarkMode = computed(() => store.onClickDarkMode)
 
 function toggleHistory() {
   showHistory.value = !showHistory.value
