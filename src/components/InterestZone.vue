@@ -37,7 +37,7 @@
           label="Selecione a zona de interesse:"
           :options="hotzoneOptions"
           v-model="selectedHotzone"
-          @change ="drawZone"
+          @change ="drawZoneChange"
           class="dropdown"
       />
 
@@ -101,14 +101,12 @@ function drawType(){
 function locationDtoToDrawedGeom(data):DrawedGeom|null{
   let newDrawedGeom :DrawedGeom = {};
   let newCoordinates :Coordinates = {};
-  let newCoordinatesArray :Coordinates[] = [];
   if (data.shape =='CIRCLE'){
     newDrawedGeom.gid = data.idLocation;
     newDrawedGeom.name = data.name;
     newDrawedGeom.shape = data.shape;
-    newCoordinatesArray[0] = {latitude: 0, longitude:0}
-    newDrawedGeom.coordinates = newCoordinatesArray;
-    newCoordinates = {longitude :data.center[0], latitude :data.center[1]}
+    newDrawedGeom.coordinates = null;
+    newCoordinates = data.center
     newDrawedGeom.center = newCoordinates;
     newDrawedGeom.radius = data.radius;
     return newDrawedGeom;
@@ -121,16 +119,15 @@ function locationDtoToDrawedGeom(data):DrawedGeom|null{
     return newDrawedGeom;
   }
 }
-function drawZone(){
-  let selectedGeom :Polygon = {};
+function drawZoneChange(){
+  let drawZonePolygon :Polygon = {};
   let selectedId :number = Number(selectedHotzone.value);
-  console.log(drawedGeomsFromDb);
   drawedGeomsFromDb.forEach((geom) =>{
     if(geom.gid == selectedId){
-      selectedGeom = makePolygon(geom);
+      drawZonePolygon = makePolygon(geom);
     }
   })
-  emit('drawZone',selectedGeom);
+  emit('drawZone',drawZonePolygon);
 
 }
 onMounted(()=>{
