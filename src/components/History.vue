@@ -19,13 +19,14 @@
         </button>
       </div>
     </div>
-    <Loading v-if="props.loading"/>
-    
+    <div v-if="props.loading && props.historyConfiguration.length > 0">
+      <Loading style= "position: absolute; width: 100%; height: 39.5%; top: 425px"/>
+    </div>
+    <div v-else-if="props.loading && props.historyConfiguration.length === 0">
+      <Loading style= "position: static; width: 100%; height: 39.5%; top: 325px;  transform: scale(0.7); "/>
+    </div>
     <ul class="history-container" @scroll="handleScroll" ref="scrollContainer">
-      <HistoryDetail v-for="config in props.historyConfiguration"
-                     v-if="!props.loading && showHistory " :key="props.historyConfiguration.length"
-                     :HistoryDetail="config">
-      </HistoryDetail>
+      <HistoryDetail v-for="config in props.historyConfiguration"/>
       <span style="display: flex; justify-content: center;" v-if="props.historyConfiguration.length == 0 && !props.loading && showHistory">
         <p>Histórico Vazio</p>
       </span>
