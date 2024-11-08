@@ -8,7 +8,9 @@ export function createMap(center: number[], zoom: number, projection: string, da
         layers: [
             new TileLayer({
                 properties: {layerName: 'TileLayer'},
-                source: new OSM()
+                source: (new XYZ({
+                    url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+                }))
             }),
         ],
         view: new View({
