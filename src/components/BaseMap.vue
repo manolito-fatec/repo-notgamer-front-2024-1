@@ -9,7 +9,7 @@
         v-model:anguloInicial="anguloInicial"
       />
     </div>
-    <DarkOrLight class="toggle-dark-white-mode" @toggleDarkLightMode="toggleTheme"/>
+    <DarkOrLight class="toggle-dark-white-mode" @toggle-dark-white-mode="toggleTheme"/> 
     <div id="map" class="map-container"></div>
     <div
         class="icon-center"
@@ -97,7 +97,7 @@ function toggleTheme() {
     map.value?.getLayers().array_.forEach(layer => {
       if(layer.values_.layerName == 'TileLayer'){
         layer.setSource(new XYZ({
-          url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
+          url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
         }));
       }
     })
@@ -486,19 +486,21 @@ onMounted(() => {
   position: absolute;
   top: 20px;
   left: 20px;
-  background-color: white;
+  background-color: transparent;
   padding: 10px;
   border-radius: 8px;
   z-index: 3;
 }
 
 .playback-layer {
-  position: absolute;
   width: 100%;
   height: 6.8%;
-  bottom: 0;
+  position: absolute;
+  bottom: 0px;
   z-index: 2;
   transition: bottom 0.5s ease;
+  align-content: center;
+  align-items: center;
 }
 
 .toggle-dark-white-mode {
