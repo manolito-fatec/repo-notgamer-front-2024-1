@@ -383,6 +383,10 @@ function drawZone(drawZonePolygon:drawZone){
   let newFeature :Feature = makeFeature(undefined,undefined,drawZonePolygon);
   featureArray.push(newFeature);
   let newVectorLayer:VectorLayer = createNewVectorLayer(featureArray,'Layer das Zonas');
+  map.value?.getLayers().array_.forEach((layer) =>{
+    if(layer.values_.layerName == 'Layer das Zonas')
+    map.value?.removeLayer(layer);
+  });
   map.value?.addLayer(newVectorLayer);
   adjustMap(drawZonePolygon);
 }
