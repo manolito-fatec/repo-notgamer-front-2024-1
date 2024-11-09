@@ -6,18 +6,33 @@
         Dê um nome para sua zona de interesse:
       </label>
       <input type="text" id="zone-name" :class="['input', { 'dark-mode-input': storeFilters.onClickDarkMode }]"
-             placeholder="Nome da zona de interesse"/>
+             placeholder="Nome da zona de interesse" @change="changeZoneName" v-model="zoneName"/>
       <div class="options">
-        <Checkbox id="draw-mode" label="Modo desenho" v-model="drawMode"/>
-        <DropDown id="draw-mode-dropdown" label="" :options="modeOptions" v-model="selectedMode"
-                  class="small-dropdown"/>
+        <Checkbox
+            id="draw-mode"
+            label="Modo desenho"
+            v-model="drawMode"
+            @click="$emit('toggleDrawing')"
+        />
+        <DropDown
+            id="draw-mode-dropdown"
+            :options="modeOptions"
+            v-model="selectedMode"
+            class="small-dropdown"
+            @change="drawType"
+        />
       </div>
       <div class="checkbox-and-button">
-        <Checkbox id="hide-zones" label="Ocultar Zonas" v-model="hideZones"/>
-        <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]">Salvar</button>
+        <Checkbox
+            id="hide-zones"
+            label="Ocultar Zonas"
+            v-model="hideZones"
+            @click="$emit('toggleZoneVisibility')"
+        />
+        <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" @click="saveDraw">Salvar</button>
       </div>
       <DropDown id="select-hotzone" label="Selecione a zona de interesse:" :options="hotzoneOptions"
-                v-model="selectedHotzone" class="dropdown"/>
+                v-model="selectedHotzone" class="dropdown" @change ="drawZoneChange"/>
       <button :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
       <DropDown id="delete-hotzone" label="Exclua sua zona de interesse:" :options="hotzoneOptions"
                 v-model="deletedHotzone" class="dropdown"/>
@@ -29,24 +44,32 @@
 <script setup lang="ts">
 import DropDown from "@/components/filter/DropDown.vue";
 import Checkbox from "@/components/Checkbox.vue";
-import {ref, watch} from 'vue'
+import {ref, watch, onMounted} from 'vue'
 import {darkModeClick} from "./stores/StoreDarkModeGetClick";
+import {fetchAllZones} from "@/services/apiService";
+import type {Coordinates, DrawedGeom} from "@/components/Types";
+import {makePolygon} from "@/services/geomService";
+import type {Polygon} from "ol/geom";
 
-const hotzoneOptions = []
-const modeOptions = []
-const selectedHotzone = ref('')
+let hotzoneOptions = ref([]);
+const modeOptions = [
+    {label:'Círculo', value:'Circle'},
+    {label:'Polígono', value:'Polygon'}
+]
+const selectedHotzone = ref<number>()
 const deletedHotzone = ref('')
-const selectedMode = ref('')
+let selectedMode = ref(modeOptions[0].value)
 const drawMode = ref(false)
 const hideZones = ref(false)
+const zoneName = ref(null);
+let drawedGeomsFromDb :DrawedGeom[] =[];
+const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility','drawZone']);
 const storeFilters = darkModeClick();
 
 watch(() => storeFilters.onClickDarkMode,
     () => {
-
       const filter = document.getElementById('filters')
       const title = document.getElementById('title')
-
       if (storeFilters.onClickDarkMode) {
         filter.style.borderRight = "4px solid #EC1C24";
         filter.style.background = "#262626";
@@ -57,6 +80,68 @@ watch(() => storeFilters.onClickDarkMode,
             title.style.color = "#000";
       }
     });
+function saveDraw() {
+  emit('saveDraw');
+}
+function changeZoneName(){
+  emit('changeZoneName',zoneName.value);
+}
+function drawType(){
+  if(drawMode.value){
+    emit('toggleDrawing');
+    emit('drawType',selectedMode.value);
+    emit('toggleDrawing');
+  }else{
+    emit('drawType',selectedMode.value);
+    emit('toggleDrawing');
+    drawMode.value = true;
+  }
+}
+function locationDtoToDrawedGeom(data):DrawedGeom|null{
+  let newDrawedGeom :DrawedGeom = {};
+  let newCoordinates :Coordinates = {};
+  if (data.shape =='CIRCLE'){
+    newDrawedGeom.gid = data.idLocation;
+    newDrawedGeom.name = data.name;
+    newDrawedGeom.shape = data.shape;
+    newDrawedGeom.coordinates = null;
+    newCoordinates = data.center
+    newDrawedGeom.center = newCoordinates;
+    newDrawedGeom.radius = data.radius;
+    return newDrawedGeom;
+  } else {
+    newDrawedGeom.gid = data.idLocation;
+    newDrawedGeom.name = data.name;
+    newDrawedGeom.shape = data.shape;
+    newCoordinates = data.coordinates
+    newDrawedGeom.coordinates = newCoordinates;
+    return newDrawedGeom;
+  }
+}
+function drawZoneChange(){
+  let drawZonePolygon :Polygon = {};
+  let selectedId :number = Number(selectedHotzone.value);
+  drawedGeomsFromDb.forEach((geom) =>{
+    if(geom.gid == selectedId){
+      drawZonePolygon = makePolygon(geom);
+    }
+  })
+  emit('drawZone',drawZonePolygon);
+
+}
+onMounted(()=>{
+  fetchAllZones().then((geoms) =>{
+    hotzoneOptions.value = geoms.map(geom => ({
+      label: geom.name,
+      value: geom.idLocation
+    })).filter((geom, index, self) =>
+        index === self.findIndex(g => g.label === geom.label)
+    );
+    geoms.forEach(geom => {
+      drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
+    })
+  });
+});
 </script>
 
 <style scoped>

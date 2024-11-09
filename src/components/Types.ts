@@ -4,8 +4,7 @@ export type GeometryPoint ={
     id: number
     idText: string
     createdAt: string
-    longitude: Number
-    latitude: Number
+    coordinates: number[]
     person :  Pessoa
 }
 
@@ -38,4 +37,23 @@ export type Address={
     road: string
     state: string
     country: string
+}
+
+export type DrawedGeom={
+    gid?: number
+    name: string
+    shape: string
+    coordinates?: Coordinates[]
+    center?: Coordinates
+    radius?: number
+}
+export type Coordinates={
+    longitude: number;
+    latitude: number;
+}
+export type StopPoint={
+    latitude: number;
+    longitude: number;
+    timestamp: string;
+    stopLocation: any;
 }

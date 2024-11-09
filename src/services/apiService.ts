@@ -1,7 +1,11 @@
 import axios from 'axios';
+import type {DrawedGeom, StopPoint} from "@/components/Types";
+import {useToast} from "vue-toastification";
 
+const toast = useToast();
 const BASE_URL_MOCKED = 'https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json';
 const BASE_URL_ENDPOINT = 'http://localhost:8080/person';
+const BASE_URL_GEOM = 'http://localhost:8080/location';
 
 interface Person {
     idPerson: number;
@@ -55,7 +59,28 @@ export const fetchDevices = async (): Promise<Device[]> => {
         throw error;
     }
 };
-
+export const fetchStopPoints = async ( person, startDate, endDate, page: number):StopPoint[]=>{
+    let getUrl = `http://localhost:8080/tracker/stop/${person}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?page=${page}&size=500`;
+    try {
+        const response = await axios.get(getUrl);
+        if (response.data && response.data.content.length === 0) {
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+            return [];
+        }
+        return response.data.content;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro desconhecido ao buscar pontos.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+        return [];
+    }
+}
 export const fetchHistory = async ( person:String, startDate:String, endDate:String, page:Number)=>{
     let urlHistory =`http://localhost:8080/tracker/history?page=${page}&size=${100}`
     try {
@@ -76,12 +101,10 @@ export const fetchGeomData = async ( person, startDate, endDate, page: number)=>
     let getUrl = `http://localhost:8080/tracker/period/${person}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?page=${page}&size=500`;
     try {
         const response = await axios.get(getUrl);
-
         if (response.data && response.data.content.length === 0) {
             toast.info("Nenhum ponto encontrado para o filtro selecionado.");
             return [];
         }
-
         return response.data.content;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -95,5 +118,64 @@ export const fetchGeomData = async ( person, startDate, endDate, page: number)=>
         }
         return [];
     }
+}
 
+export const saveGeomData = async (drawedGeom : DrawedGeom)=>{
+    let postUrl = BASE_URL_GEOM + '/save-shape'
+    try{
+        const response  = await axios.post(postUrl, drawedGeom);
+        toast.success('Zona de interesse salva!')
+        return response.data.content
+    } catch (error){
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro ao salvar geometrias.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("BAD_RESPONSE.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+        return null;
+    }
+}
+export const fetchGeomInZoneByUser = async ( location, startDate, endDate, userId)=>{
+    let getUrl = BASE_URL_GEOM+`/inside/${location}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?userId=${userId}`
+    try {
+        const response = await axios.get(getUrl);
+        if (response.data && response.data.content.length === 0) {
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+            return [];
+        }
+        return response.data.content;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro desconhecido ao buscar pontos.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+        return [];
+    }
+}
+export const fetchAllZones = async ()=>{
+    let getUrl = BASE_URL_GEOM+`/get-all-shapes`
+    try{
+        const response = await axios.get(getUrl);
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro desconhecido ao buscar pontos.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+        return [];
+    }
 }

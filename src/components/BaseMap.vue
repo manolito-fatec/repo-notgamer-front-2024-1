@@ -1,6 +1,16 @@
 <template>
   <div class="map-wrapper">
-    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData" @clearPoints="clearPoints"/>
+    <GeoFilterView class="filter-overlay"
+                   @saveFilter="handleFilterData"
+                   @clearPoints="clearPoints"
+                   @saveDraw="saveGeometry"
+                   @toggleDrawing="toggleDrawing"
+                   @drawType="drawTypeUpdate"
+                   @changeZoneName="changeZoneName"
+                   @toggleZoneVisibility="toggleZoneVisibility"
+                   @drawZone="drawZone"
+    />
+
     <div v-if="showPlayback" class="playback-layer">
       <PlaybackControl
         v-model:rota="route" 
@@ -24,8 +34,6 @@
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
       <div id="popup-content"></div>
     </div>
-    
-
   </div>
 </template>
 
@@ -33,24 +41,31 @@
 import { ref, onMounted } from 'vue';
 import {Map, Feature, Overlay} from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import {OSM, XYZ} from 'ol/source';
+import {XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
-import { Point, LineString, Geometry } from 'ol/geom';
-import {Icon, Style, Stroke, Fill} from 'ol/style';
-import IconStartPin from '../assets/IconStartPin.png';
-import IconStartAndEnd from '../assets/IconStartAndEnd.png';
-import IconEndPin from '../assets/IconEndPin.png';
+import {Point, LineString, Geometry, Circle, type Polygon} from 'ol/geom';
+import {Style, Stroke, Fill, Icon} from 'ol/style';
 import GeoFilterView from "@/views/GeoFilterView.vue";
-import IconPositionMap from '../assets/IconPositionMap.png';
 import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
-import {fetchGeomData, fetchPersonById} from "@/services/apiService";
-import {createMap, createNewVectorLayer, createTileLayer} from "@/services/mapService";
+import {fetchGeomData, fetchStopPoints} from "@/services/apiService";
+import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
+import IconStopPoint from "@/assets/IconStopPoint.png";
+import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
+import {
+  createStartAndEndPoint,
+  makeFeature, makeLineString, makeMultiplePointsLegacy,
+  makePointsFromArray,
+  makePolygon,
+  makeSinglePoint,
+  saveGeoms
+} from "@/services/geomService";
+
 
 const toast = useToast();
 
@@ -63,7 +78,6 @@ let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
-
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
@@ -78,11 +92,47 @@ const drawLayer = new VectorLayer({ source });
 let draw = ref<Draw | null>(null);
 let drawingActive = ref(false);
 let drawType = ref('Circle');
+let drawGeomName = ref<string>();
+let zoneVisibility = ref(true);
 
 const mapMode = ref(false);
 let darkOrWhiteMap: string;
 const iconScale = ref(1);
 const iconOpacity = ref(1);
+
+function saveGeometry(){
+  map.value?.getLayers().array_.forEach(layer =>{
+    if(layer.values_.layerName == 'Draw Layer'){
+      layer.getSource().getFeatures().forEach(feature =>{
+        saveGeoms(feature,drawGeomName.value);
+      });
+    }
+  })
+}
+function toggleZoneVisibility(){
+  if(zoneVisibility.value) {
+    zoneVisibility.value = false;
+    map.value?.getLayers().array_.forEach(layer =>{
+      if(layer.values_.layerName == 'Draw Layer'){
+        console.log(layer.setVisible(false))
+      }
+    })
+  } else {
+    zoneVisibility.value = true;
+    map.value?.getLayers().array_.forEach(layer =>{
+      if(layer.values_.layerName == 'Draw Layer'){
+        console.log(layer.setVisible(true))
+      }
+    })
+  }
+}
+
+function drawTypeUpdate(selectedMode:selectedMode){
+  drawType.value = selectedMode;
+}
+function changeZoneName(newZoneName){
+  drawGeomName.value = newZoneName;
+}
 
 function toggleTheme() {
   const iconCenter = document.getElementById("icon-center");
@@ -103,7 +153,6 @@ function toggleTheme() {
     })
   }
 }
-
 function initializePopup() {
   popupContent.value = document.getElementById('popup-content');
   popupCloser.value = document.getElementById('popup-closer');
@@ -140,8 +189,8 @@ function handleMapClick(event) {
 
 
 function getInitialRotation() {
-  const [lon1, lat1] = allCoordinatesAnimation.value[0];
-  const [lon2, lat2] = allCoordinatesAnimation.value[1];
+  const [lon1, lat1] = allCoordinatesAnimation.value;
+  const [lon2, lat2] = allCoordinatesAnimation.value;
 
   const deltaLon = lon2 - lon1;
   const deltaLat = lat2 - lat1;
@@ -149,17 +198,20 @@ function getInitialRotation() {
   anguloInicial = Math.atan2(deltaLat, deltaLon)*-1;
 }
 
+function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
+  let geometryPoints:GeometryPoint[]= [];
+  data.forEach(d => {
+    let newGeometryPoint: GeometryPoint = {};
+    newGeometryPoint.id = d.id;
+    newGeometryPoint.idText = d.itoId;
+    newGeometryPoint.createdAt = d.createdAt;
+    newGeometryPoint.coordinates = [d.longitude, d.latitude];
+    geometryPoints.push(newGeometryPoint);
+  })
+  return geometryPoints;
+}
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
-  pointFeatures.value = [];
-  routeLine.value = [];
-  pointFinalStar.value = [];
-  if (map.value) {
-    map.value?.getLayers().array_.forEach(layer => {
-      if(layer.values_.layerName != 'TileLayer'){
-        map.value?.removeLayer(layer)
-      }
-    })
-  }
+  plotStopPoints(filterData.person, filterData.startDate, filterData.endDate)
   fetchGeomData(filterData.person, filterData.startDate, filterData.endDate, 0).then((points) => {
     if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
@@ -167,17 +219,41 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
         showPlayback.value = false;
       }
     } else {
-      let pointList = new ref(points);
-      makeGeometryPointFromArray(pointList, filterData.person);
-      lineLayer.value = makeLineFromPoints(pointFeatures);
-      map.value.addLayer(lineLayer.value);
+      map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
+      const geometryPoints = convertToGeometryPoints(points);
+      map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(geometryPoints,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
+      let pointFeaturesNew :Feature[] =[];
+      geometryPoints.forEach(point =>{
+        pointFeaturesNew.push(makeFeature(makeSinglePoint(point)));
+      })
+      pointFeatures.value = makeMultiplePointsLegacy(points);
+      map.value.addLayer(makeLineFromPoints(pointFeatures));
+      map.value?.on('singleclick', handleMapClick);
+      showPlayback.value = true;
+      initializePopup();
       adjustMap();
     }
   });
-  map.value.addLayer(createNewVectorLayer(routeLine, 'Layer das Rotas'));
-  map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
-  initializePopup();
-  map.value?.on('singleclick', handleMapClick);
+
+}
+function plotStopPoints(person: number , startDate:string, endDate:string) {
+  fetchStopPoints(person, startDate, endDate, 0).then((points:StopPoint[]) => {
+    if (!points) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+      if (showPlayback.value) {
+        showPlayback.value = false;
+      }
+    } else {
+      let stopPointStyle:Style = new Style({
+        image: new Icon({
+          src: IconStopPoint,
+          scale: 0.6,
+          anchor: [0.5, 1],
+        }),
+      });
+      map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,stopPointStyle)));
+    }
+  });
 }
 
 function clearPoints() {
@@ -197,171 +273,51 @@ function clearPoints() {
     }
     map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
     adjustMap();
+    showPlayback.value = false;
   }
 }
-function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
-  if (arrayOfGeometryObjects.length === 0) return [];
-
-  if (nameFilter) {
-    const startPointStartPin = new Feature({
-      geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-    });
-    const personInPoint = ref();
-    fetchPersonById(nameFilter).then( person => {
-      personInPoint.value = person;
-    });
-
-    startPointStartPin.setStyle(new Style({
-      image: new Icon({
-        src: IconStartPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    }));
-
-    startPointIconMap.value = new Feature({
-      geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-    });
-
-    startPointIconMap.value.setStyle(new Style({
-      image: new Icon({
-        src: IconPositionMap,
-        anchor: [0.5, 0.5],
-        scale: 0.2,
-        rotation: anguloInicial
-      }),
-    }));
-
-    const endPoint = new Feature({
-      geometry: new Point([arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].longitude, arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].latitude]),
-    });
-
-    endPoint.setStyle(new Style({
-      image: new Icon({
-        src: IconEndPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    }));
-
-    if(startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
-      if (showPlayback.value) {
-        showPlayback.value = false;
-      }
-      toast.info("A localização do ponto de início é o mesmo do ponto de fim.");
-
-      const startAndEnd = new Feature({
-        geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-      });
-
-      startAndEnd.setStyle(new Style({
-        image: new Icon({
-          src: IconStartAndEnd,
-          scale: 0.7,
-          anchor: [0.5, 1],
-        })
-      }));
-      startPointStartPin.setProperties({person: personInPoint});
-      endPoint.setProperties({person: personInPoint});
-      startAndEnd.setProperties({person: personInPoint});
-      pointFinalStar.value.push(startAndEnd);
-      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos finais e iniciais'));
-    } else {
-      startPointStartPin.setProperties({person: personInPoint});
-      endPoint.setProperties({person: personInPoint});
-      pointFinalStar.value.push(startPointStartPin);
-      pointFinalStar.value.push(startPointIconMap.value);
-      pointFinalStar.value.push(endPoint);
-      map.value.addLayer(createNewVectorLayer(pointFinalStar, 'Layer dos pontos finais e iniciais'));
-      center.value = endPoint.getGeometry().getCoordinates();
-
-      if (!showPlayback.value) {
-        showPlayback.value = !showPlayback.value;
-      } else {
-        showPlayback.value = false;
-        setTimeout(() => {
-          showPlayback.value = true;
-        }, 1);
-      }
-    }
-    center.value = endPoint.getGeometry().getCoordinates();
-  }
-
-  arrayOfGeometryObjects.value.forEach((pointObj) => {
-    const point = new Feature({
-      geometry: new Point([pointObj.longitude, pointObj.latitude]),
-    });
-    point.setStyle(new Style({
-      image: new Icon({
-        src: IconEndPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    }));
-    pointFeatures.value.push(point);
-  });
-}
-
-function makeLineFromPoints(featureList) {
+function makeLineFromPoints(featureList:Feature[]) {
   if (!featureList) {
     toast.info("Nenhum ponto disponível para criar linhas.");
     return null;
   }
-
-  const groupedById = featureList.value.reduce((acc, feature) => {
-    const idText = feature.get('idText');
-    if (!acc[idText]) acc[idText] = [];
-    acc[idText].push(feature);
-    return acc;
-  }, {});
-
-  Object.keys(groupedById).forEach((idText) => {
-    const points = groupedById[idText];
-    allCoordinatesAnimation.value = [];
-
-    if (points.length >= 2) {
-      for (let i = 0; i < points.length - 1; i++) {
-        const point1 = points[i];
-        const point2 = points[i + 1];
-
-        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates())
-        allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates())
-      }
-
-      route.value = new LineString(allCoordinatesAnimation.value)
-
-      getInitialRotation();
-
-      const lineFeature = new Feature({
-        geometry: route.value,
-      });
-      lineFeature.setStyle(new Style({
-        stroke: new Stroke({
-          color: '#ec1c24',
-          width: 6,
-        }),
-      }));
-      routeLine.value.push(lineFeature);
-    }
-  })
-  return new VectorLayer({
-    source: new VectorSource({
-      features: routeLine.value,
+  let featureArray :Feature[] = [];
+  let newLineString: LineString = makeLineString(featureList);
+  featureArray.push(new Feature({geometry: newLineString}));
+  featureArray[0].setStyle(new Style({
+    stroke: new Stroke({
+      color: '#000000',
+      width: 4
     }),
-    properties: {layerName: 'Layer das Rotas'}
-  })
+    zIndex: 4
+  }));
+  route.value = newLineString;
+  map.value?.getLayers().array_.forEach(layer =>{
+    if(layer.values_.layerName == undefined){
+      startPointIconMap.value = layer.getSource().getFeatures()[2];
+    }
+  });
+  allCoordinatesAnimation.value = makeLineString(featureList).getCoordinates();
+
+  let lineLayer :VectorLayer = createNewVectorLayer(featureArray,'Layer das Rotas');
+  return lineLayer
 }
 
 
-const adjustMap = () => {
-  const coordinates = pointFeatures.value.map((pontos) =>
-      pontos.getGeometry().getCoordinates()
-  );
-  const extent = boundingExtent(coordinates);
-  if (map.value) {
-    map.value
-        .getView()
-        .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15});
+const adjustMap = (drawedZone?:Polygon|Circle) => {
+  if(drawedZone){
+    const extent = drawedZone.getExtent();
+    if (map.value) {
+      map.value
+          .getView()
+          .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15,duration: 1000});
+    }
+  } else {
+    const coordinates = pointFeatures.value.map((pontos) =>
+        pontos.getGeometry().getCoordinates()
+    );
+    const extent = boundingExtent(coordinates);
+    map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
   }
 };
 function toggleDrawing() {
@@ -405,7 +361,6 @@ function stopDrawing() {
     draw.value = null;
     drawingActive.value = false;
   }
-
 }
 function centerMap() {
   if (map.value) {
@@ -416,14 +371,32 @@ function centerMap() {
       map.value?.getView().setCenter(defaultCenter);
       map.value?.getView().setZoom(defaultZoom);
     } else {
-      const coordinates = pointFeatures.value.map((ponto) =>
-          ponto.getGeometry().getCoordinates()
-      );
+      let coordinates;
+      map.value?.getLayers().array_.forEach(layer =>{
+        if(layer.values_.layerName == 'Layer dos Pontos'){
+          layer.getSource().getFeatures().forEach(feature =>{
+            console.log(feature.getGeometry()[1]);
+          });
+        }
+      });
       const extent = boundingExtent(coordinates);
 
-      map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
+
+      map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
     }
   }
+}
+function drawZone(drawZonePolygon:drawZone){
+  let featureArray :Feature[] = [];
+  let newFeature :Feature = makeFeature(undefined,undefined,drawZonePolygon);
+  featureArray.push(newFeature);
+  let newVectorLayer:VectorLayer = createNewVectorLayer(featureArray,'Layer das Zonas');
+  map.value?.getLayers().array_.forEach((layer) =>{
+    if(layer.values_.layerName == 'Layer das Zonas')
+    map.value?.removeLayer(layer);
+  });
+  map.value?.addLayer(newVectorLayer);
+  adjustMap(drawZonePolygon);
 }
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
@@ -455,28 +428,7 @@ onMounted(() => {
   right: 8px;
   font-size: 1.2em;
 }
-.controls {
-  position: absolute;
-  top: 200px;
-  left: 20px;
-  display: flex;
-  gap: 10px;
-  z-index: 4;
-}
 
-.draw-button {
-  padding: 10px 15px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.draw-button:hover {
-  background-color: #45a049;
-}
 .map-container {
   width: 100vw;
   height: 100vh;
@@ -554,7 +506,6 @@ onMounted(() => {
 .icon-center-icon {
   font-size: 20px;
   color: #3A3A3A;
-
 }
 
 </style>

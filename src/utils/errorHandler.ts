@@ -26,3 +26,6 @@ export function handleAxiosError(error) {
     }
     console.error(error);
 }
+export function handleTypeError(e) {
+    return null;
+}

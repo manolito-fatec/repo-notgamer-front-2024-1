@@ -22,6 +22,11 @@
           :options="DeviceOption"
           label="Dispositivos:"
       />
+      <DropDown
+        id="dropdown3"
+        :options="ZoneOption"
+        label="Zonas de interesse:"
+      />
       <DataRangePicker
           v-model:endDate="endDate"
           v-model:startDate="startDate"
@@ -39,8 +44,14 @@
       </div>
     </div>
     <div v-if="showZone" class="zone-component">
-      <InterestZone>
-      </InterestZone>
+      <InterestZone
+          @saveDraw="saveDraw"
+          @toggleDrawing="toggleDrawing"
+          @drawType="drawType"
+          @changeZoneName="changeZoneName"
+          @toggleZoneVisibility="$emit('toggleZoneVisibility')"
+          @drawZone="drawZone"
+      />
     </div>
   </div>
 </template>
@@ -62,13 +73,13 @@ import InterestZone from "@/components/InterestZone.vue";
 import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
 import {getClick} from '@/components/stores/StoreGetClick.js'
 import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
-
-const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor']);
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
+const ZoneOption = ref([]);
 const listOfHistory = ref([]);
 const totalPage = ref(0);
 const page = ref(0);
@@ -84,7 +95,23 @@ const resetFilters = ref(false);
 const storeFilters = darkModeClick();
 const storeGetClickToggleFilters = getClick();
 const storePathManipulation = getPathColorManipulatorState();
+const selectedMode = ref(null);
 
+function drawType(selectedMode:selectedMode){
+  emit("drawType", selectedMode);
+}
+function saveDraw(){
+  emit("saveDraw");
+}
+function toggleDrawing(){
+  emit("toggleDrawing")
+}
+function changeZoneName(changeZoneName:changeZoneName){
+  emit("changeZoneName", changeZoneName);
+}
+function drawZone(drawZonePolygon:drawZone){
+  emit("drawZone", drawZonePolygon);
+}
 onMounted(async () => {
   try {
     let personListFromDb = await fetchPersons();
@@ -196,7 +223,6 @@ function handleSave() {
 }
 
 const paginatorHistory = (event) => {
-  
   let currentPage = page.value + 1;
   let total = Number(totalPage.value);
   if(total >= currentPage){
@@ -210,9 +236,9 @@ const getHistory = async (person, startDate, endDate, pageValue) => {
     const historyRequest = await fetchHistory(person, startDate, endDate, pageValue);
     listOfHistory.value = [...new Set([...listOfHistory.value, ...historyRequest.content])
     ];
-    if(listOfHistory.value.length == 1){
-      if(totalPage.value >= pageValue)
-      loading.value = true;
+    if (listOfHistory.value.length == 1) {
+      if (totalPage.value >= pageValue)
+        loading.value = true;
       getHistory(person, startDate, endDate, pageValue + 1);
     }
     totalPage.value = historyRequest.totalPages;
@@ -223,7 +249,6 @@ const getHistory = async (person, startDate, endDate, pageValue) => {
     toast.error("Erro ao buscar histórico. Tente novamente mais tarde.")
   }
 }
-
 function handleReset() {
   Person.value = null;
   Device.value = null;
