@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type {DrawedGeom} from "@/components/Types";
+import type {DrawedGeom, StopPoint} from "@/components/Types";
 import {useToast} from "vue-toastification";
 
 const toast = useToast();
@@ -59,7 +59,28 @@ export const fetchDevices = async (): Promise<Device[]> => {
         throw error;
     }
 };
-
+export const fetchStopPoints = async ( person, startDate, endDate, page: number):StopPoint[]=>{
+    let getUrl = `http://localhost:8080/tracker/stop/${person}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?page=${page}&size=500`;
+    try {
+        const response = await axios.get(getUrl);
+        if (response.data && response.data.content.length === 0) {
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+            return [];
+        }
+        return response.data.content;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro desconhecido ao buscar pontos.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+        return [];
+    }
+}
 export const fetchHistory = async ( person, startDate, endDate)=>{
     let urlHistory = "http://localhost:8080/tracker/history"
     try {
@@ -158,3 +179,4 @@ export const fetchAllZones = async ()=>{
         return [];
     }
 }
+
