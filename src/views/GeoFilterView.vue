@@ -51,6 +51,7 @@
           @changeZoneName="changeZoneName"
           @toggleZoneVisibility="$emit('toggleZoneVisibility')"
           @drawZone="drawZone"
+          @removeShowedZone="$emit('removeZoneFilters')"
       />
     </div>
   </div>
@@ -58,7 +59,7 @@
 
 <script setup lang="ts">
 import {onMounted, ref, watch} from 'vue';
-import {fetchDevices, fetchPersons} from "@/services/apiService.ts";
+import {fetchAllZones, fetchDevices, fetchPersons} from "@/services/apiService.ts";
 import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
 import DropDown from "@/components/filter/DropDown.vue";
@@ -73,7 +74,7 @@ import InterestZone from "@/components/InterestZone.vue";
 import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
 import {getClick} from '@/components/stores/StoreGetClick.js'
 import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
-const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone']);
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
@@ -282,7 +283,16 @@ watch(() => storeFilters.onClickDarkMode,
     title.style.color = "#000";
   }
 });
-
+onMounted(()=>{
+  fetchAllZones().then((geoms) =>{
+    ZoneOption.value = geoms.map(geom => ({
+      label: geom.name,
+      value: geom.idLocation
+    })).filter((geom, index, self) =>
+        index === self.findIndex(g => g.label === geom.label)
+    );
+  });
+});
 </script>
 
 <style scoped>

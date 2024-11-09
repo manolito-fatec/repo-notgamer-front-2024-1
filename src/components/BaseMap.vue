@@ -9,6 +9,7 @@
                    @changeZoneName="changeZoneName"
                    @toggleZoneVisibility="toggleZoneVisibility"
                    @drawZone="drawZone"
+                   @removeZoneFilters="removeZoneFilters"
     />
 
     <div v-if="showPlayback" class="playback-layer">
@@ -106,6 +107,7 @@ function saveGeometry(){
       layer.getSource().getFeatures().forEach(feature =>{
         saveGeoms(feature,drawGeomName.value);
       });
+      map.value?.removeLayer(layer);
     }
   })
 }
@@ -397,6 +399,12 @@ function drawZone(drawZonePolygon:drawZone){
   });
   map.value?.addLayer(newVectorLayer);
   adjustMap(drawZonePolygon);
+}
+function removeZoneFilters(){
+  map.value?.getLayers().array_.forEach((layer) =>{
+    if(layer.values_.layerName == 'Layer das Zonas')
+      map.value?.removeLayer(layer);
+  });
 }
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
