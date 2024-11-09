@@ -25,7 +25,7 @@
       <div class="checkbox-and-button">
         <Checkbox
             id="hide-zones"
-            label="Ocultar Zonas"
+            label="Ocultar Desenhos"
             v-model="hideZones"
             @click="$emit('toggleZoneVisibility')"
         />
@@ -33,7 +33,7 @@
       </div>
       <DropDown id="select-hotzone" label="Selecione a zona de interesse:" :options="hotzoneOptions"
                 v-model="selectedHotzone" class="dropdown" @change ="drawZoneChange"/>
-      <button :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
+      <button @click="removeShowedZone" :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
       <DropDown id="delete-hotzone" label="Exclua sua zona de interesse:" :options="hotzoneOptions"
                 v-model="deletedHotzone" class="dropdown"/>
       <button :class="['delete-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Deletar</button>
@@ -50,6 +50,7 @@ import {fetchAllZones} from "@/services/apiService";
 import type {Coordinates, DrawedGeom} from "@/components/Types";
 import {makePolygon} from "@/services/geomService";
 import type {Polygon} from "ol/geom";
+import {Map} from "ol";
 
 let hotzoneOptions = ref([]);
 const modeOptions = [
@@ -63,7 +64,7 @@ const drawMode = ref(false)
 const hideZones = ref(false)
 const zoneName = ref(null);
 let drawedGeomsFromDb :DrawedGeom[] =[];
-const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility','drawZone']);
+const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility','drawZone','removeShowedZone']);
 const storeFilters = darkModeClick();
 
 watch(() => storeFilters.onClickDarkMode,
@@ -82,6 +83,17 @@ watch(() => storeFilters.onClickDarkMode,
     });
 function saveDraw() {
   emit('saveDraw');
+  fetchAllZones().then((geoms) =>{
+    hotzoneOptions.value = geoms.map(geom => ({
+      label: geom.name,
+      value: geom.idLocation
+    })).filter((geom, index, self) =>
+        index === self.findIndex(g => g.label === geom.label)
+    );
+    geoms.forEach(geom => {
+      drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
+    })
+  });
 }
 function changeZoneName(){
   emit('changeZoneName',zoneName.value);
@@ -127,7 +139,9 @@ function drawZoneChange(){
     }
   })
   emit('drawZone',drawZonePolygon);
-
+}
+function removeShowedZone(){
+  emit('removeShowedZone')
 }
 onMounted(()=>{
   fetchAllZones().then((geoms) =>{
