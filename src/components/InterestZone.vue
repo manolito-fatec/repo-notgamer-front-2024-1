@@ -36,7 +36,7 @@
       <button @click="removeShowedZone" :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
       <DropDown id="delete-hotzone" label="Exclua sua zona de interesse:" :options="hotzoneOptions"
                 v-model="deletedHotzone" class="dropdown"/>
-      <button :class="['delete-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Deletar</button>
+      <button @click="deleteZone" :class="['delete-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Deletar</button>
     </div>
   </div>
 </template>

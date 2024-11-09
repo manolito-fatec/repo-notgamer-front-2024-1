@@ -31,7 +31,7 @@ export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[]|StopPoint
     return newFeatures;
 }
 export function makeSinglePoint(pointObject: GeometryPoint|StopPoint): Point {
-    if(pointObject.stopLocation){
+    if(pointObject.stopLocation != undefined){
         return new Point([pointObject.longitude,pointObject.latitude])
     }else{
         return new Point(pointObject.coordinates)

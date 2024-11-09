@@ -24,6 +24,7 @@
       />
       <DropDown
         id="dropdown3"
+        v-model="selectedZone"
         :options="ZoneOption"
         label="Zonas de interesse:"
       />
@@ -97,6 +98,7 @@ const storeFilters = darkModeClick();
 const storeGetClickToggleFilters = getClick();
 const storePathManipulation = getPathColorManipulatorState();
 const selectedMode = ref(null);
+const selectedZone = ref(null);
 
 function drawType(selectedMode:selectedMode){
   emit("drawType", selectedMode);
@@ -209,16 +211,31 @@ function handleSave() {
     }
 
     if (!hasErrors) {
-      const filterData = {
-        person: Person.value,
-        device: Device.value,
-        startDate: startDate.value,
-        endDate: endDate.value
-      };
-      emit('saveFilter', filterData);
-      loading.value = true;
-      page.value = 1;
-      getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
+      if(selectedZone.value){
+        const filterData = {
+          person: Person.value,
+          device: Device.value,
+          startDate: startDate.value,
+          endDate: endDate.value,
+          selectedZone: selectedZone.value,
+        };
+        emit('saveFilter', filterData);
+        loading.value = true;
+        page.value = 1;
+        getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
+      } else {
+        const filterData = {
+          person: Person.value,
+          device: Device.value,
+          startDate: startDate.value,
+          endDate: endDate.value,
+        };
+        emit('saveFilter', filterData);
+        loading.value = true;
+        page.value = 1;
+        getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
+      }
+
     }
   }
 }

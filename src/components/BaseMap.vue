@@ -52,7 +52,7 @@ import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
-import {fetchGeomData, fetchStopPoints} from "@/services/apiService";
+import {fetchGeomData, fetchGeomDataWithinZone, fetchPersonById, fetchStopPoints} from "@/services/apiService";
 import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
@@ -212,15 +212,23 @@ function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
   })
   return geometryPoints;
 }
-function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
-  plotStopPoints(filterData.person, filterData.startDate, filterData.endDate)
-  fetchGeomData(filterData.person, filterData.startDate, filterData.endDate, 0).then((points) => {
+function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null, selectedZone:number | null}){
+  if(filterData.selectedZone){
+    plotStopPoints(filterData.person, filterData.startDate, filterData.endDate, filterData.selectedZone)
+    fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points:GeometryPoint[]) => {
     if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
       if (showPlayback.value) {
         showPlayback.value = false;
       }
-    } else {
+    }
+    let filteredPoints:GeometryPoint[] = [];
+    points.forEach((point) => {
+      if(point.person.idPerson == filterData.person){
+        point.person = fetchPersonById(filterData.person);
+        filteredPoints.push(point);
+      }
+    })
       map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
       const geometryPoints = convertToGeometryPoints(points);
       map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(geometryPoints,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
@@ -234,11 +242,38 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
       showPlayback.value = true;
       initializePopup();
       adjustMap();
-    }
-  });
+
+    })
+  } else {
+    plotStopPoints(filterData.person, filterData.startDate, filterData.endDate);
+    fetchGeomData(filterData.person, filterData.startDate, filterData.endDate, 0).then((points) => {
+      if (!points) {
+        toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        if (showPlayback.value) {
+          showPlayback.value = false;
+        }
+      } else {
+        map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
+        const geometryPoints = convertToGeometryPoints(points);
+        map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(geometryPoints,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
+        let pointFeaturesNew :Feature[] =[];
+        geometryPoints.forEach(point =>{
+          pointFeaturesNew.push(makeFeature(makeSinglePoint(point)));
+        })
+        pointFeatures.value = makeMultiplePointsLegacy(points);
+        map.value.addLayer(makeLineFromPoints(pointFeatures));
+        map.value?.on('singleclick', handleMapClick);
+        showPlayback.value = true;
+        initializePopup();
+        adjustMap();
+      }
+    });
+  }
+
+
 
 }
-function plotStopPoints(person: number , startDate:string, endDate:string) {
+function plotStopPoints(person: number , startDate:string, endDate:string, selectedZone?:number) {
   fetchStopPoints(person, startDate, endDate, 0).then((points:StopPoint[]) => {
     if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
