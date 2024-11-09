@@ -23,7 +23,6 @@
       />
       <DropDown
         id="dropdown3"
-        v-model="Zone"
         :options="ZoneOption"
         label="Zonas de interesse:"
       />
