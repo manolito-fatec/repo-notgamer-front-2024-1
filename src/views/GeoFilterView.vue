@@ -1,12 +1,13 @@
 <template>
-  <div class="filter-container">
+  <div class="filter-container" >
     <Sidebar
         @toggle-filters="toggleFilters"
         @toggle-zone="toggleZone"
         :showFilters="showFilters"
         :showZone="showZone"
     />
-    <div v-if="showFilters" class="filters">
+    <div v-show="showFilters" class="filters" id="filters">
+      <div class="title" id="title">FILTRAR</div>
       <PersonSearch
           id="autocomplete1"
           v-model="Person"
@@ -39,7 +40,7 @@
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
       <div>
-        <History :historyConfiguration="listOfHistory" :loading="loading"/>
+        <History @openTeleport="paginatorHistory" :historyConfiguration="listOfHistory" :loading="loading" :person="Person" :init="endDate" :final="endDate"/>
       </div>
     </div>
     <div v-if="showZone" class="zone-component">
@@ -56,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import {fetchDevices, fetchPersons} from "@/services/apiService.ts";
 import Sidebar from "@/components/SideBar.vue";
 import DataRangePicker from "@/components/filter/DateRangePicker.vue";
@@ -69,6 +70,9 @@ import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
 import InterestZone from "@/components/InterestZone.vue";
+import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
+import {getClick} from '@/components/stores/StoreGetClick.js'
+import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
 
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone']);
 const toast = useToast();
@@ -78,6 +82,8 @@ const PersonOption = ref([]);
 const DeviceOption = ref([]);
 const ZoneOption = ref([]);
 const listOfHistory = ref([]);
+const totalPage = ref(0);
+const page = ref(0);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
 const showZone = ref(false);
@@ -87,6 +93,9 @@ const loading = ref(false);
 const endDate = ref(null);
 const selectedPeriod = ref('');
 const resetFilters = ref(false);
+const storeFilters = darkModeClick();
+const storeGetClickToggleFilters = getClick();
+const storePathManipulation = getPathColorManipulatorState();
 const selectedMode = ref(null);
 
 function drawType(selectedMode:selectedMode){
@@ -143,18 +152,23 @@ const onPersonSelect = async (selectedPerson) => {
   }
 };
 
-
 function toggleFilters() {
   showFilters.value = !showFilters.value;
-  if (showFilters.value) {
+  storeGetClickToggleFilters.onClickFilters = !storeGetClickToggleFilters.onClickFilters;
+  storePathManipulation.pathColorManipulatorIconFilter = !storePathManipulation.pathColorManipulatorIconFilter;
+  if (storePathManipulation.pathColorManipulatorIconInterestZone === false) {
     showZone.value = false;
+    storePathManipulation.pathColorManipulatorIconInterestZone = true;
   }
 }
 
 function toggleZone() {
   showZone.value = !showZone.value;
-  if (showZone.value) {
+  storeGetClickToggleFilters.onClickInterestZone = !storeGetClickToggleFilters.onClickInterestZone;
+  storePathManipulation.pathColorManipulatorIconInterestZone = !storePathManipulation.pathColorManipulatorIconInterestZone;
+  if (storePathManipulation.pathColorManipulatorIconFilter === false) {
     showFilters.value = false;
+    storePathManipulation.pathColorManipulatorIconFilter = true;
   }
 }
 
@@ -204,22 +218,40 @@ function handleSave() {
       };
       emit('saveFilter', filterData);
       loading.value = true;
-      getHistory(filterData.person, filterData.startDate, filterData.endDate);
+      page.value = 1;
+      getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
     }
   }
 }
 
-const getHistory = async (person, startDate, endDate) => {
+const paginatorHistory = (event) => {
+
+  let currentPage = page.value + 1;
+  let total = Number(totalPage.value);
+  if(total >= currentPage){
+    loading.value = true;
+    getHistory(Person.value, startDate.value, endDate.value, currentPage);
+  }
+}
+
+const getHistory = async (person, startDate, endDate, pageValue) => {
   try {
-    const historyRequest = await fetchHistory(person, startDate, endDate);
-    listOfHistory.value = historyRequest;
+    const historyRequest = await fetchHistory(person, startDate, endDate, pageValue);
+    listOfHistory.value = [...new Set([...listOfHistory.value, ...historyRequest.content])
+    ];
+    if (listOfHistory.value.length == 1) {
+      if (totalPage.value >= pageValue)
+        loading.value = true;
+      getHistory(person, startDate, endDate, pageValue + 1);
+    }
+    totalPage.value = historyRequest.totalPages;
+    page.value = historyRequest.pageable.pageNumber;
     loading.value = false;
   } catch (error) {
     console.error(error)
     toast.error("Erro ao buscar histórico. Tente novamente mais tarde.")
   }
 }
-
 function handleReset() {
   Person.value = null;
   Device.value = null;
@@ -236,6 +268,24 @@ function handleReset() {
 
   emit('clearPoints');
 }
+
+watch(() => storeFilters.onClickDarkMode,
+  () => {
+
+  const filter = document.getElementById('filters')
+  const title = document.getElementById('title')
+
+  if (storeFilters.onClickDarkMode){
+    filter.style.borderRight = "4px solid #EC1C24";
+    filter.style.background = "#262626";
+    title.style.color = "#FFF";
+  } else {
+    filter.style.borderRight = "4px solid #000059",
+    filter.style.background = "#EFEFEF",
+    title.style.color = "#000";
+  }
+});
+
 </script>
 
 <style scoped>
@@ -243,20 +293,29 @@ function handleReset() {
 
 .filters {
   position: fixed;
-  top: 0;
+  top: 3%;
   left: 100px;
-  width: 420px;
-  height: 100%;
+  width: 380px;
+  height: 87%;
   padding: 16px;
-  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
-  border-left: 4px solid #EC1C24;
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-right: 4px solid #000059;
+  background: #EFEFEF;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: left 0.5s ease;
   font-family: 'Poppins', regular, sans-serif;
+  font-size: 12px;
   z-index: 10;
+  text:#fff;
+}
+
+.title {
+  font-family: 'Poppins', regular, sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #000;
+  padding-bottom: 0%;
 }
 
 .button-group {

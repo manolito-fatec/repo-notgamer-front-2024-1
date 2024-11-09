@@ -1,28 +1,29 @@
 <template>
   <div class="sidebar">
-    <IconLogo />
-    <button class="toggle-btn" @click="onToggleFilters">
-      <IconFilter :isActive="showFilters" />
+    <button id="toggle-btn" class="toggle-btn" @click="onToggleFilters" @toggle-dark-white-mode="darkMode">
+      <IconFilter />
     </button>
-    <button class="toggle-zone" @click="onToggleZone">
-      Blablabla
+    <button class="int-btn" @click="onToggleZone">
+      <IconAlert />
     </button>
   </div>
 </template>
 
 <script setup>
+import { getClick } from '@/components/stores/StoreGetClick.js'
 import IconFilter from "@/components/icons/IconFilter.vue";
-import IconLogo from "@/components/icons/IconLogo.vue";
+import IconAlert from './icons/IconInterestZone.vue';
+
+const storeFilters = getClick();
 
 const emit = defineEmits(['toggle-filters', 'toggle-zone']);
-
 const props = defineProps({
   showFilters: Boolean,
   showZone: Boolean
 });
 
 function onToggleFilters() {
-  emit('toggle-filters');
+  emit('toggle-filters')
 }
 
 function onToggleZone() {
@@ -32,34 +33,18 @@ function onToggleZone() {
 
 <style scoped>
 .sidebar {
-  position: fixed;
-  left: 0;
-  top: -5%;
-  width: 100px;
-  height: 110%;
-  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding-top: 18px;
-  z-index: 10;
+  display: grid;
+  grid-template-rows: repeat(auto, 100%);
 }
 
-.sidebar > * {
-  margin: 46px 0;
-  z-index: 10;
-}
-
-.toggle-btn {
+.toggle-btn, .int-btn {
   background-color: transparent;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 10px;
+  padding: 0;
+  border-color: transparent;
+}
+
+.int-btn:hover, .toggle-btn:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s ease-in-out;
 }
 </style>

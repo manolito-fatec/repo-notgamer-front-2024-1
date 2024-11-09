@@ -1,11 +1,12 @@
 <template>
-  <div class="zone-container">
+  <div :class="['zone-container', { 'dark-mode': storeFilters.onClickDarkMode }]">
     <div class="zone-of-interest">
-      <h2 class="title">ZONA DE INTERESSE</h2>
-
-      <label for="zone-name" class="label">Dê um nome para sua zona de interesse:</label>
-      <input class="input" placeholder="Nome da zona de interesse" v-model="zoneName" @change="changeZoneName"/>
-
+      <h2 :class="['title', { 'dark-mode-text': storeFilters.onClickDarkMode }]">ZONA DE INTERESSE</h2>
+      <label for="zone-name" :class="['label', { 'dark-mode-text': storeFilters.onClickDarkMode }]">
+        Dê um nome para sua zona de interesse:
+      </label>
+      <input type="text" id="zone-name" :class="['input', { 'dark-mode-input': storeFilters.onClickDarkMode }]"
+             placeholder="Nome da zona de interesse" @change="changeZoneName" v-model="zoneName"/>
       <div class="options">
         <Checkbox
             id="draw-mode"
@@ -21,7 +22,6 @@
             @change="drawType"
         />
       </div>
-
       <div class="checkbox-and-button">
         <Checkbox
             id="hide-zones"
@@ -29,29 +29,14 @@
             v-model="hideZones"
             @click="$emit('toggleZoneVisibility')"
         />
-        <button class="save-button" @click="saveDraw">Salvar</button>
+        <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" @click="saveDraw">Salvar</button>
       </div>
-
-      <DropDown
-          id="select-hotzone"
-          label="Selecione a zona de interesse:"
-          :options="hotzoneOptions"
-          v-model="selectedHotzone"
-          @change ="drawZoneChange"
-          class="dropdown"
-      />
-
-      <button class="remove-button">Remover filtro</button>
-
-      <DropDown
-          id="delete-hotzone"
-          label="Exclua sua zona de interesse:"
-          :options="hotzoneOptions"
-          v-model="deletedHotzone"
-          class="dropdown"
-      />
-
-      <button class="delete-button">Deletar</button>
+      <DropDown id="select-hotzone" label="Selecione a zona de interesse:" :options="hotzoneOptions"
+                v-model="selectedHotzone" class="dropdown" @change ="drawZoneChange"/>
+      <button :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
+      <DropDown id="delete-hotzone" label="Exclua sua zona de interesse:" :options="hotzoneOptions"
+                v-model="deletedHotzone" class="dropdown"/>
+      <button :class="['delete-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Deletar</button>
     </div>
   </div>
 </template>
@@ -59,7 +44,8 @@
 <script setup lang="ts">
 import DropDown from "@/components/filter/DropDown.vue";
 import Checkbox from "@/components/Checkbox.vue";
-import {onMounted, ref} from 'vue'
+import {ref, watch, onMounted} from 'vue'
+import {darkModeClick} from "./stores/StoreDarkModeGetClick";
 import {fetchAllZones} from "@/services/apiService";
 import type {Coordinates, DrawedGeom} from "@/components/Types";
 import {makePolygon} from "@/services/geomService";
@@ -78,15 +64,28 @@ const hideZones = ref(false)
 const zoneName = ref(null);
 let drawedGeomsFromDb :DrawedGeom[] =[];
 const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility','drawZone']);
+const storeFilters = darkModeClick();
 
+watch(() => storeFilters.onClickDarkMode,
+    () => {
+      const filter = document.getElementById('filters')
+      const title = document.getElementById('title')
+      if (storeFilters.onClickDarkMode) {
+        filter.style.borderRight = "4px solid #EC1C24";
+        filter.style.background = "#262626";
+        title.style.color = "#FFF";
+      } else {
+        filter.style.borderRight = "4px solid #000059",
+            filter.style.background = "#EFEFEF",
+            title.style.color = "#000";
+      }
+    });
 function saveDraw() {
   emit('saveDraw');
 }
-
 function changeZoneName(){
   emit('changeZoneName',zoneName.value);
 }
-
 function drawType(){
   if(drawMode.value){
     emit('toggleDrawing');
@@ -150,17 +149,18 @@ onMounted(()=>{
 
 .zone-container {
   position: fixed;
-  top: 0;
+  top: 3%;
   left: 100px;
-  width: 420px;
-  height: 100%;
+  width: 380px;
+  height: 87%;
   padding: 8px;
-  background: linear-gradient(180deg, #262626 0%, #3A3A3A 50%, #262626 100%);
-  border-left: 4px solid #EC1C24;
+  background: #EFEFEF;
+  border-right: 4px solid #000059;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: right 0.5s ease;
-  color: #ffffff;
+  color: #000;
   z-index: 10;
   font-family: 'Poppins', regular, sans-serif;
 }
@@ -174,16 +174,18 @@ onMounted(()=>{
 }
 
 .title {
+  font-family: 'Poppins', regular, sans-serif;
+  font-weight: 700;
   font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 24px;
-  text-align: center;
+  color: #000;
+  padding-bottom: 8px
 }
 
 .label {
   display: block;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 12px;
+  font-family: 'Poppins', regular, sans-serif;
 }
 
 .input {
@@ -191,9 +193,14 @@ onMounted(()=>{
   padding: 10px;
   border-radius: 5px;
   border: none;
-  background-color: #444444;
-  color: #ffffff;
+  background-color: #6D6D6D;
+  color: #FFF;
   margin-bottom: 20px;
+}
+
+.input::placeholder {
+  color: #FFFFFF;
+  opacity: 1;
 }
 
 .options {
@@ -216,8 +223,8 @@ onMounted(()=>{
 }
 
 .save-button {
-  padding: 10px 38px;
-  background-color: #EC1C24;
+  padding: 10px 34.8px;
+  background-color: #000059;
   color: #ffffff;
   font-weight: bold;
   border: none;
@@ -226,20 +233,47 @@ onMounted(()=>{
   margin-left: auto;
 }
 
-.dropdown {
-  margin-bottom: 16px;
-  width: 100%;
-}
-
 .remove-button, .delete-button {
   width: 100%;
   padding: 10px;
   border: none;
   border-radius: 5px;
-  background-color: #EC1C24;
+  background-color: #000059;
   color: #ffffff;
   font-weight: bold;
   cursor: pointer;
   margin-bottom: 20px;
+}
+
+.dropdown {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.dark-mode {
+  background-color: #262626 !important;
+  border-right: 4px solid #EC1C24;
+}
+
+.dark-mode-text {
+  color: #FFF !important;
+}
+
+.dark-mode-input {
+  background-color: #444444 !important;
+  color: #FFF
+}
+
+.dark-mode-button {
+  background-color: #EC1C24 !important;
+}
+
+.dark-mode-input::placeholder {
+  color: #FFF !important;
+  opacity: 0.8;
+}
+
+.save-button.dark-mode-save {
+  background-color: #EC1C24 !important;
 }
 </style>

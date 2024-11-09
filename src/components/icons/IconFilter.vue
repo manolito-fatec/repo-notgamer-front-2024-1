@@ -1,58 +1,60 @@
 <template>
   <svg
-      width="70"
-      height="66"
-      viewBox="0 0 100 66"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+    width="50"
+    height="50"
+    viewBox="0 0 65 65"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    @click="toggleColor"
   >
-    <path
-        d="M6.77676 58.1252C4.86242 56.2109 4.86242 53.1072 6.77676 51.1928L31.0402 26.9293L37.9726 33.8618L13.7092 58.1252C11.7948 60.0396 8.69109 60.0396 6.77676 58.1252Z"
-        :fill="isActive ? '#FFF' : '#EC1C24'"
-        class="color-transition"
+    <circle
+      cx="32.5"
+      cy="32.5"
+      r="32.5"
+      transform="rotate(90 32.5 32.5)"
+      :fill="circleThemeManipulator ? '#EC1C24' : '#000059'"
     />
     <path
-        d="M63.1373 30.0826L87.4007 5.81917C89.3151 3.90484 92.4188 3.90484 94.3332 5.81917C96.2475 7.73351 96.2475 10.8373 94.3332 12.7516L70.0697 37.0151L63.1373 30.0826Z"
-        :fill="isActive ? '#FFF' : '#EC1C24'"
-        class="color-transition"
-    />
-    <rect
-        x="30.9804"
-        y="27.0588"
-        width="39.2157"
-        height="9.80392"
-        :fill="isActive ? '#FFF' : '#EC1C24'"
-        class="color-transition"
-    />
-    <path
-        d="M27.8498 34.8246C29.3369 34.4261 30.6978 35.787 30.2993 37.2741L25.5 55.1854C25.1015 56.6725 23.2426 57.1706 22.1539 56.082L9.04194 42.97C7.95328 41.8813 8.45137 40.0224 9.93851 39.6239L27.8498 34.8246Z"
-        :fill="isActive ? '#EC1C24' : '#FFF'"
-        :stroke="isActive ? '#610505' : '#FFF'"
-        stroke-width="2"
-    />
-    <ellipse
-        cx="90.1961"
-        cy="9.80392"
-        rx="9.80392"
-        ry="9.80392"
-        :fill="isActive ? '#FFF' : '#EC1C24'"
-        class="color-transition"
+      d="M50 18.667C50 17.5624 49.1046 16.667 48 16.667H17C15.8954 16.667 15 17.5624 15 18.667V23.5635C15 24.0616 15.1859 24.5418 15.5213 24.9101L26.9787 37.4918C27.3141 37.8601 27.5 38.3403 27.5 38.8384V50.5894C27.5 52.2829 29.4732 53.2099 30.7767 52.1289L37.2767 46.7385C37.7349 46.3586 38 45.7943 38 45.199V38.8152C38 38.3311 38.1756 37.8634 38.4943 37.4989L49.5057 24.9031C49.8244 24.5386 50 24.0709 50 23.5867V18.667Z"
+      stroke="#EFEFEF"
+      stroke-width="3"
+      :fill="storePathManipulation.pathColorManipulatorIconFilter ? 'transparent' : '#EFEFEF' "
+      class="color-transition"
     />
   </svg>
 </template>
 
-<script setup lang="ts">
-import { defineProps } from 'vue';
+<script lang="ts" setup>
+import { ref, watch } from 'vue';
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
+import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
+import { getClick } from '../stores/StoreGetClick.js';
 
-const props = defineProps<{ isActive: boolean }>();
+const store = darkModeClick();
+const storePathManipulation = getPathColorManipulatorState();
+
+const pathColorManipulator = ref<boolean>(true);
+const circleThemeManipulator = ref<boolean>(false);
+
+const toggleColor = (): void => {
+  pathColorManipulator.value = !pathColorManipulator.value;
+};
+
+watch(
+  () => store.onClickDarkMode,
+  (newValue) => {
+    circleThemeManipulator.value = newValue;
+  }
+);
+
 </script>
 
 <style scoped>
 svg {
-  display:block;
+  display: block;
 }
 
 .color-transition {
-  transition: fill 0.3s ease;
+  transition: fill 0.5s ease;
 }
 </style>

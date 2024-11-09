@@ -81,8 +81,8 @@ export const fetchStopPoints = async ( person, startDate, endDate, page: number)
         return [];
     }
 }
-export const fetchHistory = async ( person, startDate, endDate)=>{
-    let urlHistory = "http://localhost:8080/tracker/history"
+export const fetchHistory = async ( person:String, startDate:String, endDate:String, page:Number)=>{
+    let urlHistory =`http://localhost:8080/tracker/history?page=${page}&size=${100}`
     try {
         const body = {
             personId: person,
@@ -90,7 +90,7 @@ export const fetchHistory = async ( person, startDate, endDate)=>{
             end: `${endDate}T23:59:59`
         }
         const response = await axios.post(urlHistory, body);
-        return response.data.content;
+        return response.data;
     } catch (error) {
         console.error("Erro ao buscar dispositivos:",error);
         throw error;
@@ -179,4 +179,3 @@ export const fetchAllZones = async ()=>{
         return [];
     }
 }
-
