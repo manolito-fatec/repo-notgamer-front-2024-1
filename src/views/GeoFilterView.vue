@@ -73,7 +73,6 @@ import InterestZone from "@/components/InterestZone.vue";
 import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
 import {getClick} from '@/components/stores/StoreGetClick.js'
 import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
-
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone']);
 const toast = useToast();
 const Person = ref(null);
@@ -113,7 +112,6 @@ function changeZoneName(changeZoneName:changeZoneName){
 function drawZone(drawZonePolygon:drawZone){
   emit("drawZone", drawZonePolygon);
 }
-
 onMounted(async () => {
   try {
     let personListFromDb = await fetchPersons();
@@ -225,7 +223,6 @@ function handleSave() {
 }
 
 const paginatorHistory = (event) => {
-
   let currentPage = page.value + 1;
   let total = Number(totalPage.value);
   if(total >= currentPage){
@@ -247,7 +244,7 @@ const getHistory = async (person, startDate, endDate, pageValue) => {
     totalPage.value = historyRequest.totalPages;
     page.value = historyRequest.pageable.pageNumber;
     loading.value = false;
-  } catch (error) {
+  } catch (error){
     console.error(error)
     toast.error("Erro ao buscar histórico. Tente novamente mais tarde.")
   }
@@ -323,8 +320,22 @@ watch(() => storeFilters.onClickDarkMode,
   display: flex;
   gap: 10px;
 }
-listIsEmpty
+
 .full-width {
   flex: 1;
+}
+
+.filter-container ::-webkit-scrollbar {
+  width: 5px;
+  }
+
+.filter-container ::-webkit-scrollbar-thumb {
+  border-radius: 50px;
+  background: #A0A0A080;
+}
+
+.filter-container ::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 50px;
 }
 </style>

@@ -20,7 +20,6 @@
       </div>
     </div>
     <Loading v-if="props.loading"/>
-
     <ul class="history-container" @scroll="handleScroll" ref="scrollContainer">
       <HistoryDetail v-for="config in props.historyConfiguration"
                      v-if="!props.loading && showHistory " :key="props.historyConfiguration.length"
@@ -55,12 +54,10 @@ import Loading from '@/components/Loading.vue';
 import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
 import { getClick } from '@/components/stores/StoreGetClick.js'
 
-
 const showHistory = ref(false)
 const scrollContainer = ref(null)
 const store = darkModeClick()
 const storeFilters = getClick()
-
 const emits = defineEmits(['openTeleport']);
 const props = defineProps<{
   historyConfiguration: HistoryConfig
@@ -91,7 +88,6 @@ function expandItems() {
   showHistory.value = !showHistory.value;
 
 }
-
 const isDarkMode = computed(() => store.onClickDarkMode && storeFilters.onClickFilters)
 
 function toggleHistory() {
