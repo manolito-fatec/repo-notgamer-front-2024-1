@@ -21,7 +21,7 @@ export function createMap(center: number[], zoom: number, projection: string, da
         }),
     })
 }
-export function createNewVectorLayer(featureArray?: Feature[], layername?: string, drawSource?: VectorSource) {
+export function createNewVectorLayer(featureArray?: Feature[], layername?: string, drawSource?: VectorSource, zIndex?: number) {
     if (drawSource) {
             return new VectorLayer({
                 source: drawSource,
@@ -43,7 +43,7 @@ export function createNewVectorLayer(featureArray?: Feature[], layername?: strin
             })
         }),
         properties: {layerName: layername},
-        zIndex: 2,
+        zIndex: zIndex|2,
     });
 }}
 export function createTileLayer(layername?: string, darkOrWhiteMap?: string) {
