@@ -19,21 +19,24 @@
         </button>
       </div>
     </div>
-    <Loading v-if="props.loading" />
-    <ul class="history-container" v-show="showHistory && !props.loading">
-      <HistoryDetail 
-        v-for="(config, index) in props.historyConfiguration" 
-        :key="index"
-        :HistoryDetail="config"
-      />
-      <p v-if="props.historyConfiguration.length === 0" class="empty-history">Histórico Vazio</p>
+    <Loading v-if="props.loading"/>
+    
+    <ul class="history-container" @scroll="handleScroll" ref="scrollContainer">
+      <HistoryDetail v-for="config in props.historyConfiguration"
+                     v-if="!props.loading && showHistory " :key="props.historyConfiguration.length"
+                     :HistoryDetail="config">
+      </HistoryDetail>
+      <span style="display: flex; justify-content: center;" v-if="props.historyConfiguration.length == 0 && !props.loading && showHistory">
+        <p>Histórico Vazio</p>
+      </span>
     </ul>
+
     <div class="history-container">
       <contenthistory class="history-entry">
         <div class="end-icon"></div>
         <div class="grid">
           <div class="text-detail">
-            {{ formatDateTime(props.historyConfiguration[historyConfiguration.length - 1]?.initDateTime) }}
+            {{ formatDateTime(props.historyConfiguration[historyConfiguration.length - 1]?.endDateTime) }}
           </div>
           <div class="text-detail">
             {{ formatAddress(props.historyConfiguration[historyConfiguration.length - 1]?.finality?.address) }}
@@ -45,26 +48,57 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
-import HistoryDetail from './HistoryDetail.vue'
-import Loading from '@/components/Loading.vue'
+import { ref, watch, defineEmits, onMounted, onUnmounted, computed } from 'vue'
+import HistoryDetail from './HistoryDetail.vue';
+import type { HistoryConfig } from './Types'
+import Loading from '@/components/Loading.vue';
 import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
 import { getClick } from '@/components/stores/StoreGetClick.js'
 import type { HistoryConfig } from './Types'
 
+
+const showHistory = ref(false)
+const scrollContainer = ref(null)
 const store = darkModeClick()
 const storeFilters = getClick()
 
+const emits = defineEmits(['openTeleport']); 
 const props = defineProps<{
-  historyConfiguration: Array<HistoryConfig>
-  loading: boolean
-}>()
+  historyConfiguration: HistoryConfig
+  totalPage: Number
+  loading: Boolean
+  person: String
+  init: String
+  final: String
+}>();
+
+watch(() => props.historyConfiguration, () => {
+  showHistory.value = true;
+});
+
+let isTeleportOpen = false;
+const handleScroll = (event:any) => {
+  const element = event.target;
+  const atBottom = Math.abs(element.scrollHeight - element.clientHeight - element.scrollTop) <= 1;
+  if (atBottom &&!isTeleportOpen) {
+    isTeleportOpen = true;
+    emits('openTeleport', true);
+  } else if (!atBottom && isTeleportOpen) {
+    isTeleportOpen = false;
+  };
+};
+
+function expandItems() {
+  showHistory.value = !showHistory.value;
+
+}
 
 const showHistory = ref(false)
 const isDarkMode = computed(() => store.onClickDarkMode)
 
 function toggleHistory() {
   showHistory.value = !showHistory.value
+
 }
 
 function formatDateTime(dateString: string): string {
@@ -83,7 +117,7 @@ function formatDateTime(dateString: string): string {
 
 function formatAddress(address: { road: string, town: string, state: string, country: string }): string {
   if (!address) return 'Endereço indisponível'
-  return `${address.road} - ${address.town} - ${address.state} - ${address.country}`
+  return `${address.road} - ${address.town? address.town : ""} - ${address.state} - ${address.country}`
 }
 </script>
 
