@@ -15,11 +15,11 @@ const store = darkModeClick();
 const storeFilters = getClick();
 
 
-watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+watch(() => store.onClickDarkMode,
   () => {
   const button = document.getElementById('start-button')
 
-  if (store.onClickDarkMode && storeFilters.onClickFilters) {
+  if (store.onClickDarkMode) {
     button.style.background = "#EC1C24"
 
   } else {

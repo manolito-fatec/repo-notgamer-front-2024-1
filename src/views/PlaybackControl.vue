@@ -252,11 +252,11 @@ function restartAnimation() {
   }
 }
 
-watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+watch(() => store.onClickDarkMode,
   () => {
   const controlMovement = document.getElementById('control-movement')
 
-  if (store.onClickDarkMode && storeFilters.onClickFilters){
+  if (store.onClickDarkMode){
     controlMovement.style.background = "#262626";
   } else {
     controlMovement.style.background = "#6D6D6D";

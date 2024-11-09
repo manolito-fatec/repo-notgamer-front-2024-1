@@ -1,6 +1,11 @@
 <template>
   <div class="filter-container" >
-    <Sidebar @toggle-filters="toggleFilters"/>
+    <Sidebar
+        @toggle-filters="toggleFilters"
+        @toggle-zone="toggleZone"
+        :showFilters="showFilters"
+        :showZone="showZone"
+    />
     <div v-show="showFilters" class="filters" id="filters">
       <div class="title" id="title">FILTRAR</div>
       <PersonSearch
@@ -33,10 +38,14 @@
         <History @openTeleport="paginatorHistory" :historyConfiguration="listOfHistory" :loading="loading" :person="Person" :init="endDate" :final="endDate"/>
       </div>
     </div>
+    <div v-if="showZone" class="zone-component">
+      <InterestZone>
+      </InterestZone>
+    </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {onMounted, ref, watch} from 'vue';
 import {fetchDevices, fetchPersons} from "@/services/apiService.ts";
 import Sidebar from "@/components/SideBar.vue";
@@ -49,9 +58,12 @@ import PersonSearch from "@/components/PersonSearch.vue";
 import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
 import {fetchHistory} from '../services/apiService.ts';
-import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
-import { getClick } from '@/components/stores/StoreGetClick.js'
+import InterestZone from "@/components/InterestZone.vue";
+import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
+import {getClick} from '@/components/stores/StoreGetClick.js'
+import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
 
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
@@ -62,14 +74,16 @@ const totalPage = ref(0);
 const page = ref(0);
 const originalPersonOption = ref([]);
 const showFilters = ref(false);
+const showZone = ref(false);
 const isPersonSelected = ref(false);
 const startDate = ref(null);
 const loading = ref(false);
 const endDate = ref(null);
 const selectedPeriod = ref('');
 const resetFilters = ref(false);
-const store = darkModeClick();
-const storeFilters = getClick();
+const storeFilters = darkModeClick();
+const storeGetClickToggleFilters = getClick();
+const storePathManipulation = getPathColorManipulatorState();
 
 onMounted(async () => {
   try {
@@ -109,12 +123,25 @@ const onPersonSelect = async (selectedPerson) => {
   }
 };
 
-
 function toggleFilters() {
   showFilters.value = !showFilters.value;
+  storeGetClickToggleFilters.onClickFilters = !storeGetClickToggleFilters.onClickFilters;
+  storePathManipulation.pathColorManipulatorIconFilter = !storePathManipulation.pathColorManipulatorIconFilter;
+  if (storePathManipulation.pathColorManipulatorIconInterestZone === false) {
+    showZone.value = false;
+    storePathManipulation.pathColorManipulatorIconInterestZone = true;
+  }
 }
 
-const emit = defineEmits(['saveFilter', 'clearPoints']);
+function toggleZone() {
+  showZone.value = !showZone.value;
+  storeGetClickToggleFilters.onClickInterestZone = !storeGetClickToggleFilters.onClickInterestZone;
+  storePathManipulation.pathColorManipulatorIconInterestZone = !storePathManipulation.pathColorManipulatorIconInterestZone;
+  if (storePathManipulation.pathColorManipulatorIconFilter === false) {
+    showFilters.value = false;
+    storePathManipulation.pathColorManipulatorIconFilter = true;
+  }
+}
 
 function handleSave() {
   let hasErrors = false;
@@ -135,24 +162,24 @@ function handleSave() {
     toast.error("Por favor, selecione uma data de fim.");
     hasErrors = true;
   }
-  
+
   if (startDate.value && endDate.value) {
     const start = new Date(startDate.value);
     const end = new Date(endDate.value);
-    
+
     if (end < start) {
       toast.error("A data de fim deve ser superior à data de início.");
       hasErrors = true;
     } else {
       const diffTime = Math.abs(end - start);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays > 31) {
         toast.error("O intervalo selecionado não pode ser maior que 31 dias.");
         hasErrors = true;
       }
     }
-    
+
     if (!hasErrors) {
       const filterData = {
         person: Person.value,
@@ -205,22 +232,22 @@ function handleReset() {
   endDate.value = null;
   selectedPeriod.value = '';
   listOfHistory.value = [];
-  
+
   resetFilters.value = true;
   setTimeout(() => {
     resetFilters.value = false;
   }, 0);
-  
+
   emit('clearPoints');
 }
 
-watch(() => store.onClickDarkMode && storeFilters.onClickFilters,
+watch(() => storeFilters.onClickDarkMode,
   () => {
-    
+
   const filter = document.getElementById('filters')
   const title = document.getElementById('title')
 
-  if (store.onClickDarkMode && storeFilters.onClickFilters){
+  if (storeFilters.onClickDarkMode){
     filter.style.borderRight = "4px solid #EC1C24";
     filter.style.background = "#262626";
     title.style.color = "#FFF";

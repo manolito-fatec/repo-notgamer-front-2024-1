@@ -104,7 +104,7 @@ function handleClickOutside(event) {
 }
 
 function updateFilterColors() {
-  const isDarkMode = store.onClickDarkMode && storeFilters.onClickFilters;
+  const isDarkMode = store.onClickDarkMode;
   const textColor = isDarkMode ? props.darkModeTextColor : props.lightModeTextColor;
   const textLabel = isDarkMode ? "#FFF" : "#000";
   const backgroundColor = isDarkMode ? props.darkModeBgColor : props.lightModeBgColor;
@@ -123,6 +123,7 @@ const suggestionItemStyle = computed(() => {
   return {
     color: isDarkMode ? props.darkModeTextColor : props.lightModeTextColor,
     backgroundColor: isDarkMode ? props.darkModeBgColor : props.lightModeBgColor
+
   };
 });
 
@@ -143,7 +144,7 @@ onBeforeUnmount(() => {
 });
 
 watch(
-  () => [store.onClickDarkMode, storeFilters.onClickFilters],
+  () => [store.onClickDarkMode],
   () => {
     updateFilterColors();
   }
