@@ -5,9 +5,9 @@ import {Fill, Icon, Stroke, Style} from "ol/style";
 import {handleTypeError} from "@/utils/errorHandler";
 import IconPositionMap from "@/assets/IconPositionMap.png";
 import IconStartPin from "@/assets/IconStartPin.png";
-import InconEndPin from "@/assets/IconEndPin.png";
+import IconEndPin from "@/assets/IconEndPin.png";
 import {saveGeomData} from "@/services/apiService";
-import {Circle, Polygon} from "ol/geom";
+import {Circle, LineString, Polygon} from "ol/geom";
 import type {Coordinate} from "ol/coordinate";
 import {circular} from 'ol/geom/Polygon';
 
@@ -29,17 +29,33 @@ export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], pointSty
         })
     }
     return newFeatures;
-
 }
-export function  makeSinglePoint(pointObject: GeometryPoint): Point {
+export function makeSinglePoint(pointObject: GeometryPoint): Point {
     return new Point(pointObject.coordinates)
+}
+export function makeMultiplePointsLegacy(arrayOfGeometryObjects:[]):Point[]{
+    let pointFeatures :Point[] =[];
+    arrayOfGeometryObjects.forEach((pointObj) => {
+        const point = new Feature({
+            geometry: new Point([pointObj.longitude, pointObj.latitude]),
+        });
+        pointFeatures.push(point);
+    });
+    return pointFeatures;
+}
+export function makeLineString(featureList:Feature[]):LineString{
+    let lineCoordinates :Coordinate[] = [];
+    featureList.value.forEach((feature) =>{
+        let singleCoordinate:Coordinate = [feature.getGeometry().getCoordinates()[0],feature.getGeometry().getCoordinates()[1]]
+        lineCoordinates.push(singleCoordinate);
+    })
+    return new LineString(lineCoordinates);
 }
 export function makePolygon(hotzone:DrawedGeom) {
     if(hotzone.shape =='CIRCLE'){
         let geomCenter :Coordinate;
         geomCenter = [hotzone.center?.longitude,hotzone.center?.latitude]
         let newTrueCircle :Circle = new Circle(geomCenter,hotzone.radius);
-        console.log(newTrueCircle);
         return newTrueCircle
     }else{
         let newArray : Coordinate[] = [];
@@ -48,13 +64,11 @@ export function makePolygon(hotzone:DrawedGeom) {
             newCoordinate = [point.longitude, point.latitude];
             newArray.push(newCoordinate)
         })
-        let newPolygon:Polygon = new Polygon([newArray])
-
+        let newPolygon:Polygon = new Polygon([newArray]);
         return newPolygon
     }
 
 }
-
 export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolygon?:Polygon): Feature {
     let createdFeature: Feature;
     if(createdPolygon) {
@@ -146,7 +160,7 @@ export function createStartAndEndPoint(arrayOfGeometryObjects:GeometryPoint[],an
     });
     let endPointStyle:Style = new Style({
         image: new Icon({
-            src: InconEndPin,
+            src: IconEndPin,
             scale: 0.7,
             anchor: [0.5, 1],
         }),
