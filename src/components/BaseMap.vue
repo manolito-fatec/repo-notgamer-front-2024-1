@@ -56,7 +56,16 @@ import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import type {DrawedGeom, GeometryPoint, Pessoa} from "@/components/Types";
-import {createStartAndEndPoint, makeFeature, makePointsFromArray, makePolygon, saveGeoms} from "@/services/geomService";
+import {
+  createStartAndEndPoint,
+  makeFeature, makeLineString, makeMultiplePointsLegacy,
+  makePointsFromArray,
+  makePolygon,
+  makeSinglePoint,
+  saveGeoms
+} from "@/services/geomService";
+
+
 const toast = useToast();
 
 let center = ref([-60.457873,0.584053]);
@@ -179,8 +188,8 @@ function handleMapClick(event) {
 
 
 function getInitialRotation() {
-  const [lon1, lat1] = allCoordinatesAnimation.value[0];
-  const [lon2, lat2] = allCoordinatesAnimation.value[1];
+  const [lon1, lat1] = allCoordinatesAnimation.value;
+  const [lon2, lat2] = allCoordinatesAnimation.value;
 
   const deltaLon = lon2 - lon1;
   const deltaLat = lat2 - lat1;
@@ -208,20 +217,20 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
         showPlayback.value = false;
       }
     } else {
-      const geometryPoints = convertToGeometryPoints(points);
-      map.value?.getLayers().array_.forEach(layer =>{
-        if(layer.values_.layerName == 'teste'){
-          layer.getSource().getFeatures().forEach(feature =>{
-            console.log(feature.getGeometry().flatCoordinates);
-          });
-        }
-      });
-      map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(geometryPoints,anguloInicial)),'Layer dos Pontos');
-      map.value.addLayer(createNewVectorLayer(routeLine, 'Layer das Rotas'));
+
       map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
+      const geometryPoints = convertToGeometryPoints(points);
+      map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(geometryPoints,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
+      let pointFeaturesNew :Feature[] =[];
+      geometryPoints.forEach(point =>{
+        pointFeaturesNew.push(makeFeature(makeSinglePoint(point)));
+      })
+      pointFeatures.value = makeMultiplePointsLegacy(points);
+      map.value.addLayer(makeLineFromPoints(pointFeatures));
+      map.value?.on('singleclick', handleMapClick);
+      showPlayback.value = true;
       initializePopup();
       adjustMap();
-      map.value?.on('singleclick', handleMapClick);
     }
   });
 
@@ -244,56 +253,34 @@ function clearPoints() {
     }
     map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
     adjustMap();
+    showPlayback.value = false;
   }
 }
-function makeLineFromPoints(featureList) {
+function makeLineFromPoints(featureList:Feature[]) {
   if (!featureList) {
     toast.info("Nenhum ponto disponível para criar linhas.");
     return null;
   }
-
-  const groupedById = featureList.value.reduce((acc, feature) => {
-    const idText = feature.get('idText');
-    if (!acc[idText]) acc[idText] = [];
-    acc[idText].push(feature);
-    return acc;
-  }, {});
-
-  Object.keys(groupedById).forEach((idText) => {
-    const points = groupedById[idText];
-    allCoordinatesAnimation.value = [];
-
-    if (points.length >= 2) {
-      for (let i = 0; i < points.length - 1; i++) {
-        const point1 = points[i];
-        const point2 = points[i + 1];
-
-        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates())
-        allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates())
-      }
-
-      route.value = new LineString(allCoordinatesAnimation.value)
-
-      getInitialRotation();
-
-      const lineFeature = new Feature({
-        geometry: route.value,
-      });
-      lineFeature.setStyle(new Style({
-        stroke: new Stroke({
-          color: '#ec1c24',
-          width: 6,
-        }),
-      }));
-      routeLine.value.push(lineFeature);
-    }
-  })
-  return new VectorLayer({
-    source: new VectorSource({
-      features: routeLine.value,
+  let featureArray :Feature[] = [];
+  let newLineString: LineString = makeLineString(featureList);
+  featureArray.push(new Feature({geometry: newLineString}));
+  featureArray[0].setStyle(new Style({
+    stroke: new Stroke({
+      color: '#000000',
+      width: 4
     }),
-    properties: {layerName: 'Layer das Rotas'}
-  })
+    zIndex: 4
+  }));
+  route.value = newLineString;
+  map.value?.getLayers().array_.forEach(layer =>{
+    if(layer.values_.layerName == undefined){
+      startPointIconMap.value = layer.getSource().getFeatures()[2];
+    }
+  });
+  allCoordinatesAnimation.value = makeLineString(featureList).getCoordinates();
+
+  let lineLayer :VectorLayer = createNewVectorLayer(featureArray,'Layer das Rotas');
+  return lineLayer
 }
 
 
@@ -310,11 +297,7 @@ const adjustMap = (drawedZone?:Polygon|Circle) => {
         pontos.getGeometry().getCoordinates()
     );
     const extent = boundingExtent(coordinates);
-    if (map.value) {
-      map.value
-          .getView()
-          .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15,duration: 1000});
-    }
+    map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
   }
 };
 function toggleDrawing() {
@@ -358,7 +341,6 @@ function stopDrawing() {
     draw.value = null;
     drawingActive.value = false;
   }
-
 }
 function centerMap() {
   if (map.value) {
@@ -369,12 +351,18 @@ function centerMap() {
       map.value?.getView().setCenter(defaultCenter);
       map.value?.getView().setZoom(defaultZoom);
     } else {
-      const coordinates = pointFeatures.value.map((ponto) =>
-          ponto.getGeometry().getCoordinates()
-      );
+      let coordinates;
+      map.value?.getLayers().array_.forEach(layer =>{
+        if(layer.values_.layerName == 'Layer dos Pontos'){
+          layer.getSource().getFeatures().forEach(feature =>{
+            console.log(feature.getGeometry()[1]);
+          });
+        }
+      });
       const extent = boundingExtent(coordinates);
 
-      map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 });
+
+      map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
     }
   }
 }
