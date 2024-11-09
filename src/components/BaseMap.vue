@@ -45,17 +45,18 @@ import {XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import {Point, LineString, Geometry, Circle, type Polygon} from 'ol/geom';
-import {Style, Stroke, Fill} from 'ol/style';
+import {Style, Stroke, Fill, Icon} from 'ol/style';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
-import {fetchGeomData} from "@/services/apiService";
+import {fetchGeomData, fetchStopPoints} from "@/services/apiService";
 import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
-import type {DrawedGeom, GeometryPoint, Pessoa} from "@/components/Types";
+import IconStopPoint from "@/assets/IconStopPoint.png";
+import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
 import {
   createStartAndEndPoint,
   makeFeature, makeLineString, makeMultiplePointsLegacy,
@@ -210,6 +211,7 @@ function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
   return geometryPoints;
 }
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
+  plotStopPoints(filterData.person, filterData.startDate, filterData.endDate)
   fetchGeomData(filterData.person, filterData.startDate, filterData.endDate, 0).then((points) => {
     if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
@@ -217,7 +219,6 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
         showPlayback.value = false;
       }
     } else {
-
       map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
       const geometryPoints = convertToGeometryPoints(points);
       map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(geometryPoints,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
@@ -234,6 +235,25 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
     }
   });
 
+}
+function plotStopPoints(person: number , startDate:string, endDate:string) {
+  fetchStopPoints(person, startDate, endDate, 0).then((points:StopPoint[]) => {
+    if (!points) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+      if (showPlayback.value) {
+        showPlayback.value = false;
+      }
+    } else {
+      let stopPointStyle:Style = new Style({
+        image: new Icon({
+          src: IconStopPoint,
+          scale: 0.6,
+          anchor: [0.5, 1],
+        }),
+      });
+      map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,stopPointStyle)));
+    }
+  });
 }
 
 function clearPoints() {
