@@ -1,4 +1,4 @@
-import type {Coordinates, DrawedGeom, GeometryPoint} from "@/components/Types";
+import type {Coordinates, DrawedGeom, GeometryPoint, StopPoint} from "@/components/Types";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
 import {Fill, Icon, Stroke, Style} from "ol/style";
@@ -12,7 +12,7 @@ import type {Coordinate} from "ol/coordinate";
 import {circular} from 'ol/geom/Polygon';
 
 
-export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], pointStyle?:Style): Feature {
+export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[]|StopPoint[], pointStyle?:Style): Feature {
     let newPoints: Point[] = [];
     let newFeatures: Feature[] = [];
     if(arrayOfGeomPoints.length == 0){
@@ -30,8 +30,12 @@ export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[], pointSty
     }
     return newFeatures;
 }
-export function makeSinglePoint(pointObject: GeometryPoint): Point {
-    return new Point(pointObject.coordinates)
+export function makeSinglePoint(pointObject: GeometryPoint|StopPoint): Point {
+    if(pointObject.stopLocation){
+        return new Point([pointObject.longitude,pointObject.latitude])
+    }else{
+        return new Point(pointObject.coordinates)
+    }
 }
 export function makeMultiplePointsLegacy(arrayOfGeometryObjects:[]):Point[]{
     let pointFeatures :Point[] =[];
