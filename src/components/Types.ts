@@ -51,3 +51,9 @@ export type Coordinates={
     longitude: number;
     latitude: number;
 }
+export type StopPoint={
+    latitude: number;
+    longitude: number;
+    timestamp: string;
+    stopLocation: any;
+}
