@@ -108,27 +108,6 @@ function drawType(){
     drawMode.value = true;
   }
 }
-function locationDtoToDrawedGeom(data):DrawedGeom|null{
-  let newDrawedGeom :DrawedGeom = {};
-  let newCoordinates :Coordinates = {};
-  if (data.shape =='CIRCLE'){
-    newDrawedGeom.gid = data.idLocation;
-    newDrawedGeom.name = data.name;
-    newDrawedGeom.shape = data.shape;
-    newDrawedGeom.coordinates = null;
-    newCoordinates = data.center
-    newDrawedGeom.center = newCoordinates;
-    newDrawedGeom.radius = data.radius;
-    return newDrawedGeom;
-  } else {
-    newDrawedGeom.gid = data.idLocation;
-    newDrawedGeom.name = data.name;
-    newDrawedGeom.shape = data.shape;
-    newCoordinates = data.coordinates
-    newDrawedGeom.coordinates = newCoordinates;
-    return newDrawedGeom;
-  }
-}
 function drawZoneChange(){
   let drawZonePolygon :Polygon = {};
   let selectedId :number = Number(selectedHotzone.value);
