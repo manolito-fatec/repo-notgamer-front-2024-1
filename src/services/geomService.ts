@@ -10,6 +10,7 @@ import {saveGeomData} from "@/services/apiService";
 import {Circle, LineString, Polygon} from "ol/geom";
 import type {Coordinate} from "ol/coordinate";
 import {circular} from 'ol/geom/Polygon';
+import {ref} from "vue";
 
 
 export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[]|StopPoint[], pointStyle?:Style): Feature {
@@ -31,11 +32,14 @@ export function makePointsFromArray(arrayOfGeomPoints: GeometryPoint[]|StopPoint
     return newFeatures;
 }
 export function makeSinglePoint(pointObject: GeometryPoint|StopPoint): Point {
-    if(pointObject.stopLocation != undefined){
-        return new Point([pointObject.longitude,pointObject.latitude])
-    }else{
-        return new Point(pointObject.coordinates)
+    try {
+        return new Point(pointObject.coordinates);
+    }catch(error) {
+        return new Point([pointObject.longitude,pointObject.latitude]);
     }
+
+
+
 }
 export function makeMultiplePointsLegacy(arrayOfGeometryObjects:[]):Point[]{
     let pointFeatures :Point[] =[];
@@ -112,7 +116,7 @@ export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolyg
     }
     return createdFeature;
 }
-function convertToDrawedGeom(feature :Feature,shape :string, drawGeomName: string) :DrawedGeom| null {
+export function convertToDrawedGeom(feature :Feature,shape :string, drawGeomName: string) :DrawedGeom| null {
     let newDrawedGeom :DrawedGeom = {};
     let newCoordinates:Coordinates[] =[];
     let coordinates : Coordinates = {};
