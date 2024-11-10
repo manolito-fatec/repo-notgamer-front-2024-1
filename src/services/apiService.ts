@@ -170,11 +170,11 @@ export const fetchAllZones = async ()=>{
         return [];
     }
 }
-export const fetchGeomDataWithinZone = async (startDate, endDate, zoneId:number):GeometryPoint[]=>{
+export const fetchGeomDataWithinZone = async (startDate, endDate, zoneId:number):[]=>{
     let getUrl = `http://localhost:8080/tracker/inside/${zoneId}/${startDate}T00:00:00.000/${endDate}T00:00:00.000`;
     try {
         const response = await axios.get(getUrl);
-        if (response.data && response.data.content.length === 0) {
+        if (response.data && response.data.length === 0) {
             toast.info("Nenhum ponto encontrado para o filtro selecionado.");
             return [];
         }
@@ -203,3 +203,15 @@ export const fetchPersonById = async(personID:number):Pessoa=>{
         }
     }
 }
+export const deleteZoneByGid = async(gid:number):Pessoa=>{
+    let getUrl = BASE_URL_GEOM + '/delete/' + gid;
+    try{
+        const response = await axios.delete(getUrl);
+        return response.data;
+    }catch(error){
+        if (axios.isAxiosError(error) && error.response) {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+    }
+}
+
