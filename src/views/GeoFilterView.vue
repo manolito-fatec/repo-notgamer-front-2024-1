@@ -85,6 +85,7 @@ const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
+const ZoneOption = ref([]);
 const listOfHistory = ref([]);
 const totalPage = ref(0);
 const page = ref(0);
@@ -119,7 +120,6 @@ function saveDraw(){
     })
     emit("saveDraw");
   });
-
 }
 function toggleDrawing(){
   emit("toggleDrawing")

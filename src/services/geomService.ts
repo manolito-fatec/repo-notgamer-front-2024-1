@@ -37,9 +37,6 @@ export function makeSinglePoint(pointObject: GeometryPoint|StopPoint): Point {
     }catch(error) {
         return new Point([pointObject.longitude,pointObject.latitude]);
     }
-
-
-
 }
 export function makeMultiplePointsLegacy(arrayOfGeometryObjects:[]):Point[]{
     let pointFeatures :Point[] =[];

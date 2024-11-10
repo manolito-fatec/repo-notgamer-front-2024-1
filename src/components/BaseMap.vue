@@ -74,7 +74,6 @@ import {
 import IconEndPin from "@/assets/IconEndPin.png";
 import {handleTypeError} from "@/utils/errorHandler";
 
-
 const toast = useToast();
 
 let center = ref([-60.457873,0.584053]);
