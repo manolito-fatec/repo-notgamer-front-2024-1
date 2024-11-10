@@ -25,8 +25,9 @@
       <DropDown
         id="dropdown3"
         v-model="selectedZone"
-        :options="ZoneOption"
+        :options="zoneOptions"
         label="Zonas de interesse:"
+        @change="drawZoneChange"
       />
       <DataRangePicker
           v-model:endDate="endDate"
@@ -70,18 +71,20 @@ import StartButton from "@/components/StartButton.vue";
 import PersonSearch from "@/components/PersonSearch.vue";
 import {handleAxiosError} from "@/utils/errorHandler";
 import {useToast} from "vue-toastification";
-import {fetchHistory} from '../services/apiService.ts';
+import {fetchHistory} from '@/services/apiService';
 import InterestZone from "@/components/InterestZone.vue";
 import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
 import {getClick} from '@/components/stores/StoreGetClick.js'
 import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
+import type {Polygon} from "ol/geom";
+import {locationDtoToDrawedGeom, makePolygon, zoneOptions, drawedGeomsFromDb} from "@/services/geomService";
+import type {DrawedGeom} from "@/components/Types";
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
 const PersonOption = ref([]);
 const DeviceOption = ref([]);
-const ZoneOption = ref([]);
 const listOfHistory = ref([]);
 const totalPage = ref(0);
 const page = ref(0);
@@ -98,13 +101,25 @@ const storeFilters = darkModeClick();
 const storeGetClickToggleFilters = getClick();
 const storePathManipulation = getPathColorManipulatorState();
 const selectedMode = ref(null);
-const selectedZone = ref(null);
+const selectedZone = ref<number>();
 
 function drawType(selectedMode:selectedMode){
   emit("drawType", selectedMode);
 }
 function saveDraw(){
-  emit("saveDraw");
+  fetchAllZones().then((geoms) =>{
+    zoneOptions.value = geoms.map(geom => ({
+      label: geom.name,
+      value: geom.idLocation
+    })).filter((geom, index, self) =>
+        index === self.findIndex(g => g.label === geom.label)
+    );
+    geoms.forEach(geom => {
+      drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
+    })
+    emit("saveDraw");
+  });
+
 }
 function toggleDrawing(){
   emit("toggleDrawing")
@@ -114,6 +129,16 @@ function changeZoneName(changeZoneName:changeZoneName){
 }
 function drawZone(drawZonePolygon:drawZone){
   emit("drawZone", drawZonePolygon);
+}
+function drawZoneChange(){
+  let drawZonePolygon :Polygon = {};
+  let selectedId :number = Number(selectedZone.value);
+  drawedGeomsFromDb.forEach((geom) =>{
+    if(geom.gid == selectedId){
+      drawZonePolygon = makePolygon(geom);
+    }
+  })
+  emit('drawZone',drawZonePolygon);
 }
 onMounted(async () => {
   try {
@@ -151,6 +176,14 @@ const onPersonSelect = async (selectedPerson) => {
       handleAxiosError(error, toast);
     }
   }
+  fetchAllZones().then((geoms) =>{
+    ZoneOption.value = geoms.map(geom => ({
+      label: geom.name,
+      value: geom.idLocation
+    })).filter((geom, index, self) =>
+        index === self.findIndex(g => g.label === geom.label)
+    );
+  });
 };
 
 function toggleFilters() {
@@ -220,9 +253,6 @@ function handleSave() {
           selectedZone: selectedZone.value,
         };
         emit('saveFilter', filterData);
-        loading.value = true;
-        page.value = 1;
-        getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
       } else {
         const filterData = {
           person: Person.value,
@@ -275,6 +305,7 @@ function handleReset() {
   endDate.value = null;
   selectedPeriod.value = '';
   listOfHistory.value = [];
+  selectedZone.value = '';
 
   resetFilters.value = true;
   setTimeout(() => {
@@ -302,12 +333,15 @@ watch(() => storeFilters.onClickDarkMode,
 });
 onMounted(()=>{
   fetchAllZones().then((geoms) =>{
-    ZoneOption.value = geoms.map(geom => ({
+    zoneOptions.value = geoms.map(geom => ({
       label: geom.name,
       value: geom.idLocation
     })).filter((geom, index, self) =>
         index === self.findIndex(g => g.label === geom.label)
     );
+    geoms.forEach(geom => {
+      drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
+    })
   });
 });
 </script>
