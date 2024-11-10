@@ -31,10 +31,10 @@
         />
         <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" @click="saveDraw">Salvar</button>
       </div>
-      <DropDown id="select-hotzone" label="Selecione a zona de interesse:" :options="hotzoneOptions"
+      <DropDown id="select-hotzone" label="Selecione a zona de interesse:" :options="zoneOptions"
                 v-model="selectedHotzone" class="dropdown" @change ="drawZoneChange"/>
       <button @click="removeShowedZone" :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
-      <DropDown id="delete-hotzone" label="Exclua sua zona de interesse:" :options="hotzoneOptions"
+      <DropDown id="delete-hotzone" label="Exclua sua zona de interesse:" :options="zoneOptions"
                 v-model="deletedHotzone" class="dropdown"/>
       <button @click="deleteZone" :class="['delete-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Deletar</button>
     </div>
@@ -46,9 +46,9 @@ import DropDown from "@/components/filter/DropDown.vue";
 import Checkbox from "@/components/Checkbox.vue";
 import {ref, watch, onMounted} from 'vue'
 import {darkModeClick} from "./stores/StoreDarkModeGetClick";
-import {fetchAllZones} from "@/services/apiService";
+import {deleteZoneByGid, fetchAllZones} from "@/services/apiService";
 import type {Coordinates, DrawedGeom} from "@/components/Types";
-import {makePolygon} from "@/services/geomService";
+import {locationDtoToDrawedGeom, makePolygon, zoneOptions, drawedGeomsFromDb} from "@/services/geomService";
 import type {Polygon} from "ol/geom";
 import {Map} from "ol";
 
@@ -57,14 +57,13 @@ const modeOptions = [
     {label:'Círculo', value:'Circle'},
     {label:'Polígono', value:'Polygon'}
 ]
-const selectedHotzone = ref<number>()
-const deletedHotzone = ref('')
+let selectedHotzone = ref<number>()
+let deletedHotzone = ref('')
 let selectedMode = ref(modeOptions[0].value)
 const drawMode = ref(false)
 const hideZones = ref(false)
 const zoneName = ref(null);
-let drawedGeomsFromDb :DrawedGeom[] =[];
-const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility','drawZone','removeShowedZone']);
+const emit = defineEmits(['saveDraw','drawType','toggleDrawing','changeZoneName','toggleZoneVisibility','drawZone','removeShowedZone','interestZonesFromDb']);
 const storeFilters = darkModeClick();
 
 watch(() => storeFilters.onClickDarkMode,
@@ -82,9 +81,9 @@ watch(() => storeFilters.onClickDarkMode,
       }
     });
 function saveDraw() {
-  emit('saveDraw');
+  emit("saveDraw");
   fetchAllZones().then((geoms) =>{
-    hotzoneOptions.value = geoms.map(geom => ({
+    zoneOptions.value = geoms.map(geom => ({
       label: geom.name,
       value: geom.idLocation
     })).filter((geom, index, self) =>
@@ -143,9 +142,26 @@ function drawZoneChange(){
 function removeShowedZone(){
   emit('removeShowedZone')
 }
+function deleteZone(){
+  let selectedId :number = Number(deletedHotzone.value);
+  deleteZoneByGid(selectedId).then((geoms) =>{
+    fetchAllZones().then((geoms) =>{
+      zoneOptions.value = geoms.map(geom => ({
+        label: geom.name,
+        value: geom.idLocation
+      })).filter((geom, index, self) =>
+          index === self.findIndex(g => g.label === geom.label)
+      );
+      geoms.forEach(geom => {
+        drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
+      })
+      deletedHotzone = ref<number>();
+    });
+  });
+}
 onMounted(()=>{
   fetchAllZones().then((geoms) =>{
-    hotzoneOptions.value = geoms.map(geom => ({
+    zoneOptions.value = geoms.map(geom => ({
       label: geom.name,
       value: geom.idLocation
     })).filter((geom, index, self) =>
