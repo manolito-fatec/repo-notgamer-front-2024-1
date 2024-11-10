@@ -11,12 +11,9 @@
   background-color: transparent;
   border: none; 
   color: white;
-  font-size: 30px;
+  font-size: 25px;
   cursor: pointer; 
-  position: fixed;
   display: flex;
   bottom: 10px;
-  /* right: 76px; */
-  right: 40px;
 }
 </style>

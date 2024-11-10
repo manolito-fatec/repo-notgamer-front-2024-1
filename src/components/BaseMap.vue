@@ -1,6 +1,17 @@
 <template>
   <div class="map-wrapper">
-    <GeoFilterView class="filter-overlay" @saveFilter="handleFilterData" @clearPoints="clearPoints"/>
+    <GeoFilterView class="filter-overlay"
+                   @saveFilter="handleFilterData"
+                   @clearPoints="clearPoints"
+                   @saveDraw="saveGeometry"
+                   @toggleDrawing="toggleDrawing"
+                   @drawType="drawTypeUpdate"
+                   @changeZoneName="changeZoneName"
+                   @toggleZoneVisibility="toggleZoneVisibility"
+                   @drawZone="drawZone"
+                   @removeZoneFilters="removeZoneFilters"
+    />
+
     <div v-if="showPlayback" class="playback-layer">
       <PlaybackControl
         v-model:rota="route" 
@@ -9,29 +20,59 @@
         v-model:anguloInicial="anguloInicial"
       />
     </div>
+    <DarkOrLight class="toggle-dark-white-mode" @toggle-dark-white-mode="toggleTheme"/> 
     <div id="map" class="map-container"></div>
+    <div
+        class="icon-center"
+        @mouseover="handleMouseOver"
+        @mouseleave="handleMouseLeave"
+        @click="centerMap"
+        :style="{ cursor: 'pointer', opacity: iconOpacity }"
+    >
+      <i class="fa-solid fa-location-crosshairs icon-center-icon"></i>
+    </div>
+    <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content"></div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Map, View, Feature } from 'ol';
+import {Map, Feature, Overlay} from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import { OSM, XYZ } from 'ol/source';
+import {XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
-import { Point, LineString, Geometry } from 'ol/geom';
-import { Icon, Style, Stroke } from 'ol/style';
-import axios from 'axios';
-import IconStartPin from '../assets/IconStartPin.png';
-import IconStartAndEnd from '../assets/IconStartAndEnd.png';
-import IconEndPin from '../assets/IconEndPin.png';
+import {Point, LineString, Geometry, Circle, type Polygon} from 'ol/geom';
+import {Style, Stroke, Fill, Icon} from 'ol/style';
 import GeoFilterView from "@/views/GeoFilterView.vue";
-import IconPositionMap from '../assets/IconPositionMap.png';
 import PlaybackControl from '@/views/PlaybackControl.vue';
 import type { Coordinate } from 'ol/coordinate';
 import {useToast} from "vue-toastification";
 import { boundingExtent } from 'ol/extent';
+import {
+  fetchAllZones,
+  fetchGeomData,
+  fetchGeomDataWithinZone,
+  fetchPersonById,
+  fetchStopPoints, saveGeomData
+} from "@/services/apiService";
+import {createMap, createNewVectorLayer} from "@/services/mapService";
+import {Draw} from "ol/interaction";
+import DarkOrLight from '@/views/DarkOrLight.vue';
+import IconStopPoint from "@/assets/IconStopPoint.png";
+import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
+import {
+  convertToDrawedGeom,
+  createStartAndEndPoint, drawedGeomsFromDb, locationDtoToDrawedGeom,
+  makeFeature, makeLineString, makeMultiplePointsLegacy,
+  makePointsFromArray,
+  saveGeoms, zoneOptions
+} from "@/services/geomService";
+import IconEndPin from "@/assets/IconEndPin.png";
+import {handleTypeError} from "@/utils/errorHandler";
 
 const toast = useToast();
 
@@ -44,15 +85,152 @@ let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
-
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
 const showPlayback = ref(false);
 
+let popup = ref<Overlay | null>(null);
+let popupContent = ref<HTMLElement | null>(null);
+let popupCloser = ref<HTMLElement | null>(null);
+
+const source = new VectorSource();
+const drawLayer = new VectorLayer({ source });
+let draw = ref<Draw | null>(null);
+let drawingActive = ref(false);
+let drawType = ref('Circle');
+let drawGeomName = ref<string>();
+let zoneVisibility = ref(true);
+let zoneDrawd :Boolean = false;
+
+const mapMode = ref(false);
+let darkOrWhiteMap: string;
+const iconScale = ref(1);
+const iconOpacity = ref(1);
+
+function saveGeometry(){
+  map.value?.getLayers().array_.forEach(layer =>{
+    if(layer.values_.layerName == 'Draw Layer'){
+      layer.getSource().getFeatures().forEach((feature:Feature) =>{
+        try{
+          if(feature.getGeometry().getRadius()){
+            saveGeomData(convertToDrawedGeom(feature,'CIRCLE',drawGeomName.value)).then((obj) =>{
+              fetchAllZones().then((geoms) =>{
+                zoneOptions.value = geoms.map(geom => ({
+                  label: geom.name,
+                  value: geom.idLocation
+                })).filter((geom, index, self) =>
+                    index === self.findIndex(g => g.label === geom.label)
+                );
+                geoms.forEach(geom => {
+                  drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
+                })
+              });
+            });
+          }
+        } catch (e){
+          saveGeomData(convertToDrawedGeom(feature,'POLYGON',drawGeomName.value)).then((obj) =>{
+            fetchAllZones().then((geoms) =>{
+              zoneOptions.value = geoms.map(geom => ({
+                label: geom.name,
+                value: geom.idLocation
+              })).filter((geom, index, self) =>
+                  index === self.findIndex(g => g.label === geom.label)
+              );
+              geoms.forEach(geom => {
+                drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
+              })
+            });
+          });
+          handleTypeError(e);
+        }
+      });
+      map.value?.removeLayer(layer);
+    }
+  })
+}
+function toggleZoneVisibility(){
+  if(zoneVisibility.value) {
+    zoneVisibility.value = false;
+    map.value?.getLayers().array_.forEach(layer =>{
+      if(layer.values_.layerName == 'Draw Layer'){
+        console.log(layer.setVisible(false))
+      }
+    })
+  } else {
+    zoneVisibility.value = true;
+    map.value?.getLayers().array_.forEach(layer =>{
+      if(layer.values_.layerName == 'Draw Layer'){
+        console.log(layer.setVisible(true))
+      }
+    })
+  }
+}
+
+function drawTypeUpdate(selectedMode:selectedMode){
+  drawType.value = selectedMode;
+}
+function changeZoneName(newZoneName){
+  drawGeomName.value = newZoneName;
+}
+
+function toggleTheme() {
+  const iconCenter = document.getElementById("icon-center");
+  mapMode.value = !mapMode.value;
+
+  if (mapMode.value) {
+    darkOrWhiteMap = 'streets-v2-dark';
+  } else {
+    darkOrWhiteMap = 'streets-v2';
+  }
+  if (map.value) {
+    map.value?.getLayers().array_.forEach(layer => {
+      if(layer.values_.layerName == 'TileLayer'){
+        layer.setSource(new XYZ({
+          url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+        }));
+      }
+    })
+  }
+}
+function initializePopup() {
+  popupContent.value = document.getElementById('popup-content');
+  popupCloser.value = document.getElementById('popup-closer');
+
+  popup.value = new Overlay({
+    element: document.getElementById('popup')!,
+    autoPan: true,
+    autoPanAnimation: { duration: 250 },
+  });
+
+  popupCloser.value.onclick = function () {
+    popup.value?.setPosition(undefined);
+    popupCloser.value?.blur();
+    return false;
+  };
+
+  map.value?.addOverlay(popup.value);
+}
+
+function handleMapClick(event) {
+  if (popupContent.value) {
+    popupContent.value.innerHTML = null;
+    popup.value?.setPosition(null);
+  }
+  map.value?.forEachFeatureAtPixel(event.pixel, function (feature) {
+    let coordinates = (feature.getGeometry() as Point).getCoordinates();
+    let name = feature.values_.person.fullName
+    if (popupContent.value) {
+      popupContent.value.innerHTML = `<p><b>${name}</b></p><p>Coordenadas: ${coordinates}</p>`;
+      popup.value?.setPosition(coordinates);
+    }
+  });
+}
+
+
 function getInitialRotation() {
-  const [lon1, lat1] = allCoordinatesAnimation.value[0];
-  const [lon2, lat2] = allCoordinatesAnimation.value[1];
+  const [lon1, lat1] = allCoordinatesAnimation.value;
+  const [lon2, lat2] = allCoordinatesAnimation.value;
 
   const deltaLon = lon2 - lon1;
   const deltaLat = lat2 - lat1;
@@ -60,286 +238,276 @@ function getInitialRotation() {
   anguloInicial = Math.atan2(deltaLat, deltaLon)*-1;
 }
 
-function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null}){
-  pointFeatures.value = [];
-  if (map.value) {
-    map.value.values_.layergroup.values_.layers.array_.forEach((layer) => {
-      map.value.values_.layergroup.values_.layers.array_.pop(layer);
+function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
+  let geometryPoints:GeometryPoint[]= [];
+  data.forEach(d => {
+    let newGeometryPoint: GeometryPoint = {};
+    newGeometryPoint.id = d.id;
+    newGeometryPoint.idText = d.itoId;
+    newGeometryPoint.createdAt = d.createdAt;
+    newGeometryPoint.coordinates = [d.longitude, d.latitude];
+    geometryPoints.push(newGeometryPoint);
+  })
+  return geometryPoints;
+}
+function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null, selectedZone:number | null}){
+  if(zoneDrawd){
+    fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points:[]) => {
+    if (!points) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+      if (showPlayback.value) {
+        showPlayback.value = false;
+      }
+    }
+    let convertedPoints:GeometryPoint[]= convertToGeometryPoints(points);
+    plotAllOnMap(convertedPoints);
     })
+  } else {
+    let startAndEndPoints :GeometryPoint[] = plotStartAndEndPoints(filterData.person, filterData.startDate, filterData.endDate,0)
+    plotStopPoints(filterData.person, filterData.startDate, filterData.endDate);
+    map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
   }
-  const baseLayer = new TileLayer({
-    source: new XYZ({
-      url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
-    }),
-  });
-  map.value.addLayer(baseLayer);
-  routeLine.value = [];
-  pointFinalStar.value = [];
-
-  let getUrl = `http://localhost:8080/tracker/period/${filterData.person}/${filterData.startDate}T00:00:00.000/${filterData.endDate}T00:00:00.000?page=0`;
-
-  getAllPoints(getUrl).then((points) => {
+}
+function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute:Boolean){
+    if(hasRoute){
+    map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
+    pointFeatures.value = makeMultiplePointsLegacy(points);
+    map.value.addLayer(makeLineFromPoints(pointFeatures));
+    showPlayback.value = true;
+  } else {
+    let insidePointStyle  :Style = new Style({
+      image: new Icon({
+        src: IconEndPin,
+        scale: 0.7,
+        anchor: [0.5, 1],
+      }),
+    })
+    map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4),'Layer dos Pontos');
+    if (showPlayback.value) {
+      showPlayback.value = false;
+    }
+  }
+  initializePopup();
+  adjustMap();
+}
+function plotStartAndEndPoints(personId:number, startDate, endDate, page:number):GeometryPoint[]{
+  fetchGeomData(personId,startDate,endDate,page).then((points:GeometryPoint[]) => {
     if (!points) {
       toast.info("Nenhum ponto encontrado para o filtro selecionado.");
       if (showPlayback.value) {
         showPlayback.value = false;
       }
     } else {
-      let pointList = new ref(points);
-      makeGeometryPointFromArray(pointList, filterData.person);
-      lineLayer.value = makeLineFromPoints(pointFeatures);
-      map.value.addLayer(lineLayer.value);
-      adjustMap();
+      plotAllOnMap(points,true);
+      return points
+    }
+
+  });
+}
+function plotStopPoints(person: number , startDate:string, endDate:string, selectedZone?:number) :StopPoint[]{
+  fetchStopPoints(person, startDate, endDate, 0).then((points:StopPoint[]) => {
+    if (!points) {
+      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+      if (showPlayback.value) {
+        showPlayback.value = false;
+      }
+    } else {
+      let stopPointStyle:Style = new Style({
+        image: new Icon({
+          src: IconStopPoint,
+          scale: 0.6,
+          anchor: [0.5, 1],
+        }),
+      });
+      map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,stopPointStyle)));
+      return points
     }
   });
 }
 
 function clearPoints() {
   if (map.value) {
-    map.value.values_.layergroup.values_.layers.array_.forEach((layer) => {
-      map.value.values_.layergroup.values_.layers.array_.pop(layer);
+    map.value?.getLayers().array_.forEach(layer => {
+      while (map.value?.getLayers().array_[map.value?.getLayers().array_.length-1].values_.layerName != 'TileLayer'){
+        map.value?.removeLayer(map.value?.getLayers().array_[map.value?.getLayers().array_.length-1]);
+      }
     })
+    showPlayback.value = false;
+    route.value = [];
     pointFeatures.value = [];
     routeLine.value = [];
     pointFinalStar.value = [];
-
-    const baseLayer = new TileLayer({
-          source: new XYZ({
-            url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
-          }),
-    });
-    map.value.addLayer(baseLayer);
+    zoneDrawd = false;
+    if (popupContent.value) {
+      popupContent.value.innerHTML = null;
+      popup.value?.setPosition(null);
+    }
+    map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
     adjustMap();
+    showPlayback.value = false;
   }
 }
-
-const getAllPoints = async (getPointsUrl: string) => {
-  try {
-    const response = await axios.get(getPointsUrl);
-
-    if (response.data && response.data.content.length === 0) {
-      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-      return [];
-    }
-
-    return response.data.content;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorMessage = error.response.data?.message ||
-          "Erro desconhecido ao buscar pontos.";
-    } if(error.code == 'ERR_BAD_RESPONSE'){
-      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-    }
-    else {
-      toast.error("Erro na conexão. Tente novamente mais tarde.");
-    }
-    return [];
-  }
-};
-
-function createStartLayer(pointFinalStarArrayOfFeatures) {
-  const vectorLayer = new VectorLayer({
-    source: new VectorSource({
-      features: pointFinalStarArrayOfFeatures.value,
-    }),
-    zIndex: 2,
-  });
-  map.value.addLayer(vectorLayer);
-}
-
-function makeGeometryPointFromArray(arrayOfGeometryObjects, nameFilter?) {
-  if (arrayOfGeometryObjects.length === 0) return [];
-
-  if (nameFilter) {
-    const startPointStartPin = new Feature({
-      geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-    });
-
-    startPointStartPin.setStyle(new Style({
-      image: new Icon({
-        src: IconStartPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    }));
-
-    startPointIconMap.value = new Feature({
-      geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-    });
-
-    startPointIconMap.value.setStyle(new Style({
-      image: new Icon({
-        src: IconPositionMap,
-        anchor: [0.5, 0.5],
-        scale: 0.2,
-        rotation: anguloInicial
-      }),
-    }));
-    
-    const endPoint = new Feature({
-      geometry: new Point([arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].longitude, arrayOfGeometryObjects.value[arrayOfGeometryObjects.value.length - 1].latitude]),
-    });
-
-    endPoint.setStyle(new Style({
-      image: new Icon({
-        src: IconEndPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    }));
-
-    if(startPointStartPin.getGeometry()?.getCoordinates()[0] === endPoint.getGeometry()?.getCoordinates()[0]){
-      if (showPlayback.value) {
-        showPlayback.value = false;
-      }
-      toast.info("A localização do ponto de início é o mesmo do ponto de fim.");
-
-      const startAndEnd = new Feature({
-        geometry: new Point([arrayOfGeometryObjects.value[0].longitude, arrayOfGeometryObjects.value[0].latitude]),
-      });
-
-      startAndEnd.setStyle(new Style({
-        image: new Icon({
-          src: IconStartAndEnd,
-          scale: 0.7,
-          anchor: [0.5, 1],
-        })
-      }));
-      pointFinalStar.value.push(startAndEnd);
-      createStartLayer(pointFinalStar);
-    } else {
-        pointFinalStar.value.push(startPointStartPin);
-        pointFinalStar.value.push(startPointIconMap.value);
-        pointFinalStar.value.push(endPoint);
-        createStartLayer(pointFinalStar);
-      center.value = endPoint.getGeometry().getCoordinates();
-
-      if (!showPlayback.value) {
-        showPlayback.value = !showPlayback.value;
-      } else {
-        showPlayback.value = false;
-        setTimeout(() => {
-          showPlayback.value = true;
-        }, 1);
-      }
-    }
-    center.value = endPoint.getGeometry().getCoordinates();
-  }
-
-  arrayOfGeometryObjects.value.forEach((pointObj) => {
-    const point = new Feature({
-      geometry: new Point([pointObj.longitude, pointObj.latitude]),
-    });
-    point.setStyle(new Style({
-      image: new Icon({
-        src: IconEndPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    }));
-    pointFeatures.value.push(point);
-  });
-}
-
-function makeLineFromPoints(featureList) {
+function makeLineFromPoints(featureList:Feature[]) {
   if (!featureList) {
     toast.info("Nenhum ponto disponível para criar linhas.");
     return null;
   }
-
-  const groupedById = featureList.value.reduce((acc, feature) => {
-    const idText = feature.get('idText');
-    if (!acc[idText]) acc[idText] = [];
-    acc[idText].push(feature);
-    return acc;
-  }, {});
-
-  Object.keys(groupedById).forEach((idText) => {
-    const points = groupedById[idText];
-    allCoordinatesAnimation.value = [];
-
-    if (points.length >= 2) {
-      for (let i = 0; i < points.length - 1; i++) {
-        const point1 = points[i];
-        const point2 = points[i + 1];
-  
-        allCoordinatesAnimation.value.push(point1.getGeometry().getCoordinates())
-        allCoordinatesAnimation.value.push(point2.getGeometry().getCoordinates())
-      }
-      
-      route.value = new LineString(allCoordinatesAnimation.value)
-
-      getInitialRotation();
-
-      const lineFeature = new Feature({
-        geometry: route.value,
-      });
-      lineFeature.setStyle(new Style({
-        stroke: new Stroke({
-          color: '#ec1c24',
-          width: 6,
-        }),
-      }));
-      routeLine.value.push(lineFeature);
+  let featureArray :Feature[] = [];
+  let newLineString: LineString = makeLineString(featureList);
+  featureArray.push(new Feature({geometry: newLineString}));
+  featureArray[0].setStyle(new Style({
+    stroke: new Stroke({
+      color: '#000000',
+      width: 4
+    }),
+    zIndex: 4
+  }));
+  route.value = newLineString;
+  map.value?.getLayers().array_.forEach(layer =>{
+    if(layer.values_.layerName == undefined){
+      startPointIconMap.value = layer.getSource().getFeatures()[2];
     }
-  })
-  return new VectorLayer({
-    source: new VectorSource({
-      features: routeLine.value,
-    })
-  })
+  });
+  allCoordinatesAnimation.value = makeLineString(featureList).getCoordinates();
+
+  let lineLayer :VectorLayer = createNewVectorLayer(featureArray,'Layer das Rotas');
+  return lineLayer
 }
 
-const adjustMap = () => {
-  const coordinates = pointFeatures.value.map((pontos) =>
-      pontos.getGeometry().getCoordinates()
-  );
-  const extent = boundingExtent(coordinates);
-  if (map.value) {
-    map.value
-        .getView()
-        .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15});
+
+const adjustMap = (drawedZone?:Polygon|Circle) => {
+  if(drawedZone){
+    const extent = drawedZone.getExtent();
+    if (map.value) {
+      map.value
+          .getView()
+          .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15,duration: 1000});
+    }
+  } else {
+    const coordinates = pointFeatures.value.map((pontos) =>
+        pontos.getGeometry().getCoordinates()
+    );
+    const extent = boundingExtent(coordinates);
+    map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
   }
 };
-
-const createMap = () => {
-  map.value = new Map({
-    target: 'map',
-    layers: [
-      new TileLayer({
-        source: new XYZ({
-          url: `https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key=eR9oB64MlktZG90QwIJ7`
-        }),
-      }),
-    ],
-    view: new View({
-      center: center.value,
-      zoom: zoom.value,
-      projection: projection.value,
+function toggleDrawing() {
+  if (drawingActive.value) {
+    if(pointFinalStar.value){
+      map.value?.on('singleclick', handleMapClick);
+    }
+    stopDrawing();
+  } else {
+    map.value.removeEventListener('singleclick', handleMapClick);
+    startDrawing();
+  }
+}
+function startDrawing() {
+  if (!map.value) return;
+    drawingActive.value = true;
+    draw.value = new Draw({
+    source: source,
+    stopClick: true,
+    type: drawType.value as 'Circle' | 'Polygon',
+    style: new Style({
+    fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
+    stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
     }),
   });
-
-  const vectorLayer = new VectorLayer({
-    source: new VectorSource({
-      features: pointFeatures.value,
-    }),
+  draw.value.on('drawend', (event) => {
+    useToast().info('Desenho finalizado!');
   });
-
-  const routeLayer = new VectorLayer({
-    source: new VectorSource({
-      features: routeLine.value,
-    }),
+  map.value.addInteraction(draw.value);
+  map.value.getViewport().addEventListener('contextmenu', (event) => {
+    event.preventDefault();
+    if (draw.value) {
+      draw.value.abortDrawing();
+      toggleDrawing();
+    }
   });
+}
+function stopDrawing() {
+  if (draw.value && map.value) {
+    map.value.removeInteraction(draw.value);
+    draw.value = null;
+    drawingActive.value = false;
+  }
+}
+function centerMap() {
+  if (map.value) {
+    if (pointFeatures.value.length === 0) {
+      const defaultCenter = [-60.457873, 0.584053];
+      const defaultZoom = 5;
 
-  map.value.addLayer(vectorLayer);
-  map.value.addLayer(routeLayer);
+      map.value?.getView().setCenter(defaultCenter);
+      map.value?.getView().setZoom(defaultZoom);
+    } else {
+      let coordinates;
+      map.value?.getLayers().array_.forEach(layer =>{
+        if(layer.values_.layerName == 'Layer dos Pontos'){
+          layer.getSource().getFeatures().forEach(feature =>{
+            console.log(feature.getGeometry()[1]);
+          });
+        }
+      });
+      const extent = boundingExtent(coordinates);
+
+
+      map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
+    }
+  }
+}
+function drawZone(drawZonePolygon:drawZone){
+  zoneDrawd = true;
+  let featureArray :Feature[] = [];
+  let newFeature :Feature = makeFeature(undefined,undefined,drawZonePolygon);
+  featureArray.push(newFeature);
+  let newVectorLayer:VectorLayer = createNewVectorLayer(featureArray,'Layer das Zonas');
+  map.value?.getLayers().array_.forEach((layer) =>{
+    if(layer.values_.layerName == 'Layer das Zonas')
+    map.value?.removeLayer(layer);
+  });
+  map.value?.addLayer(newVectorLayer);
+  adjustMap(drawZonePolygon);
+}
+function removeZoneFilters(){
+  map.value?.getLayers().array_.forEach((layer) =>{
+    if(layer.values_.layerName == 'Layer das Zonas')
+      map.value?.removeLayer(layer);
+  });
+  map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
 }
 onMounted(() => {
-  createMap();
+  darkOrWhiteMap = 'streets-v2';
+  map.value = createMap(center, zoom, projection, darkOrWhiteMap);
+  map.value.addLayer(createNewVectorLayer(source, 'Draw Layer',source));
+  initializePopup()
 });
 </script>
 
 <style scoped>
+.ol-popup {
+  position: absolute;
+  background-color: black;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #c1060a;
+  min-width: 200px;
+  z-index: 10;
+  bottom: 12px;
+  left: 50px;
+  transform: translate(-50%, -100%);
+}
+
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-size: 1.2em;
+}
+
 .map-container {
   width: 100vw;
   height: 100vh;
@@ -349,31 +517,74 @@ onMounted(() => {
   position: absolute;
   top: 20px;
   left: 20px;
-  background-color: white;
+  background-color: transparent;
   padding: 10px;
   border-radius: 8px;
   z-index: 3;
 }
 
 .playback-layer {
-  position: absolute;
   width: 100%;
   height: 6.8%;
+  position: absolute;
   bottom: 0px;
   z-index: 2;
   transition: bottom 0.5s ease;
+  align-content: center;
+  align-items: center;
+}
+
+.toggle-dark-white-mode {
+  justify-content: center;
+  position: absolute;
+  right: 11px;
+  bottom: 138px;
+  z-index: 2;
 }
 
 :global(.ol-zoom-in) {
-  bottom: 6em;
-  right: 2em;
+  bottom: 3.5em;
+  right: 10px;
   position: fixed;
 }
 
 :global(.ol-zoom-out) {
-  bottom: 4.5em;
-  right: 2em;
+  bottom: 1em;
+  right: 10px;
   position: fixed;
+}
+
+:global(.ol-control button)  {
+  color: #000000;
+  display: block;
+  font-weight: bold;
+  font-size: inherit;
+  text-align: center;
+  height: 2.67em;
+  width: 2.67em;
+  line-height: .4em;
+  border: none;
+  border-radius: 2px;
+}
+
+.icon-center {
+  position: absolute;
+  bottom: 97.91px;
+  right: 11px;
+  z-index: 4;
+  background-color: white;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom-left-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+
+.icon-center-icon {
+  font-size: 20px;
+  color: #3A3A3A;
 }
 
 </style>

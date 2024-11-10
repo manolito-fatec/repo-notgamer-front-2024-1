@@ -22,45 +22,20 @@ function onChange(event: Event) {
   emit('update:modelValue', selectedValue);
 }
 
-function watchChanges(newValue) {
-  const select = document.getElementById('select')
-  const icon = document.getElementById('icon')
-  
-  if (newValue) {
-    icon.style.left = '595px';
-    select.style.left = '595px';
-  } else {
-    icon.style.left = '190px';
-    select.style.left = '190px';
-  }
-}
-
-watch(
-  () => store.onClickFilters,
-  (newValue) => {
-    watchChanges(newValue)
-  }
-);
-
-onMounted(() => {
-  watchChanges(store.onClickFilters);
-})
-
 </script>
 
 <style scoped>
 
 .dropdown-speed select {
-width: 30px;
-height: 30px;
+width: 25px;
+height: 25px;
 background-color: transparent;
 cursor: pointer;
 border: none;
 position: fixed;
 appearance: none; 
 color: transparent;
-bottom: 10px;
-left: 190px;
+bottom: 13px;
 }
 
 .dropdown-speed option {
@@ -72,12 +47,10 @@ background-color: #202020;
 background-color: transparent;
 border: none; 
 color: white;
-font-size: 30px;
+font-size: 25px;
 cursor: pointer; 
-position: fixed;
 display: flex;
 bottom: 10px;
-left: 190px;
 }
 
 </style>
