@@ -1,11 +1,12 @@
 import axios from 'axios';
-import type {DrawedGeom, StopPoint} from "@/components/Types";
+import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
 import {useToast} from "vue-toastification";
 
 const toast = useToast();
 const BASE_URL_MOCKED = 'https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json';
 const BASE_URL_ENDPOINT = 'http://localhost:8080/person';
 const BASE_URL_GEOM = 'http://localhost:8080/location';
+const BASE_URL_PERSON = 'http://localhost:8080/person';
 
 interface Person {
     idPerson: number;
@@ -16,16 +17,6 @@ interface Person {
 interface Device {
     label: string;
     value: number;
-}
-export const fetchPersonById  = async (id: number): Promise<Person> => {
-    try{
-        const response = await axios.get<Person>(BASE_URL_ENDPOINT + '/' + id);
-        return response.data;
-    }catch (error){
-        console.log("Pessoa não encontrada: ",error);
-        throw error;
-    }
-
 }
 
 export const fetchPersons = async (): Promise<Person[]> => {
@@ -179,3 +170,48 @@ export const fetchAllZones = async ()=>{
         return [];
     }
 }
+export const fetchGeomDataWithinZone = async (startDate, endDate, zoneId:number):[]=>{
+    let getUrl = `http://localhost:8080/tracker/inside/${zoneId}/${startDate}T00:00:00.000/${endDate}T00:00:00.000`;
+    try {
+        const response = await axios.get(getUrl);
+        if (response.data && response.data.length === 0) {
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+            return [];
+        }
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.message ||
+                "Erro desconhecido ao buscar pontos.";
+        } if(error.code == 'ERR_BAD_RESPONSE'){
+            toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        }
+        else {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+        return [];
+    }
+}
+export const fetchPersonById = async(personID:number):Pessoa=>{
+    let getUrl = BASE_URL_PERSON + personID;
+    try{
+        const response = await axios.get(getUrl);
+        return response.data;
+    }catch(error){
+        if (axios.isAxiosError(error) && error.response) {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+    }
+}
+export const deleteZoneByGid = async(gid:number):Pessoa=>{
+    let getUrl = BASE_URL_GEOM + '/delete/' + gid;
+    try{
+        const response = await axios.delete(getUrl);
+        return response.data;
+    }catch(error){
+        if (axios.isAxiosError(error) && error.response) {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+    }
+}
+
