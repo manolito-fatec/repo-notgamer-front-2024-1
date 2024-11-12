@@ -153,14 +153,14 @@ function toggleZoneVisibility(){
     zoneVisibility.value = false;
     map.value?.getLayers().array_.forEach(layer =>{
       if(layer.values_.layerName == 'Draw Layer'){
-        console.log(layer.setVisible(false))
+        layer.setVisible(false);
       }
     })
   } else {
     zoneVisibility.value = true;
     map.value?.getLayers().array_.forEach(layer =>{
       if(layer.values_.layerName == 'Draw Layer'){
-        console.log(layer.setVisible(true))
+        layer.setVisible(true)
       }
     })
   }
@@ -250,18 +250,19 @@ function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
   return geometryPoints;
 }
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null, selectedZone:number | null}){
-  if(zoneDrawd){
-    fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points:[]) => {
-    if (!points) {
-      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-      if (showPlayback.value) {
-        showPlayback.value = false;
+  if(zoneDrawd) {
+    clearPoints();
+    fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points: []) => {
+      if (!points) {
+        toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        if (showPlayback.value) {
+          showPlayback.value = false;
+        }
       }
-    }
-    let convertedPoints:GeometryPoint[]= convertToGeometryPoints(points);
-    plotAllOnMap(convertedPoints);
+      let convertedPoints: GeometryPoint[] = convertToGeometryPoints(points);
+      plotAllOnMap(convertedPoints);
     })
-  } else {
+  }else{
     let startAndEndPoints :GeometryPoint[] = plotStartAndEndPoints(filterData.person, filterData.startDate, filterData.endDate,0)
     plotStopPoints(filterData.person, filterData.startDate, filterData.endDate);
   }
