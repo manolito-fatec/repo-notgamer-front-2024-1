@@ -48,7 +48,13 @@ import {ref, watch, onMounted} from 'vue'
 import {darkModeClick} from "./stores/StoreDarkModeGetClick";
 import {deleteZoneByGid, fetchAllZones} from "@/services/apiService";
 import type {Coordinates, DrawedGeom} from "@/components/Types";
-import {locationDtoToDrawedGeom, makePolygon, zoneOptions, drawedGeomsFromDb} from "@/services/geomService";
+import {
+  locationDtoToDrawedGeom,
+  makePolygon,
+  zoneOptions,
+  drawedGeomsFromDb,
+  selectedHotzone
+} from "@/services/geomService";
 import type {Polygon} from "ol/geom";
 import {Map} from "ol";
 
@@ -57,7 +63,7 @@ const modeOptions = [
     {label:'Círculo', value:'Circle'},
     {label:'Polígono', value:'Polygon'}
 ]
-let selectedHotzone = ref<number>()
+
 let deletedHotzone = ref('')
 let selectedMode = ref(modeOptions[0].value)
 const drawMode = ref(false)
@@ -119,9 +125,11 @@ function drawZoneChange(){
   emit('drawZone',drawZonePolygon);
 }
 function removeShowedZone(){
+  selectedHotzone.value = 0;
   emit('removeShowedZone')
 }
 function deleteZone(){
+  emit('removeShowedZone');
   let selectedId :number = Number(deletedHotzone.value);
   deleteZoneByGid(selectedId).then((geoms) =>{
     fetchAllZones().then((geoms) =>{

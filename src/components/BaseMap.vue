@@ -69,7 +69,7 @@ import {
   createStartAndEndPoint, drawedGeomsFromDb, locationDtoToDrawedGeom,
   makeFeature, makeLineString, makeMultiplePointsLegacy,
   makePointsFromArray,
-  saveGeoms, zoneOptions
+  saveGeoms, selectedHotzone, zoneOptions
 } from "@/services/geomService";
 import IconEndPin from "@/assets/IconEndPin.png";
 import {handleTypeError} from "@/utils/errorHandler";
@@ -94,8 +94,7 @@ let popup = ref<Overlay | null>(null);
 let popupContent = ref<HTMLElement | null>(null);
 let popupCloser = ref<HTMLElement | null>(null);
 
-const source = new VectorSource();
-const drawLayer = new VectorLayer({ source });
+let source = ref<VectorSource>();
 let draw = ref<Draw | null>(null);
 let drawingActive = ref(false);
 let drawType = ref('Circle');
@@ -145,7 +144,7 @@ function saveGeometry(){
           handleTypeError(e);
         }
       });
-      map.value?.removeLayer(layer);
+      source.value = new VectorSource();
     }
   })
 }
@@ -265,7 +264,6 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   } else {
     let startAndEndPoints :GeometryPoint[] = plotStartAndEndPoints(filterData.person, filterData.startDate, filterData.endDate,0)
     plotStopPoints(filterData.person, filterData.startDate, filterData.endDate);
-    map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
   }
 }
 function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute:Boolean){
@@ -332,6 +330,7 @@ function clearPoints() {
         map.value?.removeLayer(map.value?.getLayers().array_[map.value?.getLayers().array_.length-1]);
       }
     })
+    selectedHotzone.value = 0;
     showPlayback.value = false;
     route.value = [];
     pointFeatures.value = [];
@@ -342,7 +341,7 @@ function clearPoints() {
       popupContent.value.innerHTML = null;
       popup.value?.setPosition(null);
     }
-    map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
+    map.value.addLayer(createNewVectorLayer(source.value,'Draw Layer',source.value));
     adjustMap();
     showPlayback.value = false;
   }
@@ -393,12 +392,12 @@ const adjustMap = (drawedZone?:Polygon|Circle) => {
 };
 function toggleDrawing() {
   if (drawingActive.value) {
-    if(pointFinalStar.value){
-      map.value?.on('singleclick', handleMapClick);
-    }
+    // if(pointFinalStar.value){
+    //   map.value?.on('singleclick', handleMapClick);
+    // }
     stopDrawing();
   } else {
-    map.value.removeEventListener('singleclick', handleMapClick);
+    // map.value.removeEventListener('singleclick', handleMapClick);
     startDrawing();
   }
 }
@@ -406,7 +405,7 @@ function startDrawing() {
   if (!map.value) return;
     drawingActive.value = true;
     draw.value = new Draw({
-    source: source,
+    source: source.value,
     stopClick: true,
     type: drawType.value as 'Circle' | 'Polygon',
     style: new Style({
@@ -418,13 +417,6 @@ function startDrawing() {
     useToast().info('Desenho finalizado!');
   });
   map.value.addInteraction(draw.value);
-  map.value.getViewport().addEventListener('contextmenu', (event) => {
-    event.preventDefault();
-    if (draw.value) {
-      draw.value.abortDrawing();
-      toggleDrawing();
-    }
-  });
 }
 function stopDrawing() {
   if (draw.value && map.value) {
@@ -457,8 +449,10 @@ function centerMap() {
     }
   }
 }
+let showedZone :Polygon = {};
 function drawZone(drawZonePolygon:drawZone){
   zoneDrawd = true;
+  showedZone = drawZonePolygon;
   let featureArray :Feature[] = [];
   let newFeature :Feature = makeFeature(undefined,undefined,drawZonePolygon);
   featureArray.push(newFeature);
@@ -475,12 +469,12 @@ function removeZoneFilters(){
     if(layer.values_.layerName == 'Layer das Zonas')
       map.value?.removeLayer(layer);
   });
-  map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
 }
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
   map.value = createMap(center, zoom, projection, darkOrWhiteMap);
-  map.value.addLayer(createNewVectorLayer(source, 'Draw Layer',source));
+  source.value = new VectorSource();
+  map.value.addLayer(createNewVectorLayer(source.value,'Draw Layer',source.value));
   initializePopup()
 });
 </script>

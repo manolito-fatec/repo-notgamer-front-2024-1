@@ -199,3 +199,4 @@ export function locationDtoToDrawedGeom(data):DrawedGeom|null{
 }
 export let zoneOptions = ref([]);
 export let drawedGeomsFromDb :DrawedGeom[] =[];
+export let selectedHotzone = ref<number>()
