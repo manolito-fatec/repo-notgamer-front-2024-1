@@ -42,7 +42,7 @@
 import { ref, onMounted } from 'vue';
 import {Map, Feature, Overlay} from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import {XYZ} from 'ol/source';
+import {Source, XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import {Point, LineString, Geometry, Circle, type Polygon} from 'ol/geom';
@@ -66,7 +66,7 @@ import IconStopPoint from "@/assets/IconStopPoint.png";
 import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
 import {
   convertToDrawedGeom,
-  createStartAndEndPoint, drawedGeomsFromDb, locationDtoToDrawedGeom,
+  createStartAndEndPoint, drawedGeomsFromDb, drawingActive, locationDtoToDrawedGeom,
   makeFeature, makeLineString, makeMultiplePointsLegacy,
   makePointsFromArray,
   saveGeoms, selectedHotzone, zoneOptions
@@ -96,7 +96,6 @@ let popupCloser = ref<HTMLElement | null>(null);
 
 let source = ref<VectorSource>();
 let draw = ref<Draw | null>(null);
-let drawingActive = ref(false);
 let drawType = ref('Circle');
 let drawGeomName = ref<string>();
 let zoneVisibility = ref(true);
@@ -251,7 +250,6 @@ function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
 }
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null, selectedZone:number | null}){
   if(zoneDrawd) {
-    clearPoints();
     fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points: []) => {
       if (!points) {
         toast.info("Nenhum ponto encontrado para o filtro selecionado.");
@@ -384,9 +382,14 @@ const adjustMap = (drawedZone?:Polygon|Circle) => {
           .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15,duration: 1000});
     }
   } else {
-    const coordinates = pointFeatures.value.map((pontos) =>
+    let coordinates = pointFeatures.value.map((pontos) =>
         pontos.getGeometry().getCoordinates()
     );
+    map.value?.getLayers().array_.forEach((layer:VectorLayer) =>{
+      layer.getSource().getFeatures().forEach(feature =>{
+        coordinates = feature.getGeometry()[1];
+      });
+    })
     const extent = boundingExtent(coordinates);
     map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
   }
@@ -403,17 +406,21 @@ function toggleDrawing() {
   }
 }
 function startDrawing() {
-  if (!map.value) return;
+  if (!map.value){
+    return;
+  } else {
+
     drawingActive.value = true;
     draw.value = new Draw({
-    source: source.value,
-    stopClick: true,
-    type: drawType.value as 'Circle' | 'Polygon',
-    style: new Style({
-    fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
-    stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
-    }),
-  });
+      source: source.value,
+      stopClick: true,
+      type: drawType.value as 'Circle' | 'Polygon',
+      style: new Style({
+        fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
+        stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
+      }),
+    });
+  }
   draw.value.on('drawend', (event) => {
     useToast().info('Desenho finalizado!');
   });
@@ -425,6 +432,12 @@ function stopDrawing() {
     draw.value = null;
     drawingActive.value = false;
   }
+  map.value?.getLayers().array_.forEach((layer:VectorLayer) =>{
+    if(layer.values_.layerName == 'Draw Layer'){
+      source.value = new VectorSource();
+      layer.setSource(source.value);
+    }
+  });
 }
 function centerMap() {
   if (map.value) {
@@ -439,7 +452,7 @@ function centerMap() {
       map.value?.getLayers().array_.forEach(layer =>{
         if(layer.values_.layerName == 'Layer dos Pontos'){
           layer.getSource().getFeatures().forEach(feature =>{
-            console.log(feature.getGeometry()[1]);
+            coordinates = feature.getGeometry()[1];
           });
         }
       });

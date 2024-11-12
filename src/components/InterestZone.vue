@@ -53,7 +53,7 @@ import {
   makePolygon,
   zoneOptions,
   drawedGeomsFromDb,
-  selectedHotzone
+  selectedHotzone, drawingActive
 } from "@/services/geomService";
 import type {Polygon} from "ol/geom";
 import {Map} from "ol";
@@ -104,14 +104,14 @@ function changeZoneName(){
   emit('changeZoneName',zoneName.value);
 }
 function drawType(){
-  if(drawMode.value){
+  if(drawingActive.value){
     emit('toggleDrawing');
     emit('drawType',selectedMode.value);
     emit('toggleDrawing');
   }else{
     emit('drawType',selectedMode.value);
     emit('toggleDrawing');
-    drawMode.value = true;
+    drawingActive.value = true;
   }
 }
 function drawZoneChange(){
@@ -158,6 +158,7 @@ onMounted(()=>{
       drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
     })
   });
+  drawMode.value = drawingActive.value;
 });
 </script>
 
