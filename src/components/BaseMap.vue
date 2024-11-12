@@ -24,8 +24,6 @@
     <div id="map" class="map-container"></div>
     <div
         class="icon-center"
-        @mouseover="handleMouseOver"
-        @mouseleave="handleMouseLeave"
         @click="centerMap"
         :style="{ cursor: 'pointer', opacity: iconOpacity }"
     >
@@ -257,7 +255,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
           showPlayback.value = false;
         }
       }
-      let convertedPoints: GeometryPoint[] = convertToGeometryPoints(points);
+      let convertedPoints: GeometryPoint[]|null= convertToGeometryPoints(points);
       plotAllOnMap(convertedPoints);
     })
   }else{
@@ -265,7 +263,7 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
     plotStopPoints(filterData.person, filterData.startDate, filterData.endDate);
   }
 }
-function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute:Boolean){
+function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean){
     if(hasRoute){
     map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
     pointFeatures.value = makeMultiplePointsLegacy(points);
@@ -279,7 +277,7 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute:Boolean){
         anchor: [0.5, 1],
       }),
     })
-    map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4),'Layer dos Pontos');
+    map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4));
     if (showPlayback.value) {
       showPlayback.value = false;
     }
@@ -382,26 +380,26 @@ const adjustMap = (drawedZone?:Polygon|Circle) => {
           .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15,duration: 1000});
     }
   } else {
-    let coordinates = pointFeatures.value.map((pontos) =>
-        pontos.getGeometry().getCoordinates()
-    );
-    map.value?.getLayers().array_.forEach((layer:VectorLayer) =>{
-      layer.getSource().getFeatures().forEach(feature =>{
-        coordinates = feature.getGeometry()[1];
-      });
-    })
-    const extent = boundingExtent(coordinates);
+    let coordinatesExtend = [];
+    map.value?.getLayers().array_.forEach((layer) =>{
+      if(layer.values_.layerName == 'Layer InsideZone' || layer.values_.layerName == 'Layer dos Pontos' || layer.values_.layerName == undefined){
+        layer.getSource().getFeatures().forEach(feature =>{
+          if(feature.getGeometry()){
+            coordinatesExtend.push([feature.getGeometry().getExtent()[0],feature.getGeometry().getExtent()[1]]);
+            return;
+          }
+        });
+      }
+
+    });
+    const extent = boundingExtent(coordinatesExtend);
     map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
   }
 };
 function toggleDrawing() {
   if (drawingActive.value) {
-    // if(pointFinalStar.value){
-    //   map.value?.on('singleclick', handleMapClick);
-    // }
     stopDrawing();
   } else {
-    // map.value.removeEventListener('singleclick', handleMapClick);
     startDrawing();
   }
 }
@@ -441,27 +439,15 @@ function stopDrawing() {
 }
 function centerMap() {
   if (map.value) {
-    if (pointFeatures.value.length === 0) {
-      const defaultCenter = [-60.457873, 0.584053];
-      const defaultZoom = 5;
-
-      map.value?.getView().setCenter(defaultCenter);
-      map.value?.getView().setZoom(defaultZoom);
-    } else {
-      let coordinates;
-      map.value?.getLayers().array_.forEach(layer =>{
-        if(layer.values_.layerName == 'Layer dos Pontos'){
-          layer.getSource().getFeatures().forEach(feature =>{
-            coordinates = feature.getGeometry()[1];
-          });
-        }
-      });
-      const extent = boundingExtent(coordinates);
-
-
-      map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
+    const defaultCenter = [-60.457873, 0.584053];
+    let coordinates:Coordinate[] = [];
+    coordinates.push(defaultCenter)
+    const defaultZoom = 5;
+    map.value?.getView().setCenter(defaultCenter);
+    map.value?.getView().setZoom(defaultZoom);
+      // const extent = boundingExtent(coordinates);
+      // map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
     }
-  }
 }
 let showedZone :Polygon = {};
 function drawZone(drawZonePolygon:drawZone){

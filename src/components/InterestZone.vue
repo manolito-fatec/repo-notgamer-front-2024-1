@@ -101,17 +101,20 @@ function saveDraw() {
   });
 }
 function changeZoneName(){
+
   emit('changeZoneName',zoneName.value);
 }
 function drawType(){
   if(drawingActive.value){
+    drawMode.value = !drawMode.value
     emit('toggleDrawing');
     emit('drawType',selectedMode.value);
     emit('toggleDrawing');
+    drawMode.value = !drawMode.value
   }else{
     emit('drawType',selectedMode.value);
     emit('toggleDrawing');
-    drawingActive.value = true;
+    drawMode.value = !drawMode.value
   }
 }
 function drawZoneChange(){
@@ -158,7 +161,6 @@ onMounted(()=>{
       drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
     })
   });
-  drawMode.value = drawingActive.value;
 });
 </script>
 
