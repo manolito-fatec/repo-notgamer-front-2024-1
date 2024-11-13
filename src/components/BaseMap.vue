@@ -24,8 +24,6 @@
     <div id="map" class="map-container"></div>
     <div
         class="icon-center"
-        @mouseover="handleMouseOver"
-        @mouseleave="handleMouseLeave"
         @click="centerMap"
         :style="{ cursor: 'pointer', opacity: iconOpacity }"
     >
@@ -42,7 +40,7 @@
 import { ref, onMounted } from 'vue';
 import {Map, Feature, Overlay} from 'ol';
 import { Tile as TileLayer } from 'ol/layer';
-import {XYZ} from 'ol/source';
+import {Source, XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import {Point, LineString, Geometry, Circle, type Polygon} from 'ol/geom';
@@ -66,10 +64,10 @@ import IconStopPoint from "@/assets/IconStopPoint.png";
 import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
 import {
   convertToDrawedGeom,
-  createStartAndEndPoint, drawedGeomsFromDb, locationDtoToDrawedGeom,
+  createStartAndEndPoint, drawedGeomsFromDb, drawingActive, locationDtoToDrawedGeom,
   makeFeature, makeLineString, makeMultiplePointsLegacy,
   makePointsFromArray,
-  saveGeoms, zoneOptions
+  saveGeoms, selectedHotzone, zoneOptions
 } from "@/services/geomService";
 import IconEndPin from "@/assets/IconEndPin.png";
 import {handleTypeError} from "@/utils/errorHandler";
@@ -94,10 +92,8 @@ let popup = ref<Overlay | null>(null);
 let popupContent = ref<HTMLElement | null>(null);
 let popupCloser = ref<HTMLElement | null>(null);
 
-const source = new VectorSource();
-const drawLayer = new VectorLayer({ source });
+let source = ref<VectorSource>();
 let draw = ref<Draw | null>(null);
-let drawingActive = ref(false);
 let drawType = ref('Circle');
 let drawGeomName = ref<string>();
 let zoneVisibility = ref(true);
@@ -145,7 +141,7 @@ function saveGeometry(){
           handleTypeError(e);
         }
       });
-      map.value?.removeLayer(layer);
+      source.value = new VectorSource();
     }
   })
 }
@@ -154,14 +150,14 @@ function toggleZoneVisibility(){
     zoneVisibility.value = false;
     map.value?.getLayers().array_.forEach(layer =>{
       if(layer.values_.layerName == 'Draw Layer'){
-        console.log(layer.setVisible(false))
+        layer.setVisible(false);
       }
     })
   } else {
     zoneVisibility.value = true;
     map.value?.getLayers().array_.forEach(layer =>{
       if(layer.values_.layerName == 'Draw Layer'){
-        console.log(layer.setVisible(true))
+        layer.setVisible(true)
       }
     })
   }
@@ -251,24 +247,23 @@ function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
   return geometryPoints;
 }
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null, selectedZone:number | null}){
-  if(zoneDrawd){
-    fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points:[]) => {
-    if (!points) {
-      toast.info("Nenhum ponto encontrado para o filtro selecionado.");
-      if (showPlayback.value) {
-        showPlayback.value = false;
+  if(zoneDrawd) {
+    fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points: []) => {
+      if (!points) {
+        toast.info("Nenhum ponto encontrado para o filtro selecionado.");
+        if (showPlayback.value) {
+          showPlayback.value = false;
+        }
       }
-    }
-    let convertedPoints:GeometryPoint[]= convertToGeometryPoints(points);
-    plotAllOnMap(convertedPoints);
+      let convertedPoints: GeometryPoint[]|null= convertToGeometryPoints(points);
+      plotAllOnMap(convertedPoints);
     })
-  } else {
+  }else{
     let startAndEndPoints :GeometryPoint[] = plotStartAndEndPoints(filterData.person, filterData.startDate, filterData.endDate,0)
     plotStopPoints(filterData.person, filterData.startDate, filterData.endDate);
-    map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
   }
 }
-function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute:Boolean){
+function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean){
     if(hasRoute){
     map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
     pointFeatures.value = makeMultiplePointsLegacy(points);
@@ -282,7 +277,7 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute:Boolean){
         anchor: [0.5, 1],
       }),
     })
-    map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4),'Layer dos Pontos');
+    map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4));
     if (showPlayback.value) {
       showPlayback.value = false;
     }
@@ -332,6 +327,7 @@ function clearPoints() {
         map.value?.removeLayer(map.value?.getLayers().array_[map.value?.getLayers().array_.length-1]);
       }
     })
+    selectedHotzone.value = 0;
     showPlayback.value = false;
     route.value = [];
     pointFeatures.value = [];
@@ -342,7 +338,7 @@ function clearPoints() {
       popupContent.value.innerHTML = null;
       popup.value?.setPosition(null);
     }
-    map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
+    map.value.addLayer(createNewVectorLayer(source.value,'Draw Layer',source.value));
     adjustMap();
     showPlayback.value = false;
   }
@@ -384,47 +380,49 @@ const adjustMap = (drawedZone?:Polygon|Circle) => {
           .fit(extent, {padding: [50, 50, 50, 50], maxZoom: 15,duration: 1000});
     }
   } else {
-    const coordinates = pointFeatures.value.map((pontos) =>
-        pontos.getGeometry().getCoordinates()
-    );
-    const extent = boundingExtent(coordinates);
+    let coordinatesExtend = [];
+    map.value?.getLayers().array_.forEach((layer) =>{
+      if(layer.values_.layerName == 'Layer InsideZone' || layer.values_.layerName == 'Layer dos Pontos' || layer.values_.layerName == undefined){
+        layer.getSource().getFeatures().forEach(feature =>{
+          if(feature.getGeometry()){
+            coordinatesExtend.push([feature.getGeometry().getExtent()[0],feature.getGeometry().getExtent()[1]]);
+            return;
+          }
+        });
+      }
+
+    });
+    const extent = boundingExtent(coordinatesExtend);
     map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
   }
 };
 function toggleDrawing() {
   if (drawingActive.value) {
-    if(pointFinalStar.value){
-      map.value?.on('singleclick', handleMapClick);
-    }
     stopDrawing();
   } else {
-    map.value.removeEventListener('singleclick', handleMapClick);
     startDrawing();
   }
 }
 function startDrawing() {
-  if (!map.value) return;
+  if (!map.value){
+    return;
+  } else {
+
     drawingActive.value = true;
     draw.value = new Draw({
-    source: source,
-    stopClick: true,
-    type: drawType.value as 'Circle' | 'Polygon',
-    style: new Style({
-    fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
-    stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
-    }),
-  });
+      source: source.value,
+      stopClick: true,
+      type: drawType.value as 'Circle' | 'Polygon',
+      style: new Style({
+        fill: new Fill({ color: 'rgba(110,105,105,0.52)' }),
+        stroke: new Stroke({ color: '#ec3b3b', width: 4 }),
+      }),
+    });
+  }
   draw.value.on('drawend', (event) => {
     useToast().info('Desenho finalizado!');
   });
   map.value.addInteraction(draw.value);
-  map.value.getViewport().addEventListener('contextmenu', (event) => {
-    event.preventDefault();
-    if (draw.value) {
-      draw.value.abortDrawing();
-      toggleDrawing();
-    }
-  });
 }
 function stopDrawing() {
   if (draw.value && map.value) {
@@ -432,33 +430,29 @@ function stopDrawing() {
     draw.value = null;
     drawingActive.value = false;
   }
+  map.value?.getLayers().array_.forEach((layer:VectorLayer) =>{
+    if(layer.values_.layerName == 'Draw Layer'){
+      source.value = new VectorSource();
+      layer.setSource(source.value);
+    }
+  });
 }
 function centerMap() {
   if (map.value) {
-    if (pointFeatures.value.length === 0) {
-      const defaultCenter = [-60.457873, 0.584053];
-      const defaultZoom = 5;
-
-      map.value?.getView().setCenter(defaultCenter);
-      map.value?.getView().setZoom(defaultZoom);
-    } else {
-      let coordinates;
-      map.value?.getLayers().array_.forEach(layer =>{
-        if(layer.values_.layerName == 'Layer dos Pontos'){
-          layer.getSource().getFeatures().forEach(feature =>{
-            console.log(feature.getGeometry()[1]);
-          });
-        }
-      });
-      const extent = boundingExtent(coordinates);
-
-
-      map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
+    const defaultCenter = [-60.457873, 0.584053];
+    let coordinates:Coordinate[] = [];
+    coordinates.push(defaultCenter)
+    const defaultZoom = 5;
+    map.value?.getView().setCenter(defaultCenter);
+    map.value?.getView().setZoom(defaultZoom);
+      // const extent = boundingExtent(coordinates);
+      // map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
     }
-  }
 }
+let showedZone :Polygon = {};
 function drawZone(drawZonePolygon:drawZone){
   zoneDrawd = true;
+  showedZone = drawZonePolygon;
   let featureArray :Feature[] = [];
   let newFeature :Feature = makeFeature(undefined,undefined,drawZonePolygon);
   featureArray.push(newFeature);
@@ -475,12 +469,12 @@ function removeZoneFilters(){
     if(layer.values_.layerName == 'Layer das Zonas')
       map.value?.removeLayer(layer);
   });
-  map.value.addLayer(createNewVectorLayer(source,'Draw Layer',source));
 }
 onMounted(() => {
   darkOrWhiteMap = 'streets-v2';
   map.value = createMap(center, zoom, projection, darkOrWhiteMap);
-  map.value.addLayer(createNewVectorLayer(source, 'Draw Layer',source));
+  source.value = new VectorSource();
+  map.value.addLayer(createNewVectorLayer(source.value,'Draw Layer',source.value));
   initializePopup()
 });
 </script>

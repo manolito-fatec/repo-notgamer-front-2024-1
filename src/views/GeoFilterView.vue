@@ -24,7 +24,7 @@
       />
       <DropDown
         id="dropdown3"
-        v-model="selectedZone"
+        v-model="selectedHotzone"
         :options="zoneOptions"
         label="Zonas de interesse:"
         @change="drawZoneChange"
@@ -77,7 +77,13 @@ import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js'
 import {getClick} from '@/components/stores/StoreGetClick.js'
 import { getPathColorManipulatorState } from '@/components/stores/StorePathManipulation.js';
 import type {Polygon} from "ol/geom";
-import {locationDtoToDrawedGeom, makePolygon, zoneOptions, drawedGeomsFromDb} from "@/services/geomService";
+import {
+  locationDtoToDrawedGeom,
+  makePolygon,
+  zoneOptions,
+  drawedGeomsFromDb,
+  selectedHotzone
+} from "@/services/geomService";
 import type {DrawedGeom} from "@/components/Types";
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
 const toast = useToast();
@@ -102,7 +108,6 @@ const storeFilters = darkModeClick();
 const storeGetClickToggleFilters = getClick();
 const storePathManipulation = getPathColorManipulatorState();
 const selectedMode = ref(null);
-const selectedZone = ref<number>();
 
 function drawType(selectedMode:selectedMode){
   emit("drawType", selectedMode);
@@ -132,7 +137,7 @@ function drawZone(drawZonePolygon:drawZone){
 }
 function drawZoneChange(){
   let drawZonePolygon :Polygon = {};
-  let selectedId :number = Number(selectedZone.value);
+  let selectedId :number = Number(selectedHotzone.value);
   drawedGeomsFromDb.forEach((geom) =>{
     if(geom.gid == selectedId){
       drawZonePolygon = makePolygon(geom);
@@ -244,13 +249,13 @@ function handleSave() {
     }
 
     if (!hasErrors) {
-      if(selectedZone.value){
+      if(selectedHotzone.value){
         const filterData = {
           person: Person.value,
           device: Device.value,
           startDate: startDate.value,
           endDate: endDate.value,
-          selectedZone: selectedZone.value,
+          selectedZone: selectedHotzone.value,
         };
         emit('saveFilter', filterData);
       } else {
@@ -305,7 +310,7 @@ function handleReset() {
   endDate.value = null;
   selectedPeriod.value = '';
   listOfHistory.value = [];
-  selectedZone.value = '';
+  selectedHotzone.value = 0;
 
   resetFilters.value = true;
   setTimeout(() => {
