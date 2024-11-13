@@ -31,11 +31,9 @@
         />
         <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" @click="saveDraw">Salvar</button>
       </div>
-      <DropDown id="select-hotzone" label="Selecione a zona de interesse:" :options="zoneOptions"
-                v-model="selectedHotzone" class="dropdown" @change ="drawZoneChange"/>
+      <DropDown id="delete-hotzone" label="Zonas de interesse:" :options="zoneOptions"
+                v-model="deletedHotzones" class="dropdown" @change="drawZoneChange"/>
       <button @click="removeShowedZone" :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
-      <DropDown id="delete-hotzone" label="Exclua sua zona de interesse:" :options="zoneOptions"
-                v-model="deletedHotzone" class="dropdown"/>
       <button @click="deleteZone" :class="['delete-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Deletar</button>
     </div>
   </div>
@@ -53,7 +51,9 @@ import {
   makePolygon,
   zoneOptions,
   drawedGeomsFromDb,
-  selectedHotzone, drawingActive
+  selectedHotzone,
+  drawingActive,
+  deletedHotzones
 } from "@/services/geomService";
 import type {Polygon} from "ol/geom";
 import {Map} from "ol";
@@ -64,7 +64,6 @@ const modeOptions = [
     {label:'Polígono', value:'Polygon'}
 ]
 
-let deletedHotzone = ref('')
 let selectedMode = ref(modeOptions[0].value)
 const drawMode = ref(false)
 const hideZones = ref(false)
@@ -119,7 +118,7 @@ function drawType(){
 }
 function drawZoneChange(){
   let drawZonePolygon :Polygon = {};
-  let selectedId :number = Number(selectedHotzone.value);
+  let selectedId :number = Number(deletedHotzones.value);
   drawedGeomsFromDb.forEach((geom) =>{
     if(geom.gid == selectedId){
       drawZonePolygon = makePolygon(geom);
@@ -133,7 +132,7 @@ function removeShowedZone(){
 }
 function deleteZone(){
   emit('removeShowedZone');
-  let selectedId :number = Number(deletedHotzone.value);
+  let selectedId :number = Number(deletedHotzones.value);
   deleteZoneByGid(selectedId).then((geoms) =>{
     fetchAllZones().then((geoms) =>{
       zoneOptions.value = geoms.map(geom => ({
@@ -145,7 +144,7 @@ function deleteZone(){
       geoms.forEach(geom => {
         drawedGeomsFromDb.push(locationDtoToDrawedGeom(geom));
       })
-      deletedHotzone = ref<number>();
+      deletedHotzones = ref<number>();
     });
   });
 }
