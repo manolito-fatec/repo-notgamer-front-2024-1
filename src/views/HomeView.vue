@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import BaseMap from "@/components/BaseMap.vue";
+import RegistrationUserView from "./RegistrationUserView.vue";
 </script>
 
 <template>
-    <BaseMap/>
+    <RegistrationUserView/>
 </template>
