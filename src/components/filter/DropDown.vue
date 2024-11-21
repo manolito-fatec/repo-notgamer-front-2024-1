@@ -85,9 +85,9 @@ onMounted(() => {
   padding: 5px 12px;
   border: 1px solid #555555;
   border-radius: 6px;
-  font-size: 12px;
   outline: none;
   transition: border 0.2s, box-shadow 0.2s, background-color 0.2s;
+  font-size: 18px;
 }
 
 .filter-input.dark-mode {
