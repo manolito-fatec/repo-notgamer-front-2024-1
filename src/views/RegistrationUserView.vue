@@ -44,7 +44,7 @@ import Logo from "@/assets/Logo.png";
   width: 40em;
   padding: 2em;
   display: flex;
-  flex-direction: column; /* Define layout vertical */
+  flex-direction: column; 
   background: black;
   opacity: 60%;
   border-radius: 20px;
@@ -53,20 +53,20 @@ import Logo from "@/assets/Logo.png";
 
 .form_grupo {
   display: flex;
-  flex-direction: column; /* Alinha os inputs verticalmente */
-  gap: 0.5em; /* Espaçamento entre os elementos */
+  flex-direction: column;
+  gap: 0.5em;
   color: white;
 }
 
 .radio-btn {
   display: flex;
   color: white;
-  gap: 0.5em; /* Espaçamento entre os botões de rádio */
+  gap: 0.5em;
 }
 
 .submit {
-  margin-top: 1em; /* Adiciona espaçamento acima do botão */
-  align-self: flex-start; /* Alinha o botão à esquerda */
+  margin-top: 1em;
+  align-self: flex-start;
   color: black;
   gap: 0.5em;
 }
