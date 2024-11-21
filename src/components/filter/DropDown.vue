@@ -77,7 +77,7 @@ onMounted(() => {
   display: block;
   margin-bottom: 6px;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 18px;
 }
 
 .filter-input {
