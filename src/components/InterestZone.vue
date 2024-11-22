@@ -1,19 +1,13 @@
-  <template>
+<template>
   <div :class="['zone-container', { 'dark-mode': storeFilters.onClickDarkMode }]">
     <div class="zone-of-interest">
       <h2 :class="['title', { 'dark-mode-text': storeFilters.onClickDarkMode }]">ZONA DE INTERESSE</h2>
-      <label id = "label-filter" for="zone-name" :class="['label', { 'dark-mode-text': storeFilters.onClickDarkMode }]">
+      <label for="zone-name" :class="['label', { 'dark-mode-text': storeFilters.onClickDarkMode }]">
         Dê um nome para sua zona de interesse:
       </label>
       <input type="text" id="zone-name" :class="['input', { 'dark-mode-input': storeFilters.onClickDarkMode }]"
              placeholder="Nome da zona de interesse" @change="changeZoneName" v-model="zoneName"/>
       <div class="options">
-        <Checkbox
-            id="draw-mode"
-            label="Modo desenho"
-            v-model="drawMode"
-            @click="$emit('toggleDrawing')"
-        />
         <DropDown
             id="draw-mode-dropdown"
             :options="modeOptions"
@@ -22,20 +16,13 @@
             @change="drawType"
         />
       </div>
-      <div class="checkbox-and-button">
-        <Checkbox
-            id="hide-zones"
-            label="Ocultar Desenhos"
-            v-model="hideZones"
-            @click="$emit('toggleZoneVisibility')"
-        />
-        <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" @click="saveDraw">Salvar</button>
+      <button :class="['eraser-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" ><IconEraser class="icon-eraser"/></button>
+      <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" @click="saveDraw"><IconSaveGeometry class="icon-save-geometry"/></button>
       </div>
       <DropDown id="delete-hotzone" label="Zonas de interesse:" :options="zoneOptions"
                 v-model="deletedHotzones" class="dropdown" @change="drawZoneChange"/>
       <button @click="removeShowedZone" :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
       <button @click="deleteZone" :class="['delete-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Deletar</button>
-    </div>
   </div>
 </template>
 
@@ -57,6 +44,8 @@ import {
 } from "@/services/geomService";
 import type {Polygon} from "ol/geom";
 import {Map} from "ol";
+import IconEraser from "./icons/IconEraser.vue";
+import IconSaveGeometry from "./icons/IconSaveGeometry.vue";
 
 let hotzoneOptions = ref([]);
 const modeOptions = [
@@ -172,32 +161,30 @@ onMounted(()=>{
   left: 100px;
   width: 380px;
   height: 87%;
-  padding: 1px;
+  padding: 8px;
   background: #EFEFEF;
   border-right: 4px solid #000059;
-  border-radius: 15px;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: right 0.5s ease;
   color: #000;
   z-index: 10;
   font-family: 'Poppins', regular, sans-serif;
-  font-size: 18px;
 }
 
 .zone-of-interest {
   display: flex;
-  font-size: 18px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 15px;
+  padding: 24px;
   border-radius: 8px;
 }
 
 .title {
   font-family: 'Poppins', regular, sans-serif;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 24px;
   color: #000;
   padding-bottom: 8px
 }
@@ -205,14 +192,12 @@ onMounted(()=>{
 .label {
   display: block;
   margin-bottom: 8px;
-  font-size: 15px;
+  font-size: 12px;
   font-family: 'Poppins', regular, sans-serif;
 }
 
 .input {
   width: 100%;
-  height: 40px;
-  font-size: 18px;
   padding: 10px;
   border-radius: 5px;
   border: none;
@@ -226,17 +211,22 @@ onMounted(()=>{
   opacity: 1;
 }
 
+.icon-eraser, .icon-save-geometry {
+  width: 20px;
+  height: 20px;
+}
+
 .options {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 18px;
   margin-bottom: 16px;
 }
 
 .small-dropdown {
   width: 120px;
   margin-left: auto;
+  position: absolute;
 }
 
 .checkbox-and-button {
@@ -246,9 +236,8 @@ onMounted(()=>{
   margin-bottom: 20px;
 }
 
-.save-button {
-  width: 120px;
-  height: 30px;
+.save-button, .eraser-button {
+  padding: 10px 34.8px;
   background-color: #000059;
   color: #ffffff;
   font-weight: bold;
@@ -256,12 +245,21 @@ onMounted(()=>{
   border-radius: 5px;
   cursor: pointer;
   margin-left: auto;
+  top: 153px;
+  position: absolute;
+}
+
+.save-button {
+  left: 250px;
+}
+
+.eraser-button {
+  left: 155px;
 }
 
 .remove-button, .delete-button {
   width: 100%;
-  height: 30px;
-  font-size: 18px;
+  padding: 10px;
   border: none;
   border-radius: 5px;
   background-color: #000059;
@@ -272,10 +270,8 @@ onMounted(()=>{
 }
 
 .dropdown {
-  margin-bottom: 50px;
-  font-size: 18px;
+  margin-bottom: 16px;
   width: 100%;
-  height: 30px;
 }
 
 .dark-mode {
@@ -303,13 +299,5 @@ onMounted(()=>{
 
 .save-button.dark-mode-save {
   background-color: #EC1C24 !important;
-
 }
-
-.zone-name{
-  width: 120px;
-  height: 30px;
-}
-
-
 </style>
