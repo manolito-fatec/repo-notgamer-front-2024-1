@@ -173,10 +173,10 @@ onMounted(()=>{
   left: 100px;
   width: 380px;
   height: 87%;
-  padding: 8px;
+  padding: 1px;
   background: #EFEFEF;
   border-right: 4px solid #000059;
-  border-radius: 10px;
+  border-radius: 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: right 0.5s ease;
@@ -191,7 +191,7 @@ onMounted(()=>{
   font-size: 18px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px;
+  padding: 15px;
   border-radius: 8px;
 }
 
@@ -212,7 +212,7 @@ onMounted(()=>{
 
 .input {
   width: 100%;
-  height: 30px;
+  height: 40px;
   font-size: 18px;
   padding: 10px;
   border-radius: 5px;
