@@ -84,6 +84,7 @@ import IconPositionMap from "@/assets/IconPositionMap.png";
 
 const toast = useToast();
 
+let cursorType = ref('default')
 let center = ref([-60.457873,0.584053]);
 let projection = ref("EPSG:4326");
 let zoom = ref(5);
@@ -517,6 +518,7 @@ function toggleDrawing() {
   } else {
     startDrawing();
   }
+  updateCursor();
 }
 function startDrawing() {
   if (!map.value){
@@ -538,6 +540,7 @@ function startDrawing() {
     useToast().info('Desenho finalizado!');
   });
   map.value.addInteraction(draw.value);
+  updateCursor();
 }
 function stopDrawing() {
   if (draw.value && map.value) {
@@ -551,6 +554,7 @@ function stopDrawing() {
       layer.setSource(source.value);
     }
   });
+  updateCursor();
 }
 function centerMap() {
   if (map.value) {
@@ -564,6 +568,15 @@ function centerMap() {
       // map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
     }
 }
+
+function updateCursor() {
+  if (drawingActive.value) {
+    document.body.style.cursor = 'crosshair';
+  } else {
+    document.body.style.cursor = cursorType.value;
+  }
+}
+
 let showedZone :Polygon = {};
 function drawZone(drawZonePolygon:drawZone){
   zoneDrawd = true;
