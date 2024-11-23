@@ -1,5 +1,5 @@
 <template>
-  <div :class="['zone-container', { 'dark-mode': storeFilters.onClickDarkMode }]">
+  <div :class="['zone-container', { 'dark-mode': storeFilters.onClickDarkMode, 'cursor-pencil': drawMode }]">
     <div class="zone-of-interest">
       <h2 :class="['title', { 'dark-mode-text': storeFilters.onClickDarkMode }]">ZONA DE INTERESSE</h2>
       <label for="zone-name" :class="['label', { 'dark-mode-text': storeFilters.onClickDarkMode }]">
@@ -300,4 +300,10 @@ onMounted(()=>{
 .save-button.dark-mode-save {
   background-color: #EC1C24 !important;
 }
-</style>
+</style>.cursor-pencil {
+  cursor: crosshair;
+}
+
+.cursor-default {
+  cursor: default;
+}
