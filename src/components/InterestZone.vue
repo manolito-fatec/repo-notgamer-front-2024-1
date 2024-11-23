@@ -15,14 +15,20 @@
             class="small-dropdown"
             @change="drawType"
         />
-      </div>
-      <button :class="['eraser-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" ><IconEraser class="icon-eraser"/></button>
-      <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" @click="saveDraw"><IconSaveGeometry class="icon-save-geometry"/></button>
+        <div class="button-group">
+          <button :class="['eraser-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]">
+            <IconEraser class="icon-eraser"/>
+          </button>
+          <button :class="['save-button', { 'dark-mode-save': storeFilters.onClickDarkMode }]" @click="saveDraw">
+            <IconSaveGeometry class="icon-save-geometry"/>
+          </button>
+        </div>
       </div>
       <DropDown id="delete-hotzone" label="Zonas de interesse:" :options="zoneOptions"
                 v-model="deletedHotzones" class="dropdown" @change="drawZoneChange"/>
       <button @click="removeShowedZone" :class="['remove-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Remover filtro</button>
       <button @click="deleteZone" :class="['delete-button', { 'dark-mode-button': storeFilters.onClickDarkMode }]">Deletar</button>
+    </div>
   </div>
 </template>
 
@@ -41,13 +47,14 @@ import {
   deletedHotzones
 } from "@/services/geomService";
 import type {Polygon} from "ol/geom";
+import IconEraser from "@/components/icons/IconEraser.vue";
+import IconSaveGeometry from "@/components/icons/IconSaveGeometry.vue";
 
 const modeOptions = [
     {label:'Círculo', value:'Circle'},
     {label:'Polígono', value:'Polygon'}
 ]
-
-let selectedMode = ref(modeOptions[0].value)
+let selectedMode = ref('')
 const drawMode = ref(false)
 const hideZones = ref(false)
 const zoneName = ref(null);
@@ -146,7 +153,7 @@ onMounted(()=>{
 });
 </script>
 
-<style scoped>
+<<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 .zone-container {
@@ -180,7 +187,7 @@ onMounted(()=>{
   font-weight: 700;
   font-size: 24px;
   color: #000;
-  padding-bottom: 8px
+  padding-bottom: 8px;
 }
 
 .label {
@@ -207,43 +214,34 @@ onMounted(()=>{
 
 .options {
   display: flex;
-  align-items: center;
   gap: 10px;
-  margin-bottom: 16px;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .small-dropdown {
-  width: 120px;
-  margin-left: auto;
-  position: absolute;
-}
-
-.checkbox-and-button {
+  height: 37px;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  justify-content: center;
 }
 
-.save-button, .eraser-button {
-  padding: 10px 34.8px;
-  background-color: #000059;
-  color: #ffffff;
-  font-weight: bold;
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.eraser-button, .save-button {
+  background-color: #6D6D6D;
+  color: #FFF;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   margin-left: auto;
-  top: 153px;
-  position: absolute;
-}
-
-.save-button {
-  left: 250px;
-}
-
-.eraser-button {
-  left: 155px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .remove-button, .delete-button {
@@ -274,7 +272,7 @@ onMounted(()=>{
 
 .dark-mode-input {
   background-color: #444444 !important;
-  color: #FFF
+  color: #FFF;
 }
 
 .dark-mode-button {
@@ -289,10 +287,17 @@ onMounted(()=>{
 .save-button.dark-mode-save {
   background-color: #EC1C24 !important;
 }
-</style>.cursor-pencil {
+
+.dark-mode .eraser-button {
+  background-color: #EC1C24 !important;
+  color: #FFF !important;
+}
+
+.cursor-pencil {
   cursor: crosshair;
 }
 
 .cursor-default {
   cursor: default;
 }
+</style>
