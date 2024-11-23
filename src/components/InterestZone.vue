@@ -28,11 +28,9 @@
 
 <script setup lang="ts">
 import DropDown from "@/components/filter/DropDown.vue";
-import Checkbox from "@/components/Checkbox.vue";
 import {ref, watch, onMounted} from 'vue'
 import {darkModeClick} from "./stores/StoreDarkModeGetClick";
 import {deleteZoneByGid, fetchAllZones} from "@/services/apiService";
-import type {Coordinates, DrawedGeom} from "@/components/Types";
 import {
   locationDtoToDrawedGeom,
   makePolygon,
@@ -43,11 +41,7 @@ import {
   deletedHotzones
 } from "@/services/geomService";
 import type {Polygon} from "ol/geom";
-import {Map} from "ol";
-import IconEraser from "./icons/IconEraser.vue";
-import IconSaveGeometry from "./icons/IconSaveGeometry.vue";
 
-let hotzoneOptions = ref([]);
 const modeOptions = [
     {label:'Círculo', value:'Circle'},
     {label:'Polígono', value:'Polygon'}
@@ -209,11 +203,6 @@ onMounted(()=>{
 .input::placeholder {
   color: #FFFFFF;
   opacity: 1;
-}
-
-.icon-eraser, .icon-save-geometry {
-  width: 20px;
-  height: 20px;
 }
 
 .options {
