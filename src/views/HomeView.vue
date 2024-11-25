@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import BaseMap from "@/components/BaseMap.vue";
+import LoginView from "./LoginView.vue";
 </script>
 
 <template>
-    <BaseMap/>
+    <LoginView/>
 </template>
