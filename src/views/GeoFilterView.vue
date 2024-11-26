@@ -45,7 +45,7 @@
           id="dispositivos"
           v-model="focusedUser"
           :options="selectedUsers"
-          label="aooooooooooooooooooo:"
+          label="Usuários ativos"
       />
       <div>
         <History @openTeleport="paginatorHistory" :historyConfiguration="listOfHistory" :loading="loading" :person="Person" :init="endDate" :final="endDate"/>

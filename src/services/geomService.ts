@@ -38,11 +38,11 @@ export function makeSinglePoint(pointObject: GeometryPoint|StopPoint): Point {
         return new Point([pointObject.longitude,pointObject.latitude]);
     }
 }
-export function makeMultiplePointsLegacy(arrayOfGeometryObjects:[]):Point[]{
+export function makeMultiplePointsLegacy(arrayOfGeometryObjects:GeometryPoint[]|StopPoint[]):Point[]{
     let pointFeatures :Point[] =[];
     arrayOfGeometryObjects.forEach((pointObj) => {
         const point = new Feature({
-            geometry: new Point([pointObj.longitude, pointObj.latitude]),
+            geometry: new Point([pointObj?.longitude, pointObj?.latitude]),
         });
         pointFeatures.push(point);
     });
@@ -201,5 +201,5 @@ export let zoneOptions = ref([]);
 export let drawedGeomsFromDb :DrawedGeom[] =[];
 export let selectedHotzone = ref<number>()
 export let drawingActive = ref(false);
-export let selectedUsers = ref<SelectedPerson[]>([]);
+export let selectedUsers = ref([]);
 export let focusedUser = ref();

@@ -39,7 +39,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import {Map, Feature, Overlay} from 'ol';
-import { Tile as TileLayer } from 'ol/layer';
 import {Source, XYZ} from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
@@ -61,13 +60,13 @@ import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import IconStopPoint from "@/assets/IconStopPoint.png";
-import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
+import type {DrawedGeom, GeometryPoint, Pessoa, SelectedPerson, StopPoint} from "@/components/Types";
 import {
   convertToDrawedGeom,
   createStartAndEndPoint, drawedGeomsFromDb, drawingActive, locationDtoToDrawedGeom,
   makeFeature, makeLineString, makeMultiplePointsLegacy,
   makePointsFromArray,
-  saveGeoms, selectedHotzone, zoneOptions
+  saveGeoms, selectedHotzone, selectedUsers, zoneOptions
 } from "@/services/geomService";
 import IconEndPin from "@/assets/IconEndPin.png";
 import {handleTypeError} from "@/utils/errorHandler";
@@ -103,6 +102,8 @@ const mapMode = ref(false);
 let darkOrWhiteMap: string;
 const iconScale = ref(1);
 const iconOpacity = ref(1);
+
+let personsList:SelectedPerson[] = [];
 
 function saveGeometry(){
   map.value?.getLayers().array_.forEach(layer =>{
@@ -246,7 +247,11 @@ function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
   })
   return geometryPoints;
 }
+let selectedPessoa:Pessoa;
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null, selectedZone:number | null}){
+  fetchPersonById(filterData.person).then((pessoa)=>{
+    selectedPessoa = pessoa;
+  });
   if(zoneDrawd) {
     fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points: []) => {
       if (!points) {
@@ -264,8 +269,10 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   }
 }
 function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean){
+  let newLayer:VectorLayer;
     if(hasRoute){
-    map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
+      newLayer = createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4)
+    map.value?.addLayer(newLayer);
     pointFeatures.value = makeMultiplePointsLegacy(points);
     map.value.addLayer(makeLineFromPoints(pointFeatures));
     showPlayback.value = true;
@@ -277,11 +284,20 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean){
         anchor: [0.5, 1],
       }),
     })
-    map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4));
+      newLayer = createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4)
+    map.value?.addLayer(newLayer);
     if (showPlayback.value) {
       showPlayback.value = false;
     }
   }
+  let selectedPersonActive:SelectedPerson ={pessoa:selectedPessoa,layerShowed:newLayer};
+  personsList.push(selectedPersonActive);
+  selectedUsers.value = personsList.map(active => ({
+    label: active.pessoa.fullName.toUpperCase(),
+    value: active.pessoa.idPerson
+  })).filter((person, index, self) =>
+      index === self.findIndex(p => p.label === person.label)
+  );
   initializePopup();
   adjustMap();
 }

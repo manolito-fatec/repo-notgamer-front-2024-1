@@ -192,8 +192,8 @@ export const fetchGeomDataWithinZone = async (startDate, endDate, zoneId:number)
         return [];
     }
 }
-export const fetchPersonById = async(personID:number):Pessoa=>{
-    let getUrl = BASE_URL_PERSON + personID;
+export const fetchPersonById = async(personID:number|undefined)=>{
+    let getUrl = BASE_URL_PERSON + '/' +personID;
     try{
         const response = await axios.get(getUrl);
         return response.data;
