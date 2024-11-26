@@ -120,6 +120,7 @@ const storeFilters = darkModeClick();
 const storeGetClickToggleFilters = getClick();
 const storePathManipulation = getPathColorManipulatorState();
 const selectedMode = ref(null);
+let buttonsList = ref([]);
 
 function drawType(selectedMode:selectedMode){
   emit("drawType", selectedMode);
@@ -430,5 +431,53 @@ onMounted(()=>{
 .filter-container ::-webkit-scrollbar-track {
   background: transparent;
   border-radius: 50px;
+}
+.buttons-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.toggle-button {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:5px;
+  text-align: center;
+}
+
+
+.remove-button {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  background-color: #6d6d6d;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.remove-button:hover {
+  background-color: #606060;
+  transform: scale(1.1);
 }
 </style>
