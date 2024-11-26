@@ -1,4 +1,4 @@
-import type {Coordinates, DrawedGeom, GeometryPoint, StopPoint} from "@/components/Types";
+import type {Coordinates, DrawedGeom, GeometryPoint, SelectedPerson, StopPoint} from "@/components/Types";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
 import {Fill, Icon, Stroke, Style} from "ol/style";
@@ -199,5 +199,7 @@ export function locationDtoToDrawedGeom(data):DrawedGeom|null{
 }
 export let zoneOptions = ref([]);
 export let drawedGeomsFromDb :DrawedGeom[] =[];
-export let selectedHotzone = ref<number>();
+export let selectedHotzone = ref<number>()
 export let drawingActive = ref(false);
+export let selectedUsers = ref<SelectedPerson[]>([]);
+export let focusedUser = ref();

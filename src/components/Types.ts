@@ -1,4 +1,5 @@
 import type { StringMappingType } from "typescript"
+import type VectorLayer from "ol/layer/Vector";
 
 export type GeometryPoint ={
     id: number
@@ -13,6 +14,10 @@ export type Pessoa ={
     idText?: string
     fullName: string
     codeDevice: number
+}
+export type SelectedPerson ={
+    pessoa : Pessoa
+    layerShowed: VectorLayer;
 }
 
 export type HistoryConfig={

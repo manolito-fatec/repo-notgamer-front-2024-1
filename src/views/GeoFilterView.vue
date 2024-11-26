@@ -41,6 +41,12 @@
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
+      <DropDown
+          id="dispositivos"
+          v-model="focusedUser"
+          :options="selectedUsers"
+          label="aooooooooooooooooooo:"
+      />
       <div>
         <History @openTeleport="paginatorHistory" :historyConfiguration="listOfHistory" :loading="loading" :person="Person" :init="endDate" :final="endDate"/>
       </div>
@@ -82,7 +88,7 @@ import {
   makePolygon,
   zoneOptions,
   drawedGeomsFromDb,
-  selectedHotzone
+  selectedHotzone, selectedUsers, focusedUser
 } from "@/services/geomService";
 import type {DrawedGeom} from "@/components/Types";
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
