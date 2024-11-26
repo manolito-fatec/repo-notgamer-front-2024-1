@@ -1,87 +1,140 @@
 <template>
-    <div class="container_form">
+    <div class="forms_background">
         <img :src="Logo"/>
-        <div class="form_grupo">
-            <label for="nome" class="form_label">Nome</label>
-            <input type="text" name="nome" class="form_input" id="nome" placeholder="Nome" required>
+        <div class="forms_fields">
+            <label> Nome: </label>
+            <input type="text" id="nome" class="input" required>
 
-            <label for="e-mail" class="form_label">Email</label>
-            <input type="email" name="email" class="form_input" id="email" placeholder="seuemail@email.com" required>
+            <label> E-mail: </label>
+            <input type="email" id="email" class="input" required>
 
-            <label for="datanascimento" class="form_label">Data de Nascimento</label>
-            <input type="password" name="datanascimento" class="form_input" id="datanascimento" placeholder="Informe sua senha" required>
+            <label> Senha: </label>
+            <input type="password" id="senha" class="input" required>
+
+            <label> Confirme sua senha: </label>
+            <input type="password" id="confirmar_senha" class="input" required>
         </div>
-        <div class="radio-btn">
-            <input type="radio" class="form_new_input" value="Admin" required="required">
-            <label for="masculino" class="radio_label"> <span class="radio_new_btn"></span> Admin </label>
+        <div class="group_btns">
+          <div class="admin_btn">
+            <input type="radio" value="Admin" v-model="uncheckOption">
+            <label>Administrador</label>
+          </div>
 
-            <input type="radio" class="form_new_input" value="Comum" required="required">
-            <label for="feminino" class="radio_label"> <span class="radio_new_btn"></span> Comum </label>
+          <div class="common_btn">
+            <input type="radio" value="Comum" v-model="uncheckOption">
+            <label>Comum</label>
+          </div>
         </div>
-        <div class="submit">
-          <input type="hidden" value="<">
-          <button type="submit" class="back" > < </button>
+        <div class="submit_group">
+          <button type="submit" class="back_btn" > < </button>
 
-          <input type="hidden" value="cadastrar">
-          <button type="submit" class="submit_btn"> Cadastrar </button>
+          <button type="submit" class="submit_btn" @click="submitUser"> CADASTRAR </button>
         </div>
     </div>
 </template>
   
 <script setup>
 
+import { ref } from 'vue';
 import Logo from "@/assets/Logo.png";
+
+const uncheckOption = ref("");
+
+function submitUser() {
+  const name = document.getElementById("nome");
+  const email = document.getElementById("email");
+  console.log("oi")
+  console.log(name.value)
+  console.log(email.value)
+}
 
 </script>
   
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 .logo {
-  width: 10em;
-  height: 10em;
+  width: 37em;
+  height: 10.43em;
 }
 
-.container_form {
-  width: 40em;
+.forms_background {
+  width: 39.25em;
+  height: 42em;
   padding: 2em;
   display: flex;
   flex-direction: column; 
   background: black;
   opacity: 60%;
   border-radius: 20px;
-  box-shadow: 0 2px 4px #000059;
+  box-shadow: 3px 0 0 #000059;
 }
 
-.form_grupo {
+.forms_fields {
+  font-family: 'Poppins';
   display: flex;
   flex-direction: column;
   gap: 0.5em;
   color: white;
 }
 
-.radio-btn {
+.input {
+  border-radius: 10px;
+}
+
+.admin_btn, 
+.common_btn {
   display: flex;
+  gap: 0.5em;
+}
+
+.back_btn,
+.submit_btn {
+  display: flex;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins';
+  font-size: 15px;
+  font-weight: bold;
   color: white;
-  gap: 0.5em;
-}
-
-.submit {
-  margin-top: 1em;
-  align-self: flex-start;
-  color: black;
-  gap: 0.5em;
-}
-
-.submit_btn, .back {
-  padding: 0.5em 1em;
   background-color: #000059;
-  color: white;
   border: none;
-  border-radius: 5px;
+  height: 36px;
+  min-width: 36px;
   cursor: pointer;
 }
 
+.submit_btn {
+  width: 34em;
+  height: 2.6em;
+}
 
+.back_btn {
+  width: 4.5em;
+  height: 2.6em;
+}
 
+.group_btns {
+  display: flex;
+  font-weight: bold;
+  font-family: 'Poppins';
+  color: white;
+  justify-content: left; 
+  align-items: center;
+  gap: 8em;
+  margin-top: 1em;
+}
+
+.submit_group {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+ 
+input[type="radio"] {
+  accent-color: #000059;
+  color: #000059;
+}
 
 </style>
 
