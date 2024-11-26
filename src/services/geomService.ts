@@ -147,7 +147,7 @@ export function saveGeoms(feature:Feature, drawGeomName: string){
         handleTypeError(e);
     }
 }
-export function createStartAndEndPoint(arrayOfGeometryObjects:GeometryPoint[],anguloInicial?:number){
+export function createStartAndEndPoint(arrayOfGeometryObjects:GeometryPoint[]|StopPoint[],anguloInicial?:number){
     let pointStartStyle:Style = new Style({
         image: new Icon({
             src: IconStartPin,
