@@ -41,12 +41,18 @@
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
-      <DropDown
-          id="dispositivos"
-          v-model="focusedUser"
-          :options="selectedUsers"
-          label="Usuários ativos"
-      />
+      <div class="buttons-container">
+        <div
+            v-for="button in buttonsList"
+            :key="button.id"
+            class="toggle-button"
+            :style="{ backgroundColor: button.active ? '#0f76b9' : '#ec1c24' }"
+            @click="toggleButton(button)"
+        >
+          <span @click.stop="removeButton(button)" class="remove-button">X</span>
+          {{ button.label }}
+        </div>
+      </div>
       <div>
         <History @openTeleport="paginatorHistory" :historyConfiguration="listOfHistory" :loading="loading" :person="Person" :init="endDate" :final="endDate"/>
       </div>
@@ -88,7 +94,7 @@ import {
   makePolygon,
   zoneOptions,
   drawedGeomsFromDb,
-  selectedHotzone, selectedUsers, focusedUser
+  selectedHotzone
 } from "@/services/geomService";
 import type {DrawedGeom} from "@/components/Types";
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
@@ -276,9 +282,24 @@ function handleSave() {
         page.value = 1;
         getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
       }
+      if (!hasErrors && !buttonsList.value.find(button => button.id === Person.value)) {
+        buttonsList.value.push({
+          id: Person.value,
+          label: `${PersonOption.value.find(p => p.value === Person.value).label}`,
+          active: true
+        });
+      }
 
     }
   }
+}
+
+function toggleButton(button) {
+  button.active = !button.active;
+}
+
+function removeButton(button) {
+  buttonsList.value = buttonsList.value.filter((b) => b.id !== button.id);
 }
 
 const paginatorHistory = (event) => {
