@@ -7,6 +7,8 @@ const BASE_URL_MOCKED = 'https://gist.githubusercontent.com/pauloarantesmachado/
 const BASE_URL_ENDPOINT = 'http://localhost:8080/person';
 const BASE_URL_GEOM = 'http://localhost:8080/location';
 const BASE_URL_PERSON = 'http://localhost:8080/person';
+const BASE_URL_LOGIN = "http://localhost:8080/auth/login";
+const toke = localStorage.getItem("token")
 
 interface Person {
     idPerson: number;
@@ -213,5 +215,21 @@ export const deleteZoneByGid = async(gid:number):Pessoa=>{
             toast.error("Erro na conexão. Tente novamente mais tarde.");
         }
     }
+}
+
+export const login = async(emailUSer:string, passwordUser:string) => {
+    try{
+        const body = {
+            email: emailUSer,
+            password:passwordUser
+        }
+        const request = await axios.post(BASE_URL_LOGIN, body);
+        console.log(request.data)
+        const tokenValue= localStorage.setItem("token", request.data.token);
+
+    }catch(error){
+        if (axios.isAxiosError(error) && error.response) {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+    }}
 }
 
