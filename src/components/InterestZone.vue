@@ -165,6 +165,7 @@ function deleteZone() {
       });
       deletedHotzones = ref<number>();
     });
+    deletedHotzones.value = '';
   });
 }
 
