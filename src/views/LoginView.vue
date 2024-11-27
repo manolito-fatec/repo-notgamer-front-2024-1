@@ -27,27 +27,42 @@
       <div class="login">
         <button class="login_btn" type="submit" @click="loginValidate">Entrar</button>
       </div>
-    </div>
+    <footer>
+      <div class="copyright" v-if="!loading">
+        <p>© 2024 Manolito. Todos os direitos reservados.</p>
+      </div>
+      <div>
+        <Loading v-if="loading"></Loading>
+      </div>
+    </footer>
+  </div>
   </div>
 </template>
 <script setup lang="ts">
-import {login} from "@/services/apiService.ts";
+import {login} from "@/services/apiService";
 import Logo from "@/assets/Logo.png";
 import { ref } from "vue";
+import router from '@/router'
+import Loading from "@/components/Loading.vue";
 
-const emailUser = ref<String>("");
-const passwordUser = ref<String>("");
+const emailUser = ref<string>("");
+const passwordUser = ref<string>("");
+const loading = ref<boolean>(false);
 
-
-const loginValidate = () => {
+const loginValidate = async() => {
+  loading.value = true;
   console.log(emailUser.value, passwordUser.value)
-  const valor = login(emailUser.value, passwordUser.value);
+  const response = await login(emailUser.value, passwordUser.value);
+  loading.value = false;
+  if(response){
+    router.replace("/home");
+  }
 }
 
 
 
 </script>
-<style>
+<style scoped lang="css">
 .container {
   width: 100vw;
   height: 100vh;
@@ -109,5 +124,13 @@ const loginValidate = () => {
   color: white;
   border: none;
   cursor: pointer;
+}
+.copyright{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #000059;
+  font-size: 13px;
+  margin-bottom:30px;
 }
 </style>
