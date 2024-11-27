@@ -10,6 +10,8 @@ const BASE_URL_ENDPOINT = 'http://localhost:8080';
 const BASE_URL_GEOM = 'http://localhost:8080/location';
 const BASE_URL_PERSON = 'http://localhost:8080/person';
 const BASE_URL_LOGIN = "http://localhost:8080/auth/login";
+const BASE_URL_REGISTER_USER = "http://localhost:8080/auth/signup";
+
 const configHeader =ref<object>( {
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
 });
@@ -23,6 +25,23 @@ interface Person {
 interface Device {
     label: string;
     value: number;
+}
+
+export const registerUser = async(emailUser:string, passwordUser:string, roleUser:string) => {
+    try {
+        const body = {
+            email: emailUser,
+            password: passwordUser,
+            role: roleUser
+        }
+        console.log(body)
+        const request = await axios.post(BASE_URL_REGISTER_USER, body);
+        console.log(request.data)
+    } catch(error) {
+        if (axios.isAxiosError(error) && error.response) {
+            toast.error("Erro na conexão. Tente novamente mais tarde.");
+        }
+    }
 }
 
 export const fetchPersons = async (): Promise<Person[]> => {

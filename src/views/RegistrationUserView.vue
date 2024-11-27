@@ -3,25 +3,25 @@
         <img :src="Logo"/>
         <div class="forms_fields">
             <label> Nome: </label>
-            <input type="text" id="nome" class="input" required>
+            <input type="text" id="nome" v-model="name" class="input" required>
 
             <label> E-mail: </label>
-            <input type="email" id="email" class="input" required>
+            <input type="email" id="email" v-model="email" class="input" required>
 
             <label> Senha: </label>
-            <input type="password" id="senha" class="input" required>
+            <input type="password" id="senha" v-model="password" class="input" required>
 
             <label> Confirme sua senha: </label>
-            <input type="password" id="confirmar_senha" class="input" required>
+            <input type="password" id="confirmar_senha" v-model="confirmPassword" class="input" required>
         </div>
         <div class="group_btns">
           <div class="admin_btn">
-            <input type="radio" value="Admin" v-model="uncheckOption">
+            <input type="radio" value="Admin" v-model="option">
             <label>Administrador</label>
           </div>
 
           <div class="common_btn">
-            <input type="radio" value="Comum" v-model="uncheckOption">
+            <input type="radio" value="Comum" v-model="option">
             <label>Comum</label>
           </div>
         </div>
@@ -37,15 +37,51 @@
 
 import { ref } from 'vue';
 import Logo from "@/assets/Logo.png";
+import { useToast } from "vue-toastification";
+import { registerUser } from "@/services/apiService.ts";
 
-const uncheckOption = ref("");
+const toast = useToast();
+const name = ref("");
+const email = ref("");
+const password = ref("");
+const confirmPassword = ref("")
+const option = ref("");
 
-function submitUser() {
-  const name = document.getElementById("nome");
-  const email = document.getElementById("email");
-  console.log("oi")
-  console.log(name.value)
-  console.log(email.value)
+async function submitUser() {
+  let hasErrors = false;
+
+  if (!name.value) {
+    toast.error("Por favor, coloque um nome.");
+    hasErrors = true;
+  }
+  if (!email.value) {
+    toast.error("Por favor, coloque um email.");
+    hasErrors = true;
+  }
+  if (!password.value) {
+    toast.error("Por favor, coloque uma senha.");
+    hasErrors = true;
+  }
+  if (!confirmPassword.value) {
+    toast.error("Por favor, confirme essa senha.");
+    hasErrors = true;
+  }
+  if (!option.value) {
+    toast.error("Por favor, selecione o nível de acesso.");
+    hasErrors = true;
+  }
+
+  else if (password.value != confirmPassword.value) {
+    toast.error("As senhas não conferem.");
+    hasErrors = true;
+  }
+
+  else if (!hasErrors) {
+    const response = await registerUser(email.value, 
+                                        password.value,
+                                        option.value
+                                        )
+  }
 }
 
 </script>
@@ -133,7 +169,6 @@ function submitUser() {
  
 input[type="radio"] {
   accent-color: #000059;
-  color: #000059;
 }
 
 </style>
