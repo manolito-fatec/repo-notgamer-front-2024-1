@@ -5,6 +5,7 @@
         @toggle-zone="toggleZone"
         :showFilters="showFilters"
         :showZone="showZone"
+        @logout="logoutUser"
     />
     <div v-show="showFilters" class="filters" id="filters">
       <div class="title" id="title">FILTRAR</div>
@@ -45,7 +46,8 @@
         <History @openTeleport="paginatorHistory" :historyConfiguration="listOfHistory" :loading="loading" :person="Person" :init="endDate" :final="endDate"/>
       </div>
     </div>
-    <div v-if="showZone" class="zone-component">
+    <div v-if="role == EnumRole.ADMIN">
+    <div v-if="showZone"class="zone-component">
       <InterestZone
           @saveDraw="saveDraw"
           @toggleDrawing="toggleDrawing"
@@ -55,6 +57,7 @@
           @drawZone="drawZone"
           @removeShowedZone="$emit('removeZoneFilters')"
       />
+    </div>
     </div>
   </div>
 </template>
@@ -85,6 +88,8 @@ import {
   selectedHotzone
 } from "@/services/geomService";
 import type {DrawedGeom} from "@/components/Types";
+import { EnumRole } from '@/utils/EnumRole';
+import router from '@/router';
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
 const toast = useToast();
 const Person = ref(null);
@@ -108,6 +113,12 @@ const storeFilters = darkModeClick();
 const storeGetClickToggleFilters = getClick();
 const storePathManipulation = getPathColorManipulatorState();
 const selectedMode = ref(null);
+const role = ref<string>("");
+
+const logoutUser = () =>{
+  localStorage.clear();
+  router.replace("/login");
+}
 
 function drawType(selectedMode:selectedMode){
   emit("drawType", selectedMode);
@@ -146,6 +157,7 @@ function drawZoneChange(){
   emit('drawZone',drawZonePolygon);
 }
 onMounted(async () => {
+  role.value = localStorage.getItem("role");
   try {
     let personListFromDb = await fetchPersons();
     PersonOption.value = personListFromDb.map(person => ({
