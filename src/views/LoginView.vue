@@ -51,7 +51,6 @@ const loading = ref<boolean>(false);
 
 const loginValidate = async() => {
   loading.value = true;
-  console.log(emailUser.value, passwordUser.value)
   const response = await login(emailUser.value, passwordUser.value);
   loading.value = false;
   if(response){

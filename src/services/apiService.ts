@@ -1,10 +1,11 @@
 import axios from 'axios';
 import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
 import {useToast} from "vue-toastification";
+import router from '@/router';
 
 const toast = useToast();
 const BASE_URL_MOCKED = 'https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json';
-const BASE_URL_ENDPOINT = 'http://localhost:8080/person';
+const BASE_URL_ENDPOINT = 'http://localhost:8080';
 const BASE_URL_GEOM = 'http://localhost:8080/location';
 const BASE_URL_PERSON = 'http://localhost:8080/person';
 const BASE_URL_LOGIN = "http://localhost:8080/auth/login";
@@ -26,13 +27,18 @@ interface Device {
 
 export const fetchPersons = async (): Promise<Person[]> => {
     try {
-        const response = await axios.get<Person[]>(BASE_URL_ENDPOINT, configHeader);
+        const response = await axios.get<Person[]>(BASE_URL_PERSON, configHeader);
         return response.data.sort((a, b) => {
             if (a.fullName < b.fullName) return -1;
             if (a.fullName > b.fullName) return 1;
             return 0;
         });
     } catch (error) {
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         console.error("Erro ao buscar pessoas:", error);
         throw error;
     }
@@ -51,6 +57,11 @@ export const fetchDevices = async (): Promise<Device[]> => {
             index === self.findIndex(d => d.label === device.label)
         );
     } catch (error) {
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         console.error("Erro ao buscar dispositivos:", error);
         throw error;
     }
@@ -64,7 +75,12 @@ export const fetchStopPoints = async ( person, startDate, endDate, page: number)
             return [];
         }
         return response.data.content;
-    } catch (error) {
+    } catch (error:any) {
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         if (axios.isAxiosError(error) && error.response) {
             const errorMessage = error.response.data?.message ||
                 "Erro desconhecido ao buscar pontos.";
@@ -87,7 +103,12 @@ export const fetchHistory = async ( person:String, startDate:String, endDate:Str
         }
         const response = await axios.post(urlHistory, body, configHeader);
         return response.data;
-    } catch (error) {
+    } catch (error:any) {
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         console.error("Erro ao buscar dispositivos:",error);
         throw error;
     }
@@ -102,7 +123,12 @@ export const fetchGeomData = async ( person, startDate, endDate, page: number)=>
             return [];
         }
         return response.data.content;
-    } catch (error) {
+    } catch (error:any) {
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         if (axios.isAxiosError(error) && error.response) {
             const errorMessage = error.response.data?.message ||
                 "Erro desconhecido ao buscar pontos.";
@@ -122,7 +148,12 @@ export const saveGeomData = async (drawedGeom : DrawedGeom)=>{
         const response  = await axios.post(postUrl, drawedGeom, configHeader);
         toast.success('Zona de interesse salva!')
         return response.data.content
-    } catch (error){
+    } catch (error:any){
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         if (axios.isAxiosError(error) && error.response) {
             const errorMessage = error.response.data?.message ||
                 "Erro ao salvar geometrias.";
@@ -144,7 +175,12 @@ export const fetchGeomInZoneByUser = async ( location, startDate, endDate, userI
             return [];
         }
         return response.data.content;
-    } catch (error) {
+    } catch (error:any) {
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         if (axios.isAxiosError(error) && error.response) {
             const errorMessage = error.response.data?.message ||
                 "Erro desconhecido ao buscar pontos.";
@@ -163,6 +199,11 @@ export const fetchAllZones = async ()=>{
         const response = await axios.get(getUrl, configHeader);
         return response.data;
     } catch (error) {
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         if (axios.isAxiosError(error) && error.response) {
             const errorMessage = error.response.data?.message ||
                 "Erro desconhecido ao buscar pontos.";
@@ -185,6 +226,10 @@ export const fetchGeomDataWithinZone = async (startDate, endDate, zoneId:number)
         }
         return response.data;
     } catch (error) {
+        if(error.status == 403){
+            router.replace("/login");
+            throw error;
+        }
         if (axios.isAxiosError(error) && error.response) {
             const errorMessage = error.response.data?.message ||
                 "Erro desconhecido ao buscar pontos.";
@@ -203,6 +248,11 @@ export const fetchPersonById = async(personID:number):Pessoa=>{
         const response = await axios.get(getUrl, configHeader);
         return response.data;
     }catch(error){
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         if (axios.isAxiosError(error) && error.response) {
             toast.error("Erro na conexão. Tente novamente mais tarde.");
         }
@@ -214,6 +264,11 @@ export const deleteZoneByGid = async(gid:number):Pessoa=>{
         const response = await axios.delete(getUrl, configHeader);
         return response.data;
     }catch(error){
+        if(error.status == 403){
+            console.error("Acesso Negado:", error);
+            router.replace("/login");
+            throw error;
+        }
         if (axios.isAxiosError(error) && error.response) {
             toast.error("Erro na conexão. Tente novamente mais tarde.");
         }
@@ -227,12 +282,11 @@ export const login = async(emailUSer:string, passwordUser:string) => {
             password:passwordUser
         }
         const request = await axios.post(BASE_URL_LOGIN, body);
-        console.log(request.data)
-        const tokenValue= localStorage.setItem("token", request.data.token);
+        localStorage.clear();
+        localStorage.setItem("token", request.data.token);
         return true;
 
     }catch(error){
-        
         if (axios.isAxiosError(error) && error.response) {
             toast.error("email ou senha inválidos");
             return false;
