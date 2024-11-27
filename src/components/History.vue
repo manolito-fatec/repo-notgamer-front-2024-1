@@ -123,7 +123,7 @@ function formatAddress(address: { road: string, town: string, state: string, cou
 .history-title {
   color: #000;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 18px;
   margin: 5px 0;
 }
 .history-container {
@@ -158,7 +158,7 @@ function formatAddress(address: { road: string, town: string, state: string, cou
   background-image: url('@/assets/IconEndPin.png');
 }
 .text-detail {
-  font-size: 12px;
+  font-size: 14px;
   color: #FFF;
 }
 .grid {
@@ -173,7 +173,7 @@ function formatAddress(address: { road: string, town: string, state: string, cou
   width: 100%;
   background-color: #6D6D6D;
   color: #FFF;
-  font-size: 11px;
+  font-size: 14px;
   padding: 1%;
   font-weight:600;
   cursor: pointer;

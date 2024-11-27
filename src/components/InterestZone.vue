@@ -1,8 +1,8 @@
-<template>
+  <template>
   <div :class="['zone-container', { 'dark-mode': storeFilters.onClickDarkMode }]">
     <div class="zone-of-interest">
       <h2 :class="['title', { 'dark-mode-text': storeFilters.onClickDarkMode }]">ZONA DE INTERESSE</h2>
-      <label for="zone-name" :class="['label', { 'dark-mode-text': storeFilters.onClickDarkMode }]">
+      <label id = "label-filter" for="zone-name" :class="['label', { 'dark-mode-text': storeFilters.onClickDarkMode }]">
         Dê um nome para sua zona de interesse:
       </label>
       <input type="text" id="zone-name" :class="['input', { 'dark-mode-input': storeFilters.onClickDarkMode }]"
@@ -173,30 +173,32 @@ onMounted(()=>{
   left: 100px;
   width: 380px;
   height: 87%;
-  padding: 8px;
+  padding: 1px;
   background: #EFEFEF;
   border-right: 4px solid #000059;
-  border-radius: 10px;
+  border-radius: 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: right 0.5s ease;
   color: #000;
   z-index: 10;
   font-family: 'Poppins', regular, sans-serif;
+  font-size: 18px;
 }
 
 .zone-of-interest {
   display: flex;
+  font-size: 18px;
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px;
+  padding: 15px;
   border-radius: 8px;
 }
 
 .title {
   font-family: 'Poppins', regular, sans-serif;
   font-weight: 700;
-  font-size: 24px;
+  font-size: 18px;
   color: #000;
   padding-bottom: 8px
 }
@@ -204,12 +206,14 @@ onMounted(()=>{
 .label {
   display: block;
   margin-bottom: 8px;
-  font-size: 12px;
+  font-size: 15px;
   font-family: 'Poppins', regular, sans-serif;
 }
 
 .input {
   width: 100%;
+  height: 40px;
+  font-size: 18px;
   padding: 10px;
   border-radius: 5px;
   border: none;
@@ -227,6 +231,7 @@ onMounted(()=>{
   display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 18px;
   margin-bottom: 16px;
 }
 
@@ -243,7 +248,8 @@ onMounted(()=>{
 }
 
 .save-button {
-  padding: 10px 34.8px;
+  width: 120px;
+  height: 30px;
   background-color: #000059;
   color: #ffffff;
   font-weight: bold;
@@ -255,7 +261,8 @@ onMounted(()=>{
 
 .remove-button, .delete-button {
   width: 100%;
-  padding: 10px;
+  height: 30px;
+  font-size: 18px;
   border: none;
   border-radius: 5px;
   background-color: #000059;
@@ -266,8 +273,10 @@ onMounted(()=>{
 }
 
 .dropdown {
-  margin-bottom: 16px;
+  margin-bottom: 50px;
+  font-size: 18px;
   width: 100%;
+  height: 30px;
 }
 
 .dark-mode {
@@ -295,5 +304,13 @@ onMounted(()=>{
 
 .save-button.dark-mode-save {
   background-color: #EC1C24 !important;
+
 }
+
+.zone-name{
+  width: 120px;
+  height: 30px;
+}
+
+
 </style>
