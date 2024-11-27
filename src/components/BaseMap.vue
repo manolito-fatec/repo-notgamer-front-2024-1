@@ -62,6 +62,7 @@ import DarkOrLight from '@/views/DarkOrLight.vue';
 import IconStopPoint from "@/assets/IconStopPoint.png";
 import type {DrawedGeom, GeometryPoint, Pessoa, SelectedPerson, StopPoint} from "@/components/Types";
 import {
+  buttonsList,
   convertToDrawedGeom,
   createStartAndEndPoint, drawedGeomsFromDb, drawingActive, locationDtoToDrawedGeom,
   makeFeature, makeLineString, makeMultiplePointsLegacy,
@@ -269,10 +270,10 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
   }
 }
 function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean){
-  let newLayer:VectorLayer;
+  let newLayer = ref<VectorLayer>({});
     if(hasRoute){
-      newLayer = createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4)
-    map.value?.addLayer(newLayer);
+      newLayer.value = createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4)
+    map.value?.addLayer(newLayer.value);
     pointFeatures.value = makeMultiplePointsLegacy(points);
     map.value.addLayer(makeLineFromPoints(pointFeatures));
     showPlayback.value = true;
@@ -284,20 +285,18 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean){
         anchor: [0.5, 1],
       }),
     })
-      newLayer = createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4)
-    map.value?.addLayer(newLayer);
+      newLayer.value = createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4)
+    map.value?.addLayer(newLayer.value);
     if (showPlayback.value) {
       showPlayback.value = false;
     }
   }
-  let selectedPersonActive:SelectedPerson ={pessoa:selectedPessoa,layerShowed:newLayer};
-  personsList.push(selectedPersonActive);
-  selectedUsers.value = personsList.map(active => ({
-    label: active.pessoa.fullName.toUpperCase(),
-    value: active.pessoa.idPerson
-  })).filter((person, index, self) =>
-      index === self.findIndex(p => p.label === person.label)
-  );
+  let selectedPersonActive:SelectedPerson ={pessoa:selectedPessoa,layerShowed:newLayer.value};
+  buttonsList.value.forEach(botao =>{
+    if(botao.id == selectedPessoa.idPerson){
+      botao.layer == newLayer.value;
+    }
+  })
   initializePopup();
   adjustMap();
 }

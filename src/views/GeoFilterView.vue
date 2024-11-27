@@ -94,7 +94,7 @@ import {
   makePolygon,
   zoneOptions,
   drawedGeomsFromDb,
-  selectedHotzone
+  selectedHotzone, buttonsList
 } from "@/services/geomService";
 import type {DrawedGeom} from "@/components/Types";
 const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
@@ -120,7 +120,6 @@ const storeFilters = darkModeClick();
 const storeGetClickToggleFilters = getClick();
 const storePathManipulation = getPathColorManipulatorState();
 const selectedMode = ref(null);
-let buttonsList = ref([]);
 
 function drawType(selectedMode:selectedMode){
   emit("drawType", selectedMode);
@@ -287,7 +286,8 @@ function handleSave() {
         buttonsList.value.push({
           id: Person.value,
           label: `${PersonOption.value.find(p => p.value === Person.value).label}`,
-          active: true
+          active: true,
+          layer: {}
         });
       }
 

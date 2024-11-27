@@ -203,3 +203,4 @@ export let selectedHotzone = ref<number>()
 export let drawingActive = ref(false);
 export let selectedUsers = ref([]);
 export let focusedUser = ref();
+export let buttonsList = ref([]);
