@@ -295,8 +295,13 @@ function handleSave() {
   }
 }
 
-function toggleButton(button) {
-  button.active = !button.active;
+function toggleButton(buttonActioned) {
+  buttonActioned.active = !buttonActioned.active;
+  buttonsList.value.forEach((button) => {
+    if (button.id !== buttonActioned.id) {
+      button.active = false;
+    }
+  })
 }
 
 function removeButton(button) {
