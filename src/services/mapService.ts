@@ -10,7 +10,7 @@ export function createMap(center: number[], zoom: number, projection: string, da
             new TileLayer({
                 properties: {layerName: 'TileLayer'},
                 source: (new XYZ({
-                    url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+                    url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=h0XJNXXoyzrwdtWPRe9B`
                 }))
             }),
         ],
@@ -49,7 +49,7 @@ export function createNewVectorLayer(featureArray?: Feature[], layername?: strin
 export function createTileLayer(layername?: string, darkOrWhiteMap?: string) {
     return new TileLayer({
         source: new XYZ({
-            url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=DxUujwebq5Zd8hO25SyJ`
+            url: `https://api.maptiler.com/maps/${darkOrWhiteMap}/{z}/{x}/{y}.png?key=h0XJNXXoyzrwdtWPRe9B`
         }),
         properties: {layerName: 'TileLayer'},
     })

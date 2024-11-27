@@ -144,6 +144,7 @@ watch(
 <style scoped>
 .date-range-container {
   margin-bottom: 8px;
+  font-size: 15px;
 }
 
 .date-range {
@@ -152,7 +153,7 @@ watch(
 }
 
 .date-input {
-  width: calc(50% - 8px);
+  width: calc(48.7% - 8px);
   padding: 5px 12px;
   border: 1px solid #555555;
   border-radius: 4px;

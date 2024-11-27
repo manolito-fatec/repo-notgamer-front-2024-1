@@ -53,7 +53,7 @@ watch(() => store.onClickDarkMode,
 }
 
 .clear-button .button-text {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 550;
   color: #FFF;
 }
