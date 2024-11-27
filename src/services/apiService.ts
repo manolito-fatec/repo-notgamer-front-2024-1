@@ -2,6 +2,7 @@ import axios from 'axios';
 import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
 import {useToast} from "vue-toastification";
 import router from '@/router';
+import { ref } from 'vue';
 
 const toast = useToast();
 const BASE_URL_MOCKED = 'https://gist.githubusercontent.com/pauloarantesmachado/e1dae04eaf471fcf13e76488c1b9051d/raw/6addd4c29581aa372e8fa8df1670c99104816d9f/gistfile1.json';
@@ -9,10 +10,9 @@ const BASE_URL_ENDPOINT = 'http://localhost:8080';
 const BASE_URL_GEOM = 'http://localhost:8080/location';
 const BASE_URL_PERSON = 'http://localhost:8080/person';
 const BASE_URL_LOGIN = "http://localhost:8080/auth/login";
-const token = localStorage.getItem("token")
-const configHeader = {
-    headers: { Authorization: `Bearer ${token}` }
-};
+const configHeader =ref<object>( {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+});
 
 interface Person {
     idPerson: number;
@@ -27,7 +27,7 @@ interface Device {
 
 export const fetchPersons = async (): Promise<Person[]> => {
     try {
-        const response = await axios.get<Person[]>(BASE_URL_PERSON, configHeader);
+        const response = await axios.get<Person[]>(BASE_URL_PERSON, configHeader.value);
         return response.data.sort((a, b) => {
             if (a.fullName < b.fullName) return -1;
             if (a.fullName > b.fullName) return 1;
@@ -46,7 +46,7 @@ export const fetchPersons = async (): Promise<Person[]> => {
 
 export const fetchDevices = async (): Promise<Device[]> => {
     try {
-        const response = await axios.get<Person[]>(BASE_URL_ENDPOINT, configHeader);
+        const response = await axios.get<Person[]>(BASE_URL_ENDPOINT, configHeader.value);
         const devices: Device[] = response.data.flatMap(person => {
             return person.codeDevice
                 ? [{ label: person.codeDevice, value: person.idPerson }]
@@ -101,7 +101,7 @@ export const fetchHistory = async ( person:String, startDate:String, endDate:Str
             init: `${startDate}T23:59:59`,
             end: `${endDate}T23:59:59`
         }
-        const response = await axios.post(urlHistory, body, configHeader);
+        const response = await axios.post(urlHistory, body, configHeader.value);
         return response.data;
     } catch (error:any) {
         if(error.status == 403){
@@ -117,7 +117,7 @@ export const fetchHistory = async ( person:String, startDate:String, endDate:Str
 export const fetchGeomData = async ( person, startDate, endDate, page: number)=>{
     let getUrl = `http://localhost:8080/tracker/period/${person}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?page=${page}&size=500`;
     try {
-        const response = await axios.get(getUrl,configHeader);
+        const response = await axios.get(getUrl,configHeader.value);
         if (response.data && response.data.content.length === 0) {
             toast.info("Nenhum ponto encontrado para o filtro selecionado.");
             return [];
@@ -145,7 +145,7 @@ export const fetchGeomData = async ( person, startDate, endDate, page: number)=>
 export const saveGeomData = async (drawedGeom : DrawedGeom)=>{
     let postUrl = BASE_URL_GEOM + '/save-shape'
     try{
-        const response  = await axios.post(postUrl, drawedGeom, configHeader);
+        const response  = await axios.post(postUrl, drawedGeom, configHeader.value);
         toast.success('Zona de interesse salva!')
         return response.data.content
     } catch (error:any){
@@ -169,7 +169,7 @@ export const saveGeomData = async (drawedGeom : DrawedGeom)=>{
 export const fetchGeomInZoneByUser = async ( location, startDate, endDate, userId)=>{
     let getUrl = BASE_URL_GEOM+`/inside/${location}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?userId=${userId}`
     try {
-        const response = await axios.get(getUrl, configHeader);
+        const response = await axios.get(getUrl, configHeader.value);
         if (response.data && response.data.content.length === 0) {
             toast.info("Nenhum ponto encontrado para o filtro selecionado.");
             return [];
@@ -196,7 +196,7 @@ export const fetchGeomInZoneByUser = async ( location, startDate, endDate, userI
 export const fetchAllZones = async ()=>{
     let getUrl = BASE_URL_GEOM+`/get-all-shapes`
     try{
-        const response = await axios.get(getUrl, configHeader);
+        const response = await axios.get(getUrl, configHeader.value);
         return response.data;
     } catch (error) {
         if(error.status == 403){
@@ -219,7 +219,7 @@ export const fetchAllZones = async ()=>{
 export const fetchGeomDataWithinZone = async (startDate, endDate, zoneId:number):[]=>{
     let getUrl = `http://localhost:8080/tracker/inside/${zoneId}/${startDate}T00:00:00.000/${endDate}T00:00:00.000`;
     try {
-        const response = await axios.get(getUrl, configHeader);
+        const response = await axios.get(getUrl, configHeader.value);
         if (response.data && response.data.length === 0) {
             toast.info("Nenhum ponto encontrado para o filtro selecionado.");
             return [];
@@ -245,7 +245,7 @@ export const fetchGeomDataWithinZone = async (startDate, endDate, zoneId:number)
 export const fetchPersonById = async(personID:number):Pessoa=>{
     let getUrl = BASE_URL_PERSON + personID;
     try{
-        const response = await axios.get(getUrl, configHeader);
+        const response = await axios.get(getUrl, configHeader.value);
         return response.data;
     }catch(error){
         if(error.status == 403){
@@ -261,7 +261,7 @@ export const fetchPersonById = async(personID:number):Pessoa=>{
 export const deleteZoneByGid = async(gid:number):Pessoa=>{
     let getUrl = BASE_URL_GEOM + '/delete/' + gid;
     try{
-        const response = await axios.delete(getUrl, configHeader);
+        const response = await axios.delete(getUrl, configHeader.value);
         return response.data;
     }catch(error){
         if(error.status == 403){
@@ -284,7 +284,13 @@ export const login = async(emailUSer:string, passwordUser:string) => {
         const request = await axios.post(BASE_URL_LOGIN, body);
         localStorage.clear();
         localStorage.setItem("token", request.data.token);
-        return true;
+        const valorToken = localStorage.getItem("token");
+        if(valorToken != "" && valorToken != null){
+            const decodedToken = JSON.parse(atob(valorToken.split(".")[1]));
+            localStorage.setItem("role", decodedToken.role);
+            return true;
+        }
+        return false;
 
     }catch(error){
         if (axios.isAxiosError(error) && error.response) {
