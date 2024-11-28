@@ -85,7 +85,7 @@ let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
 
-const startPointIconMap = ref<Feature<Geometry>>();
+const startPointIconMap = ref<Feature>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
 const showPlayback = ref(false);
@@ -167,17 +167,21 @@ function toggleZoneVisibility(){
   }
 }
 function toggledUserHandler(buttonObject){
-    if(showPlayback.value){
+    if(showPlayback.value && buttonObject.active){
       showPlayback.value = false;
       loadedRoutes.forEach((routeObj)=>{
         if(routeObj.pessoaId  == buttonObject.id){
           route.value = routeObj.linestringObj;
           allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
-          map.value?.getLayers().array_.forEach(layer =>{
-            if(layer.values_.layerName == undefined){
-              startPointIconMap.value = layer.getSource().getFeatures()[2];
+          map.value?.getLayers().array_.forEach((layer) =>{
+            if(layer.values_.layerName == 'Layer das Rotas'){
+              if(layer.getSource().getFeatures()[0].getGeometry().getCoordinates() = startPointIconMap.value.getGeometry().getCoordinates()){
+                
+              }
+              startPointIconMap.value = layer.getSource().getFeatures()[0];
+              // map.value?.removeLayer(layer);
             }
-          });
+          })
           showPlayback.value = true;
         }
       })
@@ -295,18 +299,18 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean, per
   let newLayer = ref<VectorLayer>({});
     if(hasRoute){
       newLayer.value = createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4)
-    map.value?.addLayer(newLayer.value);
-    pointFeatures.value = makeMultiplePointsLegacy(points);
-    map.value.addLayer(makeLineFromPoints(pointFeatures,personId));
-    showPlayback.value = true;
-  } else {
-    let insidePointStyle  :Style = new Style({
-      image: new Icon({
-        src: IconEndPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    })
+      map.value?.addLayer(newLayer.value);
+      pointFeatures.value = makeMultiplePointsLegacy(points);
+      map.value.addLayer(makeLineFromPoints(pointFeatures,personId));
+      showPlayback.value = true;
+    } else {
+      let insidePointStyle  :Style = new Style({
+        image: new Icon({
+          src: IconEndPin,
+          scale: 0.7,
+          anchor: [0.5, 1],
+        }),
+      })
       newLayer.value = createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4)
     map.value?.addLayer(newLayer.value);
     if (showPlayback.value) {
@@ -420,7 +424,7 @@ const adjustMap = (drawedZone?:Polygon|Circle) => {
   } else {
     let coordinatesExtend = [];
     map.value?.getLayers().array_.forEach((layer) =>{
-      if(layer.values_.layerName == 'Layer InsideZone' || layer.values_.layerName == 'Layer dos Pontos' || layer.values_.layerName == undefined){
+      if(layer.values_.layerName == 'Layer InsideZone' || layer.values_.layerName == 'Layer dos Pontos' || layer.values_.layerName == 'Layer do Carrinho' || layer.values_.layerName == undefined){
         layer.getSource().getFeatures().forEach(feature =>{
           if(feature.getGeometry()){
             coordinatesExtend.push([feature.getGeometry().getExtent()[0],feature.getGeometry().getExtent()[1]]);

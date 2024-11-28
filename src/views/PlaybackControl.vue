@@ -39,7 +39,6 @@ import {Icon, Style} from 'ol/style';
 import IconPositionMap from '../assets/IconPositionMap.png';
 import {getClick} from '@/components/stores/StoreGetClick.js'
 import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
-import type {Coordinate} from "ol/coordinate";
 
 const store = darkModeClick();
 const storeFilters = getClick();
