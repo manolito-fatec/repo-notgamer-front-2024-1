@@ -6,11 +6,11 @@
     <button v-if="roleValue == EnumRole.ADMIN" class="int-btn" @click="onToggleZone">
       <IconAlert />
     </button>
+    <button v-if="roleValue == EnumRole.ADMIN" class="int-btn" @click="onRegisterUser">
+      <IconRegistrationUser />
+    </button>
     <button  class="int-btn" @click="logout">
       <IconLogout />
-    </button>
-    <button v-if="roleValue == EnumRole.ADMIN"  @click="onRegisterUser">
-      CADASTRAR
     </button>
   </div>
 </template>
@@ -23,6 +23,7 @@ import IconAlert from './icons/IconInterestZone.vue';
 import { onMounted, ref } from 'vue';
 import { EnumRole } from '@/utils/EnumRole';
 import IconLogout from './icons/IconLogout.vue';
+import IconRegistrationUser from './icons/IconRegistrationUser.vue';
 const roleValue = ref<string>("");
 
 const storeFilters = getClick();

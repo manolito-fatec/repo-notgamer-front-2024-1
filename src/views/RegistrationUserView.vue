@@ -1,8 +1,8 @@
 <template>
-  <div class="map_wrapper">
-    <div class="forms_background">
+  <div class="mapWrapper">
+    <div class="formsBackground" id="formsBackground">
         <img :src="Logo"/>
-        <div class="forms_fields">
+        <div class="formsFields">
             <label> E-mail: </label>
             <input type="email" id="email" v-model="email" class="input" required>
             <p v-show="errorEmail" style="color:red;margin: 0;padding: 0;">{{ "Por favor, coloque um e-mail válido." }}</p>
@@ -15,13 +15,13 @@
             <input type="password" id="confirmar_senha" v-model="confirmPassword" class="input" required>
             <p v-show="errorConfirmPassword" style="color:red;margin: 0;padding: 0;">{{ "Por favor, confirme a senha." }}</p>
         </div>
-        <div class="group_btns">
-          <div class="admin_btn">
+        <div class="groupBtns">
+          <div class="adminBtn">
             <input type="radio" value="ADMIN" v-model="option">
             <label>Administrador</label>
           </div>
 
-          <div class="common_btn">
+          <div class="commonBtn">
             <input type="radio" value="USER" v-model="option">
             <label>Comum</label>
           </div>
@@ -29,10 +29,10 @@
           <p v-show="errorOption" style="color:red;margin: 0;padding: 0;">{{ "Por favor, selecione o nível de acesso." }}</p>
 
         </div>
-        <div class="submit_group">
-          <button type="submit" class="back_btn" @click="returnHome"> < </button>
+        <div class="submitGroup">
+          <button type="submit" class="backBtn" id="backBtn" @click="returnHome"> < </button>
 
-          <button type="submit" class="submit_btn" @click="submitUser"> CADASTRAR </button>
+          <button type="submit" class="submitBtn" id="submitBtn" @click="submitUser"> CADASTRAR </button>
         </div>
     </div>
   </div>
@@ -40,9 +40,10 @@
   
 <script setup>
 import router from '@/router'
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Logo from "@/assets/Logo.png";
 import { useToast } from "vue-toastification";
+import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
 import { verifyIfHaveTwoEmails, registerUser } from "@/services/apiService.ts";
 
 const toast = useToast();
@@ -54,6 +55,7 @@ const errorEmail = ref(false);
 const errorPassword = ref(false);
 const errorConfirmPassword = ref(false);
 const errorOption = ref(false);
+const store = darkModeClick();
 
 async function returnHome() {
   router.replace("/home");
@@ -111,13 +113,13 @@ async function submitUser() {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
-.map_wrapper {
+.mapWrapper {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
 }
 
-.map_wrapper::before {
+.mapWrapper::before {
   content: "";
   position: absolute;
   top: 0;
@@ -136,7 +138,7 @@ async function submitUser() {
   height: 10.43em;
 }
 
-.forms_background {
+.formsBackground {
   position: absolute;
   width: 480px;
   top: 50%;
@@ -150,7 +152,7 @@ async function submitUser() {
   box-shadow: 3px 0 0 #000059;
 }
 
-.forms_fields {
+.formsFields {
   font-family: 'Poppins';
   display: flex;
   flex-direction: column;
@@ -160,17 +162,16 @@ async function submitUser() {
 
 .input {
   border-radius: 10px;
-  /* margin-bottom: 1em; */
 }
 
-.admin_btn, 
-.common_btn {
+.adminBtn, 
+.commonBtn {
   display: flex;
   gap: 0.5em;
 }
 
-.back_btn,
-.submit_btn {
+.backBtn,
+.submitBtn {
   display: flex;
   border-radius: 10px;
   align-items: center;
@@ -186,17 +187,17 @@ async function submitUser() {
   cursor: pointer;
 }
 
-.submit_btn {
+.submitBtn {
   width: 34em;
   height: 2.6em;
 }
 
-.back_btn {
+.backBtn {
   width: 4.5em;
   height: 2.6em;
 }
 
-.group_btns {
+.groupBtns {
   display: flex;
   font-weight: bold;
   font-family: 'Poppins';
@@ -207,7 +208,7 @@ async function submitUser() {
   margin-top: 1em;
 }
 
-.submit_group {
+.submitGroup {
   display: flex;
   gap: 8px;
   margin-top: 16px;
