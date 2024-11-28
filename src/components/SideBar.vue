@@ -9,10 +9,14 @@
     <button  class="int-btn" @click="logout">
       <IconLogout />
     </button>
+    <button v-if="roleValue == EnumRole.ADMIN"  @click="onRegisterUser">
+      CADASTRAR
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
+import router from '@/router'
 import { getClick } from '@/components/stores/StoreGetClick.js'
 import IconFilter from "@/components/icons/IconFilter.vue";
 import IconAlert from './icons/IconInterestZone.vue';
@@ -35,6 +39,10 @@ function onToggleFilters() {
 
 function onToggleZone() {
   emit('toggle-zone');
+}
+
+function onRegisterUser() {
+  router.replace("/cadastro")
 }
 
 const logout = () => {

@@ -19,6 +19,11 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue'),
     },
     {
+      path: '/cadastro',
+      name: 'RegistrationUserView',
+      component: () => import('../views/RegistrationUserView.vue'),
+    },
+    {
       path: '/sandbox',
       name: 'sandbox',
       component: () => import("@/components/InterestZone.vue")

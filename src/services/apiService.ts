@@ -27,6 +27,15 @@ interface Device {
     value: number;
 }
 
+export const verifyIfHaveTwoEmails = async(emailUser:string) => {
+    try {
+        const response = await axios.get(`http://localhost:8080/auth/get-user/${emailUser}`, configHeader.value);
+        return response.data;
+    } catch(error) {
+        console.log(error);
+    }
+}
+
 export const registerUser = async(emailUser:string, passwordUser:string, roleUser:string) => {
     try {
         const body = {
@@ -34,13 +43,9 @@ export const registerUser = async(emailUser:string, passwordUser:string, roleUse
             password: passwordUser,
             role: roleUser
         }
-        console.log(body)
-        const request = await axios.post(BASE_URL_REGISTER_USER, body);
-        console.log(request.data)
+        await axios.post(BASE_URL_REGISTER_USER, body, configHeader.value);
     } catch(error) {
-        if (axios.isAxiosError(error) && error.response) {
-            toast.error("Erro na conexão. Tente novamente mais tarde.");
-        }
+        console.log(error);
     }
 }
 
@@ -113,7 +118,7 @@ export const fetchStopPoints = async ( person, startDate, endDate, page: number)
     }
 }
 export const fetchHistory = async ( person:String, startDate:String, endDate:String, page:Number)=>{
-    let urlHistory =`http://localhost:8080/tracker/history?page=${page}&size=${100}`
+    let urlHistory = `http://localhost:8080/tracker/history?page=${page}&size=${100}`
     try {
         const body = {
             personId: person,
@@ -186,7 +191,7 @@ export const saveGeomData = async (drawedGeom : DrawedGeom)=>{
     }
 }
 export const fetchGeomInZoneByUser = async ( location, startDate, endDate, userId)=>{
-    let getUrl = BASE_URL_GEOM+`/inside/${location}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?userId=${userId}`
+    let getUrl = BASE_URL_GEOM+`/inside/${location}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?userId=${userId}`;
     try {
         const response = await axios.get(getUrl, configHeader.value);
         if (response.data && response.data.content.length === 0) {
@@ -317,4 +322,3 @@ export const login = async(emailUSer:string, passwordUser:string) => {
             return false;
         }}
 }
-
