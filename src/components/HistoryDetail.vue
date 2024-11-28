@@ -99,7 +99,7 @@ function formatDateTime(dateString: string): string {
   border: none;
   background-color: transparent;
   color: #000;
-  font-size: 11px;
+  font-size: 12px;
   font-family: 'Poppins', regular, sans-serif;
   resize: none;
   box-sizing: border-box;
