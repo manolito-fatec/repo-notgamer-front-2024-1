@@ -1,4 +1,4 @@
-import type {Coordinates, DrawedGeom, GeometryPoint, SelectedPerson, StopPoint} from "@/components/Types";
+import type {Coordinates, DrawedGeom, GeometryPoint, LoadedRoutes, SelectedPerson, StopPoint} from "@/components/Types";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
 import {Fill, Icon, Stroke, Style} from "ol/style";
@@ -204,3 +204,4 @@ export let drawingActive = ref(false);
 export let selectedUsers = ref([]);
 export let focusedUser = ref();
 export let buttonsList = ref([]);
+export let loadedRoutes:LoadedRoutes[] = [];

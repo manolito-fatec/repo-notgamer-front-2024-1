@@ -34,14 +34,12 @@ import ButtonStartPause from '@/components/ButtonStartPause.vue';
 import {ref, defineProps, watch} from 'vue';
 import Feature from 'ol/Feature';
 import {LineString} from 'ol/geom';
-import ButtonBackward from '@/components/ButtonBackward.vue';
-import ButtonForward from '@/components/ButtonForward.vue';
 import ButtonRestart from '@/components/ButtonRestart.vue';
 import {Icon, Style} from 'ol/style';
 import IconPositionMap from '../assets/IconPositionMap.png';
-import Coordinate from 'ol/coordinate';
 import {getClick} from '@/components/stores/StoreGetClick.js'
 import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
+import type {Coordinate} from "ol/coordinate";
 
 const store = darkModeClick();
 const storeFilters = getClick();

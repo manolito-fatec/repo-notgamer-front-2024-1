@@ -10,6 +10,7 @@
                    @toggleZoneVisibility="toggleZoneVisibility"
                    @drawZone="drawZone"
                    @removeZoneFilters="removeZoneFilters"
+                   @toggledUser="toggledUserHandler"
     />
 
     <div v-if="showPlayback" class="playback-layer">
@@ -60,11 +61,11 @@ import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import IconStopPoint from "@/assets/IconStopPoint.png";
-import type {DrawedGeom, GeometryPoint, Pessoa, SelectedPerson, StopPoint} from "@/components/Types";
+import type {DrawedGeom, GeometryPoint, LoadedRoutes, Pessoa, SelectedPerson, StopPoint} from "@/components/Types";
 import {
   buttonsList,
   convertToDrawedGeom,
-  createStartAndEndPoint, drawedGeomsFromDb, drawingActive, locationDtoToDrawedGeom,
+  createStartAndEndPoint, drawedGeomsFromDb, drawingActive, loadedRoutes, locationDtoToDrawedGeom,
   makeFeature, makeLineString, makeMultiplePointsLegacy,
   makePointsFromArray,
   saveGeoms, selectedHotzone, selectedUsers, zoneOptions
@@ -83,6 +84,7 @@ let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
+
 const startPointIconMap = ref<Feature<Geometry>>();
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
@@ -104,7 +106,7 @@ let darkOrWhiteMap: string;
 const iconScale = ref(1);
 const iconOpacity = ref(1);
 
-let personsList:SelectedPerson[] = [];
+
 
 function saveGeometry(){
   map.value?.getLayers().array_.forEach(layer =>{
@@ -163,6 +165,26 @@ function toggleZoneVisibility(){
       }
     })
   }
+}
+function toggledUserHandler(buttonObject){
+    if(showPlayback.value){
+      showPlayback.value = false;
+      loadedRoutes.forEach((routeObj)=>{
+        if(routeObj.pessoaId  == buttonObject.id){
+          route.value = routeObj.linestringObj;
+          allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
+          map.value?.getLayers().array_.forEach(layer =>{
+            if(layer.values_.layerName == undefined){
+              startPointIconMap.value = layer.getSource().getFeatures()[2];
+            }
+          });
+          showPlayback.value = true;
+        }
+      })
+    }
+  // route.value =
+  // const allCoordinatesAnimation = ref<Coordinate[]>([]);
+  // const showPlayback = ref(false);
 }
 
 function drawTypeUpdate(selectedMode:selectedMode){
@@ -269,13 +291,13 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
     plotStopPoints(filterData.person, filterData.startDate, filterData.endDate);
   }
 }
-function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean){
+function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean, personId?:number){
   let newLayer = ref<VectorLayer>({});
     if(hasRoute){
       newLayer.value = createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4)
     map.value?.addLayer(newLayer.value);
     pointFeatures.value = makeMultiplePointsLegacy(points);
-    map.value.addLayer(makeLineFromPoints(pointFeatures));
+    map.value.addLayer(makeLineFromPoints(pointFeatures,personId));
     showPlayback.value = true;
   } else {
     let insidePointStyle  :Style = new Style({
@@ -308,7 +330,7 @@ function plotStartAndEndPoints(personId:number, startDate, endDate, page:number)
         showPlayback.value = false;
       }
     } else {
-      plotAllOnMap(points,true);
+      plotAllOnMap(points,true,personId);
       return points
     }
 
@@ -358,7 +380,7 @@ function clearPoints() {
     showPlayback.value = false;
   }
 }
-function makeLineFromPoints(featureList:Feature[]) {
+function makeLineFromPoints(featureList:Feature[], person:number) {
   if (!featureList) {
     toast.info("Nenhum ponto disponível para criar linhas.");
     return null;
@@ -374,6 +396,7 @@ function makeLineFromPoints(featureList:Feature[]) {
     zIndex: 4
   }));
   route.value = newLineString;
+  loadedRoutes.push({pessoaId: person, linestringObj: newLineString});
   map.value?.getLayers().array_.forEach(layer =>{
     if(layer.values_.layerName == undefined){
       startPointIconMap.value = layer.getSource().getFeatures()[2];

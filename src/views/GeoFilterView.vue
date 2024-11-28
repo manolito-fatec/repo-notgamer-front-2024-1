@@ -97,7 +97,7 @@ import {
   selectedHotzone, buttonsList
 } from "@/services/geomService";
 import type {DrawedGeom} from "@/components/Types";
-const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters','toggledUser']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
@@ -259,7 +259,7 @@ function handleSave() {
         hasErrors = true;
       }
     }
-
+  let filterDataForButtons = {};
     if (!hasErrors) {
       if(selectedHotzone.value){
         const filterData = {
@@ -269,6 +269,7 @@ function handleSave() {
           endDate: endDate.value,
           selectedZone: selectedHotzone.value,
         };
+        filterDataForButtons = filterData;
         emit('saveFilter', filterData);
       } else {
         const filterData = {
@@ -277,18 +278,29 @@ function handleSave() {
           startDate: startDate.value,
           endDate: endDate.value,
         };
+        filterDataForButtons = filterData;
         emit('saveFilter', filterData);
         loading.value = true;
         page.value = 1;
         getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
       }
       if (!hasErrors && !buttonsList.value.find(button => button.id === Person.value)) {
-        buttonsList.value.push({
-          id: Person.value,
-          label: `${PersonOption.value.find(p => p.value === Person.value).label}`,
-          active: true,
-          layer: {}
-        });
+        if(buttonsList.value.length > 0){
+          buttonsList.value.push({
+            id: Person.value,
+            label: `${PersonOption.value.find(p => p.value === Person.value).label}`,
+            active: true,
+            filterButtonData: {filterDataForButtons},
+          });
+          buttonsList.value[buttonsList.value.length - 2].active = false;
+        }else{
+          buttonsList.value.push({
+            id: Person.value,
+            label: `${PersonOption.value.find(p => p.value === Person.value).label}`,
+            active: true,
+            filterButtonData: {filterDataForButtons},
+          });
+        }
       }
 
     }
@@ -302,6 +314,7 @@ function toggleButton(buttonActioned) {
       button.active = false;
     }
   })
+  emit('toggledUser',buttonActioned);
 }
 
 function removeButton(button) {
