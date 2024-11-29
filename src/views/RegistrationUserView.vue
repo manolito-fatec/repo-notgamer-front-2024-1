@@ -1,50 +1,60 @@
 <template>
   <div class="mapWrapper">
-    <div class="formsBackground" id="formsBackground">
-        <img :src="Logo"/>
-        <div class="formsFields">
-            <label> E-mail: </label>
-            <input type="email" id="email" v-model="email" class="input" required>
-            <p v-show="errorEmail" style="color:red;margin: 0;padding: 0;">{{ "Por favor, coloque um e-mail válido." }}</p>
+    <div id="formsBackground" class="formsBackground">
+      <img :src="Logo"/>
+      <div class="login">
+        <label for="email">Email:</label>
+        <input id="email" v-model="email" class="input" placeholder="Digite seu email" required type="email">
+        <p v-show="errorEmail" style="color:red;margin: 0;padding: 0;">{{ "Por favor, coloque um e-mail válido." }}</p>
+      </div>
 
-            <label> Senha: </label>
-            <input type="password" id="senha" v-model="password" class="input" required>
-            <p v-show="errorPassword" style="color:red;margin: 0;padding: 0;">{{ "Por favor, coloque uma senha." }}</p>
+      <div class="login">
+        <label for="senha">Senha:</label>
+        <input id="senha" v-model="password" class="input" placeholder="Digite sua senha" required type="password">
+        <p v-show="errorPassword" style="color:red;margin: 0;padding: 0;">{{ "Por favor, coloque uma senha." }}</p>
+      </div>
 
-            <label> Confirme sua senha: </label>
-            <input type="password" id="confirmar_senha" v-model="confirmPassword" class="input" required>
-            <p v-show="errorConfirmPassword" style="color:red;margin: 0;padding: 0;">{{ "Por favor, confirme a senha." }}</p>
+      <div class="login">
+        <label for="confirmar_senha">Confirme sua senha:</label>
+        <input id="confirmar_senha" v-model="confirmPassword" class="input" placeholder="Confirme sua senha" required
+               type="password">
+        <p v-show="errorConfirmPassword" style="color:red;margin: 0;padding: 0;">{{
+            "Por favor, confirme a senha."
+          }}</p>
+      </div>
+
+      <div class="groupBtns">
+        <div class="adminBtn">
+          <input v-model="option" type="radio" value="ADMIN">
+          <label>Administrador</label>
         </div>
-        <div class="groupBtns">
-          <div class="adminBtn">
-            <input type="radio" value="ADMIN" v-model="option">
-            <label>Administrador</label>
-          </div>
 
-          <div class="commonBtn">
-            <input type="radio" value="USER" v-model="option">
-            <label>Comum</label>
-          </div>
-
-          <p v-show="errorOption" style="color:red;margin: 0;padding: 0;">{{ "Por favor, selecione o nível de acesso." }}</p>
-
+        <div class="commonBtn">
+          <input v-model="option" type="radio" value="USER">
+          <label>Comum</label>
         </div>
-        <div class="submitGroup">
-          <button type="submit" class="backBtn" id="backBtn" @click="returnHome"> < </button>
 
-          <button type="submit" class="submitBtn" id="submitBtn" @click="submitUser"> CADASTRAR </button>
-        </div>
+        <p v-show="errorOption" style="color:red;margin: 0;padding: 0;">{{
+            "Por favor, selecione o nível de acesso."
+          }}</p>
+
+      </div>
+      <div class="submitGroup">
+        <button id="backBtn" class="backBtn" @click="returnLogin"> <</button>
+
+        <button id="submitBtn" class="submitBtn" type="submit" @click="submitUser"> Cadastrar</button>
+      </div>
     </div>
   </div>
 </template>
-  
+
 <script setup>
 import router from '@/router'
-import { ref, watch } from 'vue';
+import {ref} from 'vue';
 import Logo from "@/assets/Logo.png";
-import { useToast } from "vue-toastification";
-import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js';
-import { verifyIfHaveTwoEmails, registerUser } from "@/services/apiService.ts";
+import {useToast} from "vue-toastification";
+import {darkModeClick} from '@/components/stores/StoreDarkModeGetClick.js';
+import {registerUser, verifyIfHaveTwoEmails} from "@/services/apiService.ts";
 
 const toast = useToast();
 const email = ref("");
@@ -57,13 +67,13 @@ const errorConfirmPassword = ref(false);
 const errorOption = ref(false);
 const store = darkModeClick();
 
-async function returnHome() {
-  router.replace("/home");
+const returnLogin = () => {
+  router.push("/login");
 }
 
 async function submitUser() {
   const response = await verifyIfHaveTwoEmails(email.value);
-  
+
   errorEmail.value = false;
   errorPassword.value = false;
   errorConfirmPassword.value = false;
@@ -80,25 +90,17 @@ async function submitUser() {
   }
   if (!option.value) {
     errorOption.value = true;
-  }
-
-  else if (!(email.value.match("@"))) {
+  } else if (!(email.value.match("@"))) {
     toast.error("Coloque um e-mail válido!")
-  }
-
-  else if (password.value != confirmPassword.value) {
+  } else if (password.value != confirmPassword.value) {
     toast.error("As senhas não conferem.");
-  }
-
-  else if (response.emailExist) {
+  } else if (response.emailExist) {
     toast.error("O usuário já está cadastrado.");
-  }
-
-  else {
-    await registerUser(email.value, 
-                      password.value,
-                      option.value
-                      )
+  } else {
+    await registerUser(email.value,
+        password.value,
+        option.value
+    )
     toast.success("Usuário Cadastrado!");
 
     email.value = "";
@@ -109,7 +111,7 @@ async function submitUser() {
 }
 
 </script>
-  
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
@@ -117,6 +119,15 @@ async function submitUser() {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+}
+
+.login {
+  font-family: 'Poppins', sans-serif;
+  padding: 0.5em 0;
+  font-size: 12px;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
 .mapWrapper::before {
@@ -133,38 +144,34 @@ async function submitUser() {
   z-index: 0;
 }
 
-.logo {
-  width: 37em;
-  height: 10.43em;
-}
-
 .formsBackground {
+  font-family: 'Poppins', sans-serif;
   position: absolute;
-  width: 480px;
+  color: white;
   top: 50%;
   left: 50%;
-  padding: 2em;
   transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column; 
+  width: 480px;
   background: rgba(0, 0, 0, 0.6);
-  border-radius: 20px;
-  box-shadow: 3px 0 0 #000059;
-}
-
-.formsFields {
-  font-family: 'Poppins';
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
-  color: white;
+  z-index: 1;
+  font-size: 12px;
+  padding: 2em;
 }
+
 
 .input {
+  width: 100%;
+  height: 36px;
+  border: none;
   border-radius: 10px;
+  padding: 0.5em 1em;
 }
 
-.adminBtn, 
+.adminBtn,
 .commonBtn {
   display: flex;
   gap: 0.5em;
@@ -173,22 +180,21 @@ async function submitUser() {
 .backBtn,
 .submitBtn {
   display: flex;
-  border-radius: 10px;
-  align-items: center;
   justify-content: center;
-  font-family: 'Poppins';
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
   font-size: 15px;
-  font-weight: bold;
   color: white;
   background-color: #000059;
   border: none;
+  border-radius: 10px;
   height: 36px;
-  min-width: 36px;
+  padding: 0.5em 1em;
   cursor: pointer;
 }
 
 .submitBtn {
-  width: 34em;
+  width: 100%;
   height: 2.6em;
 }
 
@@ -199,13 +205,13 @@ async function submitUser() {
 
 .groupBtns {
   display: flex;
-  font-weight: bold;
-  font-family: 'Poppins';
-  color: white;
-  justify-content: left; 
-  align-items: center;
   gap: 1em;
   margin-top: 1em;
+  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
+  color: white;
+  justify-content: left;
+  align-items: center;
 }
 
 .submitGroup {
@@ -213,11 +219,11 @@ async function submitUser() {
   gap: 8px;
   margin-top: 16px;
 }
- 
+
 input[type="radio"] {
   accent-color: #000059;
 }
-
 </style>
+
 
   
