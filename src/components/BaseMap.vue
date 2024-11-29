@@ -11,6 +11,7 @@
                    @drawZone="drawZone"
                    @removeZoneFilters="removeZoneFilters"
                    @toggledUser="toggledUserHandler"
+                   @removedUserButton="removedUserHandler"
     />
 
     <div v-if="showPlayback" class="playback-layer">
@@ -114,16 +115,14 @@ let darkOrWhiteMap: string;
 const iconScale = ref(1);
 const iconOpacity = ref(1);
 
-
-
-function saveGeometry(){
-  map.value?.getLayers().array_.forEach(layer =>{
-    if(layer.values_.layerName == 'Draw Layer'){
-      layer.getSource().getFeatures().forEach((feature:Feature) =>{
-        try{
-          if(feature.getGeometry().getRadius()){
-            saveGeomData(convertToDrawedGeom(feature,'CIRCLE',drawGeomName.value)).then((obj) =>{
-              fetchAllZones().then((geoms) =>{
+function saveGeometry() {
+  map.value?.getLayers().array_.forEach(layer => {
+    if (layer.values_.layerName == 'Draw Layer') {
+      layer.getSource().getFeatures().forEach((feature: Feature) => {
+        try {
+          if (feature.getGeometry().getRadius()) {
+            saveGeomData(convertToDrawedGeom(feature, 'CIRCLE', drawGeomName.value)).then((obj) => {
+              fetchAllZones().then((geoms) => {
                 zoneOptions.value = geoms.map(geom => ({
                   label: geom.name,
                   value: geom.idLocation
@@ -136,9 +135,9 @@ function saveGeometry(){
               });
             });
           }
-        } catch (e){
-          saveGeomData(convertToDrawedGeom(feature,'POLYGON',drawGeomName.value)).then((obj) =>{
-            fetchAllZones().then((geoms) =>{
+        } catch (e) {
+          saveGeomData(convertToDrawedGeom(feature, 'POLYGON', drawGeomName.value)).then((obj) => {
+            fetchAllZones().then((geoms) => {
               zoneOptions.value = geoms.map(geom => ({
                 label: geom.name,
                 value: geom.idLocation
@@ -177,7 +176,7 @@ function toggleZoneVisibility(){
 function toggledUserHandler(buttonObject){
     if(showPlayback.value && buttonObject.active){
       showPlayback.value = false;
-      loadedRoutes.forEach((routeObj)=>{
+      loadedRoutes.value.forEach((routeObj)=>{
         if(routeObj.pessoaId  == buttonObject.id){
           route.value = routeObj.linestringObj;
           allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
@@ -203,7 +202,7 @@ function toggledUserHandler(buttonObject){
     } else if(buttonObject.active){
       showPlayback.value = false;
       startPointIconMap?.value == undefined;
-      loadedRoutes.forEach((routeObj)=>{
+      loadedRoutes.value.forEach((routeObj)=>{
         if(routeObj.pessoaId  == buttonObject.id){
           route.value = routeObj.linestringObj;
           allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
@@ -235,6 +234,30 @@ function toggledUserHandler(buttonObject){
   // const allCoordinatesAnimation = ref<Coordinate[]>([]);
   // const showPlayback = ref(false);
 }
+function removedUserHandler(buttonRemoved){
+  buttonsList.value.forEach(button => {
+    if(button.id == buttonRemoved.id){
+      switch(button.active){
+        case true:
+          loadedRoutes.value.forEach(routeObj=>{
+            if(routeObj.pessoaId == button.id){
+              loadedRoutes.value = loadedRoutes.value.filter((routeObj)=>routeObj.pessoaId != button.id);
+            }
+          })
+          toggledUserHandler(buttonRemoved);
+          buttonsList.value = buttonsList.value.filter((b) => b.id !== buttonRemoved.id);
+          console.log('Case True')
+          //LOGICA SE FOR O BOTAO ATIVO
+          break;
+        case false:
+          //LOGICA SE ESTIVER DESATIVADO
+          break;
+      }
+
+    }
+  })
+}
+
 
 function drawTypeUpdate(selectedMode:selectedMode){
   drawType.value = selectedMode;
@@ -447,7 +470,7 @@ function makeLineFromPoints(featureList:Feature[], person:number) {
     zIndex: 4
   }));
   route.value = newLineString;
-  loadedRoutes.push({pessoaId: person, linestringObj: newLineString});
+  loadedRoutes.value.push({pessoaId: person, linestringObj: newLineString});
   map.value?.getLayers().array_.forEach(layer =>{
     if(layer.values_.layerName == 'Layer Stard and End'){
       startPointIconMap.value = layer.getSource().getFeatures()[2];

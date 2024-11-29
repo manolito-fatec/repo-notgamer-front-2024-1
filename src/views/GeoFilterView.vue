@@ -97,7 +97,7 @@ import {
   selectedHotzone, buttonsList
 } from "@/services/geomService";
 import type {DrawedGeom} from "@/components/Types";
-const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters','toggledUser']);
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters','toggledUser','removedUserButton']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
@@ -317,8 +317,8 @@ function toggleButton(buttonActioned) {
   emit('toggledUser',buttonActioned);
 }
 
-function removeButton(button) {
-  buttonsList.value = buttonsList.value.filter((b) => b.id !== button.id);
+function removeButton(buttonRemoved) {
+  emit('removedUserButton', buttonRemoved);
 
 }
 
