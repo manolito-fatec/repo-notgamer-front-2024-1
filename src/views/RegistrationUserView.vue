@@ -40,7 +40,7 @@
 
       </div>
       <div class="submitGroup">
-        <button id="backBtn" class="backBtn" @click="returnLogin"> <</button>
+        <button id="backBtn" class="backBtn" @click="returnHome"> <</button>
 
         <button id="submitBtn" class="submitBtn" type="submit" @click="submitUser"> Cadastrar</button>
       </div>
@@ -67,8 +67,8 @@ const errorConfirmPassword = ref(false);
 const errorOption = ref(false);
 const store = darkModeClick();
 
-const returnLogin = () => {
-  router.push("/login");
+const returnHome = () => {
+  router.push("/home");
 }
 
 async function submitUser() {
