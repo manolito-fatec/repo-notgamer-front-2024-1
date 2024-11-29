@@ -74,7 +74,7 @@ import {
   makeLineString,
   makeMultiplePointsLegacy,
   makePointsFromArray,
-  selectedHotzone,
+  selectedHotzone, startPointIconMap,
   zoneOptions
 } from "@/services/geomService";
 import IconEndPin from "@/assets/IconEndPin.png";
@@ -92,7 +92,7 @@ let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
 
-const startPointIconMap = ref<Feature>();
+
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
 const showPlayback = ref(false);

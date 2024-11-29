@@ -319,6 +319,7 @@ function toggleButton(buttonActioned) {
 
 function removeButton(button) {
   buttonsList.value = buttonsList.value.filter((b) => b.id !== button.id);
+
 }
 
 const paginatorHistory = (event) => {

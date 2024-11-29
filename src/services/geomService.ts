@@ -205,3 +205,4 @@ export let selectedUsers = ref([]);
 export let focusedUser = ref();
 export let buttonsList = ref([]);
 export let loadedRoutes:LoadedRoutes[] = [];
+export let startPointIconMap = ref<Feature>();
