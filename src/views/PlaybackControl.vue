@@ -213,6 +213,7 @@ function routeAnimation() {
         rotation: angulo
       }),
     }));
+    props.iconMap.setProperties({pontoCarrinho: true})
 
     if (progress < 1) {
       requestAnimationFrame(routeAnimation);

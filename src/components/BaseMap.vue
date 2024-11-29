@@ -79,6 +79,7 @@ import {
 } from "@/services/geomService";
 import IconEndPin from "@/assets/IconEndPin.png";
 import {handleTypeError} from "@/utils/errorHandler";
+import IconPositionMap from "@/assets/IconPositionMap.png";
 
 const toast = useToast();
 
@@ -181,6 +182,7 @@ function toggledUserHandler(buttonObject){
           route.value = routeObj.linestringObj;
           allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
           map.value?.getLayers().array_.forEach((layer) =>{
+            startPointIconMap?.value?.setStyle(undefined)
             if(layer.values_.layerName == 'Layer Stard and End'){
               if(startPointIconMap.value){
                 if(layer.getProperties().personId == startPointIconMap.value.getProperties().personId){
@@ -192,6 +194,39 @@ function toggledUserHandler(buttonObject){
               }
             }
            })
+          showPlayback.value = true;
+        }
+      })
+    } else if(!buttonObject.active){
+      showPlayback.value = false;
+      startPointIconMap?.value?.setStyle(undefined)
+    } else if(buttonObject.active){
+      showPlayback.value = false;
+      startPointIconMap?.value == undefined;
+      loadedRoutes.forEach((routeObj)=>{
+        if(routeObj.pessoaId  == buttonObject.id){
+          route.value = routeObj.linestringObj;
+          allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
+          map.value?.getLayers().array_.forEach((layer) =>{
+            startPointIconMap?.value == undefined;
+            if(layer.values_.layerName == 'Layer Stard and End'){
+              if(startPointIconMap.value){
+                if(layer.getProperties().personId == startPointIconMap.value.getProperties().personId){
+                  startPointIconMap.value = layer.getSource().getFeatures()[2];
+                  startPointIconMap?.value?.setProperties({personId: buttonObject.id})
+                  startPointIconMap?.value?.setStyle(new Style({
+                    image: new Icon({
+                      src: IconPositionMap,
+                      anchor: [0.5, 0.5],
+                      scale: 0.2
+                    }),
+                  }))
+                  let extent = new Point(route?.value?.getExtent());
+                  map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
+                }
+              }
+            }
+          })
           showPlayback.value = true;
         }
       })
@@ -313,7 +348,7 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean, per
       map.value?.addLayer(newLayer.value);
       pointFeatures.value = makeMultiplePointsLegacy(points);
       map.value.addLayer(makeLineFromPoints(pointFeatures,personId));
-      showPlayback.value = true;
+      // showPlayback.value = true;
     } else {
       let insidePointStyle  :Style = new Style({
         image: new Icon({
@@ -331,6 +366,7 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean, per
   buttonsList.value.forEach(botao =>{
     if(botao.id == selectedPessoa.idPerson){
       botao.layer == newLayer.value;
+      toggledUserHandler(botao)
     }
   })
   initializePopup();
