@@ -202,7 +202,6 @@ function routeAnimation() {
 
     const coord = props.rota.getCoordinateAt(progress);
     props.iconMap.getGeometry().setCoordinates(coord);
-
     changeColorRange();
     getRotationIcon();
 

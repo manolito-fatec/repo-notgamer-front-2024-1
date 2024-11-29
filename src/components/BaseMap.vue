@@ -38,37 +38,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import {Map, Feature, Overlay} from 'ol';
-import {Source, XYZ} from 'ol/source';
-import { Vector as VectorLayer } from 'ol/layer';
-import { Vector as VectorSource } from 'ol/source';
-import {Point, LineString, Geometry, Circle, type Polygon} from 'ol/geom';
-import {Style, Stroke, Fill, Icon} from 'ol/style';
+import {onMounted, ref} from 'vue';
+import {Feature, Map, Overlay} from 'ol';
+import {Vector as VectorSource, XYZ} from 'ol/source';
+import {Vector as VectorLayer} from 'ol/layer';
+import {Circle, LineString, Point, type Polygon} from 'ol/geom';
+import {Fill, Icon, Stroke, Style} from 'ol/style';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import PlaybackControl from '@/views/PlaybackControl.vue';
-import type { Coordinate } from 'ol/coordinate';
+import type {Coordinate} from 'ol/coordinate';
 import {useToast} from "vue-toastification";
-import { boundingExtent } from 'ol/extent';
+import {boundingExtent} from 'ol/extent';
 import {
   fetchAllZones,
   fetchGeomData,
   fetchGeomDataWithinZone,
   fetchPersonById,
-  fetchStopPoints, saveGeomData
+  fetchStopPoints,
+  saveGeomData
 } from "@/services/apiService";
 import {createMap, createNewVectorLayer} from "@/services/mapService";
 import {Draw} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import IconStopPoint from "@/assets/IconStopPoint.png";
-import type {DrawedGeom, GeometryPoint, LoadedRoutes, Pessoa, SelectedPerson, StopPoint} from "@/components/Types";
+import type {GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
 import {
   buttonsList,
   convertToDrawedGeom,
-  createStartAndEndPoint, drawedGeomsFromDb, drawingActive, loadedRoutes, locationDtoToDrawedGeom,
-  makeFeature, makeLineString, makeMultiplePointsLegacy,
+  createStartAndEndPoint,
+  drawedGeomsFromDb,
+  drawingActive,
+  loadedRoutes,
+  locationDtoToDrawedGeom,
+  makeFeature,
+  makeLineString,
+  makeMultiplePointsLegacy,
   makePointsFromArray,
-  saveGeoms, selectedHotzone, selectedUsers, zoneOptions
+  selectedHotzone,
+  zoneOptions
 } from "@/services/geomService";
 import IconEndPin from "@/assets/IconEndPin.png";
 import {handleTypeError} from "@/utils/errorHandler";
@@ -174,14 +181,17 @@ function toggledUserHandler(buttonObject){
           route.value = routeObj.linestringObj;
           allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
           map.value?.getLayers().array_.forEach((layer) =>{
-            if(layer.values_.layerName == 'Layer das Rotas'){
-              if(layer.getSource().getFeatures()[0].getGeometry().getCoordinates() = startPointIconMap.value.getGeometry().getCoordinates()){
-                
+            if(layer.values_.layerName == 'Layer Stard and End'){
+              if(startPointIconMap.value){
+                if(layer.getProperties().personId == startPointIconMap.value.getProperties().personId){
+                  startPointIconMap.value = layer.getSource().getFeatures()[2];
+                  startPointIconMap?.value?.setProperties({personId: buttonObject.id})
+                  let extent = new Point(route?.value?.getExtent());
+                  map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
+                }
               }
-              startPointIconMap.value = layer.getSource().getFeatures()[0];
-              // map.value?.removeLayer(layer);
             }
-          })
+           })
           showPlayback.value = true;
         }
       })
@@ -298,7 +308,8 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
 function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean, personId?:number){
   let newLayer = ref<VectorLayer>({});
     if(hasRoute){
-      newLayer.value = createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4)
+      newLayer.value = createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),'Layer Stard and End',undefined,4)
+      newLayer.value.setProperties({personId: personId})
       map.value?.addLayer(newLayer.value);
       pointFeatures.value = makeMultiplePointsLegacy(points);
       map.value.addLayer(makeLineFromPoints(pointFeatures,personId));
@@ -317,7 +328,6 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean, per
       showPlayback.value = false;
     }
   }
-  let selectedPersonActive:SelectedPerson ={pessoa:selectedPessoa,layerShowed:newLayer.value};
   buttonsList.value.forEach(botao =>{
     if(botao.id == selectedPessoa.idPerson){
       botao.layer == newLayer.value;
@@ -374,6 +384,7 @@ function clearPoints() {
     pointFeatures.value = [];
     routeLine.value = [];
     pointFinalStar.value = [];
+    buttonsList.value = [];
     zoneDrawd = false;
     if (popupContent.value) {
       popupContent.value.innerHTML = null;
@@ -391,7 +402,7 @@ function makeLineFromPoints(featureList:Feature[], person:number) {
   }
   let featureArray :Feature[] = [];
   let newLineString: LineString = makeLineString(featureList);
-  featureArray.push(new Feature({geometry: newLineString}));
+  featureArray.push(new Feature({geometry: newLineString,properties: {personId: person}}));
   featureArray[0].setStyle(new Style({
     stroke: new Stroke({
       color: '#000000',
@@ -402,8 +413,9 @@ function makeLineFromPoints(featureList:Feature[], person:number) {
   route.value = newLineString;
   loadedRoutes.push({pessoaId: person, linestringObj: newLineString});
   map.value?.getLayers().array_.forEach(layer =>{
-    if(layer.values_.layerName == undefined){
+    if(layer.values_.layerName == 'Layer Stard and End'){
       startPointIconMap.value = layer.getSource().getFeatures()[2];
+      startPointIconMap?.value?.setProperties({personId: person});
     }
   });
   allCoordinatesAnimation.value = makeLineString(featureList).getCoordinates();
@@ -424,7 +436,7 @@ const adjustMap = (drawedZone?:Polygon|Circle) => {
   } else {
     let coordinatesExtend = [];
     map.value?.getLayers().array_.forEach((layer) =>{
-      if(layer.values_.layerName == 'Layer InsideZone' || layer.values_.layerName == 'Layer dos Pontos' || layer.values_.layerName == 'Layer do Carrinho' || layer.values_.layerName == undefined){
+      if(layer.values_.layerName == 'Layer InsideZone' || layer.values_.layerName == 'Layer dos Pontos' || layer.values_.layerName == 'Layer Stard and End' || layer.values_.layerName == undefined){
         layer.getSource().getFeatures().forEach(feature =>{
           if(feature.getGeometry()){
             coordinatesExtend.push([feature.getGeometry().getExtent()[0],feature.getGeometry().getExtent()[1]]);

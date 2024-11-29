@@ -74,7 +74,7 @@ export function makePolygon(hotzone:DrawedGeom) {
     }
 
 }
-export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolygon?:Polygon): Feature {
+export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolygon?:Polygon, zIndex?:number): Feature {
     let createdFeature: Feature;
     if(createdPolygon) {
         createdFeature = new Feature({geometry: createdPolygon});
@@ -86,7 +86,7 @@ export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolyg
                 color: '#000000',
                 width: 2
             }),
-            zIndex: 2
+            zIndex: zIndex|2
         }))
         return createdFeature;
     }
