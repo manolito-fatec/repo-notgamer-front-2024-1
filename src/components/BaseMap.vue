@@ -246,11 +246,14 @@ function removedUserHandler(buttonRemoved){
           })
           toggledUserHandler(buttonRemoved);
           buttonsList.value = buttonsList.value.filter((b) => b.id !== buttonRemoved.id);
-          console.log('Case True')
-          //LOGICA SE FOR O BOTAO ATIVO
           break;
         case false:
-          //LOGICA SE ESTIVER DESATIVADO
+          loadedRoutes.value.forEach(routeObj=>{
+            if(routeObj.pessoaId == button.id){
+              loadedRoutes.value = loadedRoutes.value.filter((routeObj)=>routeObj.pessoaId != button.id);
+            }
+          })
+          buttonsList.value = buttonsList.value.filter((b) => b.id !== buttonRemoved.id);
           break;
       }
 
