@@ -59,7 +59,7 @@ import {
   saveGeomData
 } from "@/services/apiService";
 import {createMap, createNewVectorLayer} from "@/services/mapService";
-import {Draw} from "ol/interaction";
+import {Draw, Extent} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import IconStopPoint from "@/assets/IconStopPoint.png";
 import type {GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
@@ -187,8 +187,8 @@ function toggledUserHandler(buttonObject){
                 if(layer.getProperties().personId == startPointIconMap.value.getProperties().personId){
                   startPointIconMap.value = layer.getSource().getFeatures()[2];
                   startPointIconMap?.value?.setProperties({personId: buttonObject.id})
-                  let extent = new Point(route?.value?.getExtent());
-                  map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
+                  let extent = route?.value?.getExtent();
+                  map.value?.getView().fit(extent, { padding: [50, 50, 50, 50],duration: 1000});
                 }
               }
             }
@@ -220,8 +220,8 @@ function toggledUserHandler(buttonObject){
                       scale: 0.2
                     }),
                   }))
-                  let extent = new Point(route?.value?.getExtent());
-                  map.value?.getView().fit(extent, { padding: [50, 50, 50, 50], maxZoom: 15 ,duration: 1000});
+                  let extent = route?.value?.getExtent();
+                  map.value?.getView().fit(extent, { padding: [50, 50, 50, 50] ,duration: 1000});
                 }
               }
             }
