@@ -1,4 +1,6 @@
 import type { StringMappingType } from "typescript"
+import type VectorLayer from "ol/layer/Vector";
+import type {LineString} from "ol/geom";
 
 export type GeometryPoint ={
     id: number
@@ -13,6 +15,10 @@ export type Pessoa ={
     idText?: string
     fullName: string
     codeDevice: number
+}
+export type LoadedRoutes ={
+    pessoaId : number
+    linestringObj: LineString;
 }
 
 export type HistoryConfig={

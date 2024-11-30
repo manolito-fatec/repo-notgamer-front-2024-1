@@ -70,7 +70,7 @@ export const fetchPersons = async (): Promise<Person[]> => {
 
 export const fetchDevices = async (): Promise<Device[]> => {
     try {
-        const response = await axios.get<Person[]>(BASE_URL_ENDPOINT, configHeader.value);
+        const response = await axios.get<Person[]>(BASE_URL_ENDPOINT +'/person', configHeader.value);
         const devices: Device[] = response.data.flatMap(person => {
             return person.codeDevice
                 ? [{ label: person.codeDevice, value: person.idPerson }]
@@ -93,7 +93,7 @@ export const fetchDevices = async (): Promise<Device[]> => {
 export const fetchStopPoints = async ( person, startDate, endDate, page: number):StopPoint[]=>{
     let getUrl = `http://localhost:8080/tracker/stop/${person}/${startDate}T00:00:00.000/${endDate}T00:00:00.000?page=${page}&size=500`;
     try {
-        const response = await axios.get(getUrl, configHeader);
+        const response = await axios.get(getUrl, configHeader.value);
         if (response.data && response.data.content.length === 0) {
             toast.info("Nenhum ponto encontrado para o filtro selecionado.");
             return [];
@@ -266,8 +266,8 @@ export const fetchGeomDataWithinZone = async (startDate, endDate, zoneId:number)
         return [];
     }
 }
-export const fetchPersonById = async(personID:number):Pessoa=>{
-    let getUrl = BASE_URL_PERSON + personID;
+export const fetchPersonById = async(personID:number|undefined)=>{
+    let getUrl = BASE_URL_PERSON + '/' +personID;
     try{
         const response = await axios.get(getUrl, configHeader.value);
         return response.data;

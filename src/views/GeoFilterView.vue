@@ -42,6 +42,18 @@
         <ClearButton class="full-width" @click="handleReset"></ClearButton>
         <StartButton class="full-width" @click="handleSave"></StartButton>
       </div>
+      <div class="buttons-container">
+        <div
+            v-for="button in buttonsList"
+            :key="button.id"
+            class="toggle-button"
+            :style="{ backgroundColor: button.active ? '#0f76b9' : '#ec1c24' }"
+            @click="toggleButton(button)"
+        >
+          <span @click.stop="removeButton(button)" class="remove-button">X</span>
+          {{ button.label }}
+        </div>
+      </div>
       <div>
         <History @openTeleport="paginatorHistory" :historyConfiguration="listOfHistory" :loading="loading" :person="Person" :init="endDate" :final="endDate"/>
       </div>
@@ -85,12 +97,12 @@ import {
   makePolygon,
   zoneOptions,
   drawedGeomsFromDb,
-  selectedHotzone
+  selectedHotzone, buttonsList
 } from "@/services/geomService";
 import type {DrawedGeom} from "@/components/Types";
+const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters','toggledUser','removedUserButton']);
 import { EnumRole } from '@/utils/EnumRole';
 import router from '@/router';
-const emit = defineEmits(['saveFilter', 'clearPoints', 'toggleSvgColor', 'saveDraw','toggleDrawing','drawType','changeZoneName','toggleZoneVisibility','drawZone','removeZoneFilters']);
 const toast = useToast();
 const Person = ref(null);
 const Device = ref(null);
@@ -259,7 +271,7 @@ function handleSave() {
         hasErrors = true;
       }
     }
-
+  let filterDataForButtons = {};
     if (!hasErrors) {
       if(selectedHotzone.value){
         const filterData = {
@@ -269,6 +281,7 @@ function handleSave() {
           endDate: endDate.value,
           selectedZone: selectedHotzone.value,
         };
+        filterDataForButtons = filterData;
         emit('saveFilter', filterData);
       } else {
         const filterData = {
@@ -277,14 +290,48 @@ function handleSave() {
           startDate: startDate.value,
           endDate: endDate.value,
         };
+        filterDataForButtons = filterData;
         emit('saveFilter', filterData);
         loading.value = true;
         page.value = 1;
         getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
       }
+      if (!hasErrors && !buttonsList.value.find(button => button.id === Person.value) && selectedHotzone.value == undefined) {
+        if(buttonsList.value.length > 0){
+          buttonsList.value.push({
+            id: Person.value,
+            label: `${PersonOption.value.find(p => p.value === Person.value).label}`,
+            active: true,
+            filterButtonData: {filterDataForButtons},
+          });
+          buttonsList.value[buttonsList.value.length - 2].active = false;
+        }else{
+          buttonsList.value.push({
+            id: Person.value,
+            label: `${PersonOption.value.find(p => p.value === Person.value).label}`,
+            active: true,
+            filterButtonData: {filterDataForButtons},
+          });
+        }
+      }
 
     }
   }
+}
+
+function toggleButton(buttonActioned) {
+  buttonActioned.active = !buttonActioned.active;
+  buttonsList.value.forEach((button) => {
+    if (button.id !== buttonActioned.id) {
+      button.active = false;
+    }
+  })
+  emit('toggledUser',buttonActioned);
+}
+
+function removeButton(buttonRemoved) {
+  emit('removedUserButton', buttonRemoved);
+
 }
 
 const paginatorHistory = (event) => {
@@ -415,5 +462,53 @@ onMounted(()=>{
 .filter-container ::-webkit-scrollbar-track {
   background: transparent;
   border-radius: 50px;
+}
+.buttons-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.toggle-button {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:5px;
+  text-align: center;
+}
+
+
+.remove-button {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  background-color: #6d6d6d;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.remove-button:hover {
+  background-color: #606060;
+  transform: scale(1.1);
 }
 </style>

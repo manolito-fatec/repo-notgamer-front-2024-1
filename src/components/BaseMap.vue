@@ -10,6 +10,8 @@
                    @toggleZoneVisibility="toggleZoneVisibility"
                    @drawZone="drawZone"
                    @removeZoneFilters="removeZoneFilters"
+                   @toggledUser="toggledUserHandler"
+                   @removedUserButton="removedUserHandler"
     />
 
     <div v-if="showPlayback" class="playback-layer">
@@ -37,40 +39,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import {Map, Feature, Overlay} from 'ol';
-import { Tile as TileLayer } from 'ol/layer';
-import {Source, XYZ} from 'ol/source';
-import { Vector as VectorLayer } from 'ol/layer';
-import { Vector as VectorSource } from 'ol/source';
-import {Point, LineString, Geometry, Circle, type Polygon} from 'ol/geom';
-import {Style, Stroke, Fill, Icon} from 'ol/style';
+import {onMounted, ref} from 'vue';
+import {Feature, Map, Overlay} from 'ol';
+import {Vector as VectorSource, XYZ} from 'ol/source';
+import {Vector as VectorLayer} from 'ol/layer';
+import {Circle, LineString, Point, type Polygon} from 'ol/geom';
+import {Fill, Icon, Stroke, Style} from 'ol/style';
 import GeoFilterView from "@/views/GeoFilterView.vue";
 import PlaybackControl from '@/views/PlaybackControl.vue';
-import type { Coordinate } from 'ol/coordinate';
+import type {Coordinate} from 'ol/coordinate';
 import {useToast} from "vue-toastification";
-import { boundingExtent } from 'ol/extent';
+import {boundingExtent} from 'ol/extent';
 import {
   fetchAllZones,
   fetchGeomData,
   fetchGeomDataWithinZone,
   fetchPersonById,
-  fetchStopPoints, saveGeomData
+  fetchStopPoints,
+  saveGeomData
 } from "@/services/apiService";
 import {createMap, createNewVectorLayer} from "@/services/mapService";
-import {Draw} from "ol/interaction";
+import {Draw, Extent} from "ol/interaction";
 import DarkOrLight from '@/views/DarkOrLight.vue';
 import IconStopPoint from "@/assets/IconStopPoint.png";
-import type {DrawedGeom, GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
+import type {GeometryPoint, Pessoa, StopPoint} from "@/components/Types";
 import {
+  buttonsList,
   convertToDrawedGeom,
-  createStartAndEndPoint, drawedGeomsFromDb, drawingActive, locationDtoToDrawedGeom,
-  makeFeature, makeLineString, makeMultiplePointsLegacy,
+  createStartAndEndPoint,
+  drawedGeomsFromDb,
+  drawingActive,
+  loadedRoutes,
+  locationDtoToDrawedGeom,
+  makeFeature,
+  makeLineString,
+  makeMultiplePointsLegacy,
   makePointsFromArray,
-  saveGeoms, selectedHotzone, zoneOptions
+  selectedHotzone, startPointIconMap,
+  zoneOptions
 } from "@/services/geomService";
 import IconEndPin from "@/assets/IconEndPin.png";
 import {handleTypeError} from "@/utils/errorHandler";
+import IconPositionMap from "@/assets/IconPositionMap.png";
 
 const toast = useToast();
 
@@ -83,7 +93,8 @@ let routeLine = ref<Feature[]>([]);
 let pointFinalStar = ref<Feature[]>([]);
 let lineLayer = ref<VectorLayer<VectorSource> | null>(null);
 let anguloInicial = 0;
-const startPointIconMap = ref<Feature<Geometry>>();
+
+
 const route = ref<LineString>();
 const allCoordinatesAnimation = ref<Coordinate[]>([]);
 const showPlayback = ref(false);
@@ -104,14 +115,14 @@ let darkOrWhiteMap: string;
 const iconScale = ref(1);
 const iconOpacity = ref(1);
 
-function saveGeometry(){
-  map.value?.getLayers().array_.forEach(layer =>{
-    if(layer.values_.layerName == 'Draw Layer'){
-      layer.getSource().getFeatures().forEach((feature:Feature) =>{
-        try{
-          if(feature.getGeometry().getRadius()){
-            saveGeomData(convertToDrawedGeom(feature,'CIRCLE',drawGeomName.value)).then((obj) =>{
-              fetchAllZones().then((geoms) =>{
+function saveGeometry() {
+  map.value?.getLayers().array_.forEach(layer => {
+    if (layer.values_.layerName == 'Draw Layer') {
+      layer.getSource().getFeatures().forEach((feature: Feature) => {
+        try {
+          if (feature.getGeometry().getRadius()) {
+            saveGeomData(convertToDrawedGeom(feature, 'CIRCLE', drawGeomName.value)).then((obj) => {
+              fetchAllZones().then((geoms) => {
                 zoneOptions.value = geoms.map(geom => ({
                   label: geom.name,
                   value: geom.idLocation
@@ -124,9 +135,9 @@ function saveGeometry(){
               });
             });
           }
-        } catch (e){
-          saveGeomData(convertToDrawedGeom(feature,'POLYGON',drawGeomName.value)).then((obj) =>{
-            fetchAllZones().then((geoms) =>{
+        } catch (e) {
+          saveGeomData(convertToDrawedGeom(feature, 'POLYGON', drawGeomName.value)).then((obj) => {
+            fetchAllZones().then((geoms) => {
               zoneOptions.value = geoms.map(geom => ({
                 label: geom.name,
                 value: geom.idLocation
@@ -162,6 +173,94 @@ function toggleZoneVisibility(){
     })
   }
 }
+function toggledUserHandler(buttonObject){
+    if(showPlayback.value && buttonObject.active){
+      showPlayback.value = false;
+      loadedRoutes.value.forEach((routeObj)=>{
+        if(routeObj.pessoaId  == buttonObject.id){
+          route.value = routeObj.linestringObj;
+          allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
+          map.value?.getLayers().array_.forEach((layer) =>{
+            startPointIconMap?.value?.setStyle(undefined)
+            if(layer.values_.layerName == 'Layer Stard and End'){
+              if(startPointIconMap.value){
+                if(layer.getProperties().personId == startPointIconMap.value.getProperties().personId){
+                  startPointIconMap.value = layer.getSource().getFeatures()[2];
+                  startPointIconMap?.value?.setProperties({personId: buttonObject.id})
+                  let extent = route?.value?.getExtent();
+                  map.value?.getView().fit(extent, { padding: [50, 50, 50, 50],duration: 1000});
+                }
+              }
+            }
+           })
+          showPlayback.value = true;
+        }
+      })
+    } else if(!buttonObject.active){
+      showPlayback.value = false;
+      startPointIconMap?.value?.setStyle(undefined)
+    } else if(buttonObject.active){
+      showPlayback.value = false;
+      startPointIconMap?.value == undefined;
+      loadedRoutes.value.forEach((routeObj)=>{
+        if(routeObj.pessoaId  == buttonObject.id){
+          route.value = routeObj.linestringObj;
+          allCoordinatesAnimation.value = routeObj.linestringObj.getCoordinates();
+          map.value?.getLayers().array_.forEach((layer) =>{
+            startPointIconMap?.value == undefined;
+            if(layer.values_.layerName == 'Layer Stard and End'){
+              if(startPointIconMap.value){
+                if(layer.getProperties().personId == startPointIconMap.value.getProperties().personId){
+                  startPointIconMap.value = layer.getSource().getFeatures()[2];
+                  startPointIconMap?.value?.setProperties({personId: buttonObject.id})
+                  startPointIconMap?.value?.setStyle(new Style({
+                    image: new Icon({
+                      src: IconPositionMap,
+                      anchor: [0.5, 0.5],
+                      scale: 0.2
+                    }),
+                  }))
+                  let extent = route?.value?.getExtent();
+                  map.value?.getView().fit(extent, { padding: [50, 50, 50, 50] ,duration: 1000});
+                }
+              }
+            }
+          })
+          showPlayback.value = true;
+        }
+      })
+    }
+  // route.value =
+  // const allCoordinatesAnimation = ref<Coordinate[]>([]);
+  // const showPlayback = ref(false);
+}
+function removedUserHandler(buttonRemoved){
+  buttonsList.value.forEach(button => {
+    if(button.id == buttonRemoved.id){
+      switch(button.active){
+        case true:
+          loadedRoutes.value.forEach(routeObj=>{
+            if(routeObj.pessoaId == button.id){
+              loadedRoutes.value = loadedRoutes.value.filter((routeObj)=>routeObj.pessoaId != button.id);
+            }
+          })
+          toggledUserHandler(buttonRemoved);
+          buttonsList.value = buttonsList.value.filter((b) => b.id !== buttonRemoved.id);
+          break;
+        case false:
+          loadedRoutes.value.forEach(routeObj=>{
+            if(routeObj.pessoaId == button.id){
+              loadedRoutes.value = loadedRoutes.value.filter((routeObj)=>routeObj.pessoaId != button.id);
+            }
+          })
+          buttonsList.value = buttonsList.value.filter((b) => b.id !== buttonRemoved.id);
+          break;
+      }
+
+    }
+  })
+}
+
 
 function drawTypeUpdate(selectedMode:selectedMode){
   drawType.value = selectedMode;
@@ -246,7 +345,11 @@ function convertToGeometryPoints(data: any[]): GeometryPoint[] | null {
   })
   return geometryPoints;
 }
+let selectedPessoa:Pessoa;
 function handleFilterData(filterData:{person: number | undefined, startDate:string | null, endDate:string | null, selectedZone:number | null}){
+  fetchPersonById(filterData.person).then((pessoa)=>{
+    selectedPessoa = pessoa;
+  });
   if(zoneDrawd) {
     fetchGeomDataWithinZone(filterData.startDate, filterData.endDate, filterData.selectedZone).then((points: []) => {
       if (!points) {
@@ -263,25 +366,34 @@ function handleFilterData(filterData:{person: number | undefined, startDate:stri
     plotStopPoints(filterData.person, filterData.startDate, filterData.endDate);
   }
 }
-function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean){
+function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean, personId?:number){
+  let newLayer = ref<VectorLayer>({});
     if(hasRoute){
-    map.value?.addLayer(createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),undefined,undefined,4),'Layer dos Pontos');
-    pointFeatures.value = makeMultiplePointsLegacy(points);
-    map.value.addLayer(makeLineFromPoints(pointFeatures));
-    showPlayback.value = true;
-  } else {
-    let insidePointStyle  :Style = new Style({
-      image: new Icon({
-        src: IconEndPin,
-        scale: 0.7,
-        anchor: [0.5, 1],
-      }),
-    })
-    map.value?.addLayer(createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4));
+      newLayer.value = createNewVectorLayer(createStartAndEndPoint(points,anguloInicial),'Layer Stard and End',undefined,4)
+      newLayer.value.setProperties({personId: personId})
+      map.value?.addLayer(newLayer.value);
+      pointFeatures.value = makeMultiplePointsLegacy(points);
+      map.value.addLayer(makeLineFromPoints(pointFeatures,personId));
+    } else {
+      let insidePointStyle  :Style = new Style({
+        image: new Icon({
+          src: IconEndPin,
+          scale: 0.7,
+          anchor: [0.5, 1],
+        }),
+      })
+      newLayer.value = createNewVectorLayer(makePointsFromArray(points,insidePointStyle),'Layer InsideZone',undefined,4)
+    map.value?.addLayer(newLayer.value);
     if (showPlayback.value) {
       showPlayback.value = false;
     }
   }
+  buttonsList.value.forEach(botao =>{
+    if(botao.id == selectedPessoa.idPerson){
+      botao.layer == newLayer.value;
+      toggledUserHandler(botao)
+    }
+  })
   initializePopup();
   adjustMap();
 }
@@ -293,7 +405,7 @@ function plotStartAndEndPoints(personId:number, startDate, endDate, page:number)
         showPlayback.value = false;
       }
     } else {
-      plotAllOnMap(points,true);
+      plotAllOnMap(points,true,personId);
       return points
     }
 
@@ -333,6 +445,7 @@ function clearPoints() {
     pointFeatures.value = [];
     routeLine.value = [];
     pointFinalStar.value = [];
+    buttonsList.value = [];
     zoneDrawd = false;
     if (popupContent.value) {
       popupContent.value.innerHTML = null;
@@ -343,14 +456,14 @@ function clearPoints() {
     showPlayback.value = false;
   }
 }
-function makeLineFromPoints(featureList:Feature[]) {
+function makeLineFromPoints(featureList:Feature[], person:number) {
   if (!featureList) {
     toast.info("Nenhum ponto disponível para criar linhas.");
     return null;
   }
   let featureArray :Feature[] = [];
   let newLineString: LineString = makeLineString(featureList);
-  featureArray.push(new Feature({geometry: newLineString}));
+  featureArray.push(new Feature({geometry: newLineString,properties: {personId: person}}));
   featureArray[0].setStyle(new Style({
     stroke: new Stroke({
       color: '#000000',
@@ -359,9 +472,11 @@ function makeLineFromPoints(featureList:Feature[]) {
     zIndex: 4
   }));
   route.value = newLineString;
+  loadedRoutes.value.push({pessoaId: person, linestringObj: newLineString});
   map.value?.getLayers().array_.forEach(layer =>{
-    if(layer.values_.layerName == undefined){
+    if(layer.values_.layerName == 'Layer Stard and End'){
       startPointIconMap.value = layer.getSource().getFeatures()[2];
+      startPointIconMap?.value?.setProperties({personId: person});
     }
   });
   allCoordinatesAnimation.value = makeLineString(featureList).getCoordinates();
@@ -382,7 +497,7 @@ const adjustMap = (drawedZone?:Polygon|Circle) => {
   } else {
     let coordinatesExtend = [];
     map.value?.getLayers().array_.forEach((layer) =>{
-      if(layer.values_.layerName == 'Layer InsideZone' || layer.values_.layerName == 'Layer dos Pontos' || layer.values_.layerName == undefined){
+      if(layer.values_.layerName == 'Layer InsideZone' || layer.values_.layerName == 'Layer dos Pontos' || layer.values_.layerName == 'Layer Stard and End' || layer.values_.layerName == undefined){
         layer.getSource().getFeatures().forEach(feature =>{
           if(feature.getGeometry()){
             coordinatesExtend.push([feature.getGeometry().getExtent()[0],feature.getGeometry().getExtent()[1]]);

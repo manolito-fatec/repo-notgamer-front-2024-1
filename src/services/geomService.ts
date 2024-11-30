@@ -1,4 +1,4 @@
-import type {Coordinates, DrawedGeom, GeometryPoint, StopPoint} from "@/components/Types";
+import type {Coordinates, DrawedGeom, GeometryPoint, LoadedRoutes, SelectedPerson, StopPoint} from "@/components/Types";
 import Point from "ol/geom/Point";
 import Feature from "ol/Feature";
 import {Fill, Icon, Stroke, Style} from "ol/style";
@@ -38,11 +38,11 @@ export function makeSinglePoint(pointObject: GeometryPoint|StopPoint): Point {
         return new Point([pointObject.longitude,pointObject.latitude]);
     }
 }
-export function makeMultiplePointsLegacy(arrayOfGeometryObjects:[]):Point[]{
+export function makeMultiplePointsLegacy(arrayOfGeometryObjects:GeometryPoint[]|StopPoint[]):Point[]{
     let pointFeatures :Point[] =[];
     arrayOfGeometryObjects.forEach((pointObj) => {
         const point = new Feature({
-            geometry: new Point([pointObj.longitude, pointObj.latitude]),
+            geometry: new Point([pointObj?.longitude, pointObj?.latitude]),
         });
         pointFeatures.push(point);
     });
@@ -74,7 +74,7 @@ export function makePolygon(hotzone:DrawedGeom) {
     }
 
 }
-export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolygon?:Polygon): Feature {
+export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolygon?:Polygon, zIndex?:number): Feature {
     let createdFeature: Feature;
     if(createdPolygon) {
         createdFeature = new Feature({geometry: createdPolygon});
@@ -86,7 +86,7 @@ export function makeFeature(newGeometry?: Point, pointStyle?:Style, createdPolyg
                 color: '#000000',
                 width: 2
             }),
-            zIndex: 2
+            zIndex: zIndex|2
         }))
         return createdFeature;
     }
@@ -147,7 +147,7 @@ export function saveGeoms(feature:Feature, drawGeomName: string){
         handleTypeError(e);
     }
 }
-export function createStartAndEndPoint(arrayOfGeometryObjects:GeometryPoint[],anguloInicial?:number){
+export function createStartAndEndPoint(arrayOfGeometryObjects:GeometryPoint[]|StopPoint[],anguloInicial?:number){
     let pointStartStyle:Style = new Style({
         image: new Icon({
             src: IconStartPin,
@@ -199,5 +199,10 @@ export function locationDtoToDrawedGeom(data):DrawedGeom|null{
 }
 export let zoneOptions = ref([]);
 export let drawedGeomsFromDb :DrawedGeom[] =[];
-export let selectedHotzone = ref<number>();
+export let selectedHotzone = ref<number>()
 export let drawingActive = ref(false);
+export let selectedUsers = ref([]);
+export let focusedUser = ref();
+export let buttonsList = ref([]);
+export let loadedRoutes= ref<LoadedRoutes[]>([]);
+export let startPointIconMap = ref<Feature>();

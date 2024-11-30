@@ -34,12 +34,9 @@ import ButtonStartPause from '@/components/ButtonStartPause.vue';
 import {ref, defineProps, watch} from 'vue';
 import Feature from 'ol/Feature';
 import {LineString} from 'ol/geom';
-import ButtonBackward from '@/components/ButtonBackward.vue';
-import ButtonForward from '@/components/ButtonForward.vue';
 import ButtonRestart from '@/components/ButtonRestart.vue';
 import {Icon, Style} from 'ol/style';
 import IconPositionMap from '../assets/IconPositionMap.png';
-import Coordinate from 'ol/coordinate';
 import {getClick} from '@/components/stores/StoreGetClick.js'
 import { darkModeClick } from '@/components/stores/StoreDarkModeGetClick.js'
 
@@ -205,7 +202,6 @@ function routeAnimation() {
 
     const coord = props.rota.getCoordinateAt(progress);
     props.iconMap.getGeometry().setCoordinates(coord);
-
     changeColorRange();
     getRotationIcon();
 
@@ -217,6 +213,7 @@ function routeAnimation() {
         rotation: angulo
       }),
     }));
+    props.iconMap.setProperties({pontoCarrinho: true})
 
     if (progress < 1) {
       requestAnimationFrame(routeAnimation);
