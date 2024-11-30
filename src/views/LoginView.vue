@@ -1,47 +1,51 @@
 <template>
   <div class="container">
     <div class="central">
-        <img class="logo" :src="Logo"/>
-        <div class="login">
-          <div for="email">Email:</div>
-          <input
-            class="text-box"
-            type="email"
+      <img :src="Logo" class="logo"/>
+      <div class="login">
+        <div for="email">Email:</div>
+        <input
             id="email"
             v-model="emailUser"
+            class="text-box"
             placeholder="Digite seu email"
             required
-          />
-        </div>
-        <div class="login">
-          <div for="password">Senha:</div>
-          <input
-            class="text-box"
-            type="password"
+            type="email"
+        />
+      </div>
+      <div class="login">
+        <div for="password">Senha:</div>
+        <input
             id="password"
             v-model="passwordUser"
+            class="text-box"
             placeholder="Digite sua senha"
             required
-          />
-        </div>
+            type="password"
+        />
+      </div>
       <div class="login">
         <button class="login_btn" type="submit" @click="loginValidate">Entrar</button>
       </div>
-    <footer>
-      <div class="copyright" v-if="!loading">
-        <p>© 2024 Manolito. Todos os direitos reservados.</p>
-      </div>
       <div>
-        <Loading v-if="loading"></Loading>
+          <button class="cadastro_btn" @click="goToCadastroPage">Cadastrar</button>
       </div>
-    </footer>
-  </div>
+      <footer>
+        <div v-if="!loading" class="copyright">
+          <p>© 2024 Manolito. Todos os direitos reservados.</p>
+        </div>
+        <div>
+          <Loading v-if="loading"></Loading>
+        </div>
+      </footer>
+    </div>
   </div>
 </template>
-<script setup lang="ts">
+
+<script lang="ts" setup>
 import {login} from "@/services/apiService";
 import Logo from "@/assets/Logo.png";
-import { ref } from "vue";
+import {ref} from "vue";
 import router from '@/router'
 import Loading from "@/components/Loading.vue";
 
@@ -49,19 +53,23 @@ const emailUser = ref<string>("");
 const passwordUser = ref<string>("");
 const loading = ref<boolean>(false);
 
-const loginValidate = async() => {
+const loginValidate = async () => {
   loading.value = true;
   const response = await login(emailUser.value, passwordUser.value);
   loading.value = false;
-  if(response){
+  if (response) {
     router.replace("/home");
   }
 }
 
-
+const goToCadastroPage = () => {
+  router.push('/cadastro');
+};
 
 </script>
-<style scoped lang="css">
+<style lang="css" scoped>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
 .container {
   width: 100vw;
   height: 100vh;
@@ -86,7 +94,7 @@ const loginValidate = async() => {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 350px;
+  width: 480px;
   transform: translate(-50%, -50%);
   z-index: 1;
   background: rgba(0, 0, 0, 0.6);
@@ -99,37 +107,49 @@ const loginValidate = async() => {
   width: 100%;
   height: 10%;
 }
+
+.cadastro_btn,
 .login_btn {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  width: 100%;
   padding: 0.5em 1em;
   background-color: #000059;
   color: white;
-  width: 100%;
-  height: 30px;
+  height: 36px;
   border: none;
   border-radius: 10px;
-  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 .text-box {
+  font-family: 'Poppins', sans-serif;
   width: 100%;
-  height: 30px;
+  height: 36px;
   border: none;
   border-radius: 10px;
   padding: 0.5em 1em;
+  gap: 0.5em;
 }
-.login{
-  padding: 0.5em 1em;
-  font-family: 'Poppins', regular, sans-serif;
+
+.login {
+  font-family: 'Poppins', sans-serif;
+  padding: 0.5em 0;
   font-size: 12px;
   color: white;
   border: none;
   cursor: pointer;
 }
-.copyright{
+
+.copyright {
+  font-family: 'Poppins', sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: #000059;
   font-size: 13px;
-  margin-bottom:30px;
+  margin-bottom: 30px;
 }
 </style>
