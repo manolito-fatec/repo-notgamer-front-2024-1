@@ -27,9 +27,6 @@
       <div class="login">
         <button class="login_btn" type="submit" @click="loginValidate">Entrar</button>
       </div>
-      <div>
-          <button class="cadastro_btn" @click="goToCadastroPage">Cadastrar</button>
-      </div>
       <footer>
         <div v-if="!loading" class="copyright">
           <p>© 2024 Manolito. Todos os direitos reservados.</p>
@@ -65,9 +62,6 @@ const loginValidate = async () => {
   }
 }
 
-const goToCadastroPage = () => {
-  router.push('/cadastro');
-};
 
 </script>
 <style lang="css" scoped>
