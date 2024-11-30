@@ -41,7 +41,7 @@ watch(() => store.onClickDarkMode,
   border: none;
   border-radius: 8px;
   padding: 8px 20px;
-  font-size: 12px;
+  font-size: 18px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -53,7 +53,7 @@ watch(() => store.onClickDarkMode,
 }
 
 .start-button .button-text {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 550;
   color: #FFF;
 }
