@@ -296,7 +296,7 @@ function handleSave() {
         page.value = 1;
         getHistory(filterData.person, filterData.startDate, filterData.endDate, page.value);
       }
-      if (!hasErrors && !buttonsList.value.find(button => button.id === Person.value)) {
+      if (!hasErrors && !buttonsList.value.find(button => button.id === Person.value) && selectedHotzone.value == undefined) {
         if(buttonsList.value.length > 0){
           buttonsList.value.push({
             id: Person.value,

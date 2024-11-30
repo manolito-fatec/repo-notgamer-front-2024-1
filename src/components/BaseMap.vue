@@ -374,7 +374,6 @@ function plotAllOnMap(points:StopPoint[]|GeometryPoint[], hasRoute?:Boolean, per
       map.value?.addLayer(newLayer.value);
       pointFeatures.value = makeMultiplePointsLegacy(points);
       map.value.addLayer(makeLineFromPoints(pointFeatures,personId));
-      // showPlayback.value = true;
     } else {
       let insidePointStyle  :Style = new Style({
         image: new Icon({

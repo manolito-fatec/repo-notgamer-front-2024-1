@@ -52,10 +52,13 @@ import Loading from "@/components/Loading.vue";
 const emailUser = ref<string>("");
 const passwordUser = ref<string>("");
 const loading = ref<boolean>(false);
+let response;
 
 const loginValidate = async () => {
   loading.value = true;
-  const response = await login(emailUser.value, passwordUser.value);
+  await login(emailUser.value, passwordUser.value).then(responsea => {
+    response = responsea;
+  });
   loading.value = false;
   if (response) {
     router.replace("/home");
