@@ -199,10 +199,11 @@ export function locationDtoToDrawedGeom(data):DrawedGeom|null{
 }
 export let zoneOptions = ref([]);
 export let drawedGeomsFromDb :DrawedGeom[] =[];
-export let selectedHotzone = ref<number>()
+export let selectedHotzone = ref<number>();
 export let drawingActive = ref(false);
 export let selectedUsers = ref([]);
 export let focusedUser = ref();
 export let buttonsList = ref([]);
 export let loadedRoutes= ref<LoadedRoutes[]>([]);
 export let startPointIconMap = ref<Feature>();
+export let deletedHotzones = ref<number>();
