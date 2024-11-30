@@ -207,7 +207,7 @@ function clearSelectedMode() {
 }
 
 .delete-zone-container {
-  margin-top: 100px;
+  margin-top: 30px;
 }
 
 .delete-zone-container .dropdown, .delete-button{
